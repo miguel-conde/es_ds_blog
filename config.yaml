@@ -37,3 +37,8 @@ Params:
   widgets:
     recent_num: 5
     tags_counter: no
+ignoreFiles: ["\\.Rmd$", "\\.Rmarkdown$", "_cache$", "\\.knit\\.md$", "\\.utf8\\.md$"]
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
