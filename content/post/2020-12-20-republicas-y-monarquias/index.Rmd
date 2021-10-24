@@ -27,6 +27,9 @@ all_data <- read_delim("data/rep_mon.csv",
 
 Ya que el asunto quiere estar de moda, aquí tienen un gráfico interactivo con el que jugar comparando unas y otras.
 
+Cuanto más igualdad en ingresos, más arriba en el gráfico (y viceversa); y cuanto
+más democráticos, más a la derecha en el gráfico.
+
 <br>
 
 ```{r, fig.height = 1800}
@@ -152,9 +155,9 @@ highchart() %>%
 
 <br>
 
-Y [aquí](images/republics_vs_monarchies.html) puedes verlo en pantalla completa.
+Y [aquí](images/republics_vs_monarchies.html){:target="_blank"} puedes verlo en pantalla completa.
 
-Y <a href="https://es100x100datascience.com/wp-content/uploads/2020/12/republics_vs_monarchies.html" target="_blank" rel="noreferrer noopener">aquí </a> 
+<!-- Y <a href="https://es100x100datascience.com/wp-content/uploads/2020/12/republics_vs_monarchies.html" target="_blank" rel="noreferrer noopener">aquí </a>  -->
 <!-- puedes verlo en pantalla completa. -->
 
 <!-- Y <a href="republics_vs_monarchies.html" target="_blank" rel="noreferrer noopener">aquí </a> -->
