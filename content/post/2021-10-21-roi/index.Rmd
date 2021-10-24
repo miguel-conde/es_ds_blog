@@ -1,0 +1,156 @@
+---
+title: ROI
+author: Miguel Conde
+date: '2021-10-21'
+slug: []
+categories:
+  - R
+  - paquetes
+  - optimización
+tags:
+  - ''
+description: 'Una infraestructura de optimización en R'
+thumbnail: ''
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE, fig.align='center')
+```
+
+# Intro
+
+
+ROI = *R Optimization Infrastructure*
+
+<small>
+- Infraestructura ampliable para modelado de problemas de optimización (lineal,
+  cuadrática, cónica y no lineal general).
+- Administra múltiples *solvers*, reformulaciones, colecciones de problemas y 
+  funciones para leer y escribir problemas de optimización en varios formatos.
+</small>
+  
+[*Paper* de 2019](https:/epub.wu.ac.at/5858/) muy recomendable: 
+
+<small>
+- Apartado 2: resumen de teoría de optimización
+- Apartado 3: panorámica del software de optimización disponible en R
+- Apartados 4 y 5: Descripción de la infraestructura y la librería
+- Apartado 6: Ejemplos
+</small>
+  
+<br><br>
+<center>
+**ROI** es a optimización lo que *caret* a *machine learning*.
+</center>
+
+# Ejemplo
+
+## Definir el problema
+
+
+<center>
+```{r, echo=FALSE, out.width="50%"}
+knitr::include_graphics("images/lp.png")
+```
+</center>
+
+```{r}
+library(ROI)
+library(tidyverse)
+
+A <- rbind(c(5, 7, 2), c(3, 2, -9), c(1, 3, 1))
+dir <- c("<=", "<=", "<=")
+rhs <- c(61, 35, 31)
+
+lp <- OP(objective   = L_objective(c(3, 7, -12)),
+         constraints = L_constraint(A, dir = dir, rhs = rhs),
+         types       = NULL, # NULL ="C", "I", "B"
+         bounds      = V_bound(li = 3, ui = 3, lb = -10, ub = 10, nobj = 3),
+         maximum     = TRUE)
+```
+
+## Definición alternativa
+
+```{r}
+# ALTERNATIVA:
+
+lp <- OP()
+
+objective(lp)   <- L_objective(c(3, 7, -12)) # 3x_1 + 7x_2 -12x_3
+constraints(lp) <- L_constraint(A, dir = c("<=", "<=", "<="), rhs = rhs)
+bounds(lp)      <- V_bound(li = 3, ui = 3, lb = -10, ub = 10, nobj = 3)
+# types(lp)
+maximum(lp)     <- TRUE
+
+lp
+```
+
+## *Solvers* disponibles 
+
++ Para ***este*** problema, la infraestructura ROI tiene disponibles los
+siguientes *solvers*:
+
+```{r}
+ROI_available_solvers(lp)[, c("Package", "Repository")] %>% head()
+```
+
+## *Solvers* instalados
+
+```{r}
+ROI_installed_solvers()
+```
+
+Si el que necesitas no está:
+
+```
+install.packages("ROI.plugin.glpk")
+```
+
+
+## *Solvers* registrados
+
+```{r}
+ROI_registered_solvers() %>% head(15)
+```
+
+Para registrarlo la primera vez que lo usas:
+
+```
+library("ROI.plugin.glpk")
+```
+
+## Resolver el problema
+
+```{r}
+ROI_applicable_solvers(lp)
+
+(lp_sol <- ROI_solve(lp, solver = "glpk"))
+
+```
+
+## Resultados 
+
+```{r}
+solution(lp_sol)
+
+objective(lp)(solution(lp_sol))
+```
+
+## Resultados 
+
+```{r}
+lp_sol$status
+```
+
+## Resultados 
+
+```{r}
+lp_sol$message
+```
+
+
+# Referencias y Recursos
+
+
+- [ROI homepage](https:/roi.r-forge.r-project.org/)
+- [ROI en CRAN](https:/cran.r-project.org/web/packages/ROI/index.html)

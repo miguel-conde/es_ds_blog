@@ -1,0 +1,43 @@
+---
+title: '"Las matemáticas vigilan tu salud", de Clara Grima y Enrique F. Borja'
+author: Miguel Conde
+date: '2021-01-10'
+slug: []
+categories:
+  - Libros
+tags: []
+description: 'Conciso y cercano, este libro proporciona los conceptos clave sobre modelos epidemiológicos y el efecto de las vacunas para combatir las pandemias.'
+thumbnail: ''
+---
+
+Este libre trata de **modelos** sobre **epidemias** y **vacunas**, vamos, dos temas de plena actualidad. Lo que me ha gustado de él es lo bien que identifica y explica los **conceptos clave**. Sin entrar en detalles ni extenderse, empleando un lenguaje animado y cercano, acerca al lector de manera precisa los puntos de referencia en el mapa de los modelos epidemiológicos y las vacunas.
+
+Si habéis tenido que buscaros la vida para modelar epidemias (ya sabéis, modelos SIR y derivados), este es el libro que os hubiera gustado tener para empezar.
+
+<center>
+![](https://es100x100datascience.com/wp-content/uploads/2021/01/mates_vigilan_salud.jpg){width="650"}
+
+</center>
+
+
+Comienza con capítulos dedicados a la **Teoría de Grafos**, a la **Teoría de Juegos**, y a los conceptos de **función** y **ecuaciones diferenciales**. Son los elementos sobre los que elaboran a continuación modelos epidemiológicos **clásicos** con **poblaciones agregadas**, modelos **más avanzados** con **poblaciones estructuradas en grafos** y, finalmente, estudian el efecto que el empleo de las **vacunas** provoca en los modelos y (un auténtico bonus) analizan el **movimiento anti vacunas** desde la Teoría de Juegos.
+
+No esperéis profundidad ni detalles. Por ejemplo, la parte dedicada a funciones y ecuaciones diferenciales os la podéis saltar a poca cultura matemática que tengáis. Pero no dejéis de disfrutar las perlas que nos identifican sobre el tema, los puntos clave sobre epidemiología y modelos.
+
+Por cierto, todas estas ideas son fácilmente trasladables al análisis de redes sociales.
+
+Si queréis profundizar, proporciona una **bibliografía** muy interesante con la que empezar.
+
+## Los autores
+
+-   [**Clara Grima**](https://www.nextdoorpublishers.com/autores/clara-grima/) es matemática con especial orientación hacia la divulgación. Aquí tenéis su página web.
+
+-   [**Enrique F. Borja**](https://www.nextdoorpublishers.com/autores/enrique-fernandez-borja/) es físico y le conoceréis como divulgador por su blog Cuentos Cuánticos.
+
+## Dónde encontrarlo
+
+En Amazon, versión papel y versión electrónica.
+
+**Editor**: Next Door Publishers, Colección de libros El Café Cajal
+
+## **Idioma**: español

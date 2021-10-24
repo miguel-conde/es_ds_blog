@@ -1,0 +1,41 @@
+---
+title: Vísteme despacio, que tengo prisa
+author: Miguel Conde
+date: '2020-12-14'
+slug: []
+categories:
+  - Data Science
+  - Metodología
+  - Software
+tags: []
+description: 'Software para no desarrolladores en Ciencia de Datos'
+thumbnail: ''
+---
+
+Muy bien, hace ya tiempo que decidiste adoptar el software como tu principal herramienta analítica. Quizá uses Python, quizá R o (¡muy bien!) ambos o, incluso, más lenguajes de programación.
+
+Tengo una buena noticia para ti: ante ti se abre un enorme abanico de posibilidades para aportar mayor valor (a tu empresa, a tu cliente, a tus investigaciones, a tu carrera), porque el software permite automatizar, permite capitalizar el trabajo y el conocimiento y permite trabajar de manera replicable y reproducible. ¡Se acabaron las penurias asociadas a las viejas herramientas!
+
+<center>
+
+![](https://i0.wp.com/es100x100datascience.com/wp-content/uploads/2020/12/festina-lente.jpg?w=576&ssl=1)
+
+</center>
+
+Pero -lo siento -- también tengo una mala noticia: el software no es la panacea.
+
+[Un avión A400M de Airbus sufre un accidente](https://www.reuters.com/article/us-airbus-a400m-idUSKBN1D819P) debido a un error en el software de sus motores. 4 muertos. La reutilización de código del cohete europeo Ariane 4 en su sucesor, el Ariane 5, provoca una explosión. Mil millones de euros perdidos. Un error "tonto" en la conversión de unidades de longitud provoca que el Mars Climate Orbiter se acerque demasiado a Marte y acabe desintegrado. Otro error causa 5 muertos en una máquina de radioterapia al recibir los pacientes dosis demasiado elevadas. El problema del año 2000...
+
+Los casos anteriores (sacados de [aquí](https://ingenieriadesoftware.es/grandes-errores-historia-software-informatico/)) no son ni mucho menos "raros" (compruébese por ejemplo [esta entrada](https://en.wikipedia.org/wiki/List_of_software_bugs) de la Wikipedia).
+
+Vale. Y ¿qué tiene que ver esto con nuestro mundo de la Analítica o la Ciencia de Datos? ¡Pues todo!
+
+A ver, esta Ley es más Universal aun que la de la Gravedad (la que quieras, clásica, relativista, cuántica, unificada...): si programas, ya puedes hacer lo que quieras: vas a cometer errores de programación. Aunque todo lo hagas bien.
+
+Mira, sin meternos en la eficiencia de usuario, pero pensando en la corrección y fiabilidad de un programa, está bien demostrado hace tiempo que el número de errores que contenga depende de su [complejidad lógica](http://www.literateprogramming.com/mccabe.pdf) y de su \[extensión\](<https://dl.acm.org/doi/10.1145/356715.356717>. Insisto, aunque todo lo hagamos bien.
+
+Y en cuanto a la facilidad de mantenimiento y evolución de un programa, van a ser determinantes el estilo de programación (claro y legible), una buena estructura y modularización, haberlo sometido a las pruebas y revisiones necesarias y contar con una buena documentación. Esto es todo lo que podemos hacer "no tan bien". Y cuanto menos bien lo hagamos, más "bugs" contendrá nuestro programa.
+
+En la práctica esto quiere decir que en Ciencia de Datos tenemos que meternos en la cabeza que hay que adoptar y adaptar ¡pero ya! Las mejores prácticas y metodologías que la Ingeniería del Software ha ido depurando durante ya muchos años. No queda otra.
+
+Y eso significa que con el software ni se puede ni se debe correr como hacemos con las hojas de cálculo o los dichosos ppts. Al principio nos dará vértigo, porque parecerá que tardamos más en hacer las cosas. Pero esa sensación es engañosa. Pasa con cualquier inversión. Estamos acostumbrados a ir a la tienda, pagar y salir con el producto. Pero si no quieres un mal producto ni te conformas con un producto mediocre, sino que quieres lo mejor, hay que acostumbrarse a pensar en términos de inversión: ¿qué queremos? ¿Ganar hoy 1 inmediatamente? O ¿mejor ahorrar, financiar, esperar, pero ganar 100 en el futuro? Hablaré más de la inversión más adelante. Mientras tanto, te dejo con [esta reflexión](https://escuelaconcerebro.wordpress.com/2012/04/04/aplazamiento-de-la-recompensa-y-aprendizaje-emocional-2/) que, a nivel personal y emocional, quiere decir lo mismo. ¡Que la disfrutes!

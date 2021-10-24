@@ -1,0 +1,30 @@
+---
+title: This is my first test post
+author: Me
+date: '2021-09-02'
+slug: this-is-my-first-test-post
+categories: []
+tags: []
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+# Parte 1
+
+```{r}
+rnorm(100) %>% hist
+```
+
+# Parte 2
+
+Lore ipsum etc, etc.
+
+# Parte 3
+
+![](images/Presa%20Aldeadavila.jpg "Presilla")
+
+# Parte 4

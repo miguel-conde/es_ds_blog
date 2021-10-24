@@ -1,0 +1,146 @@
+country_code;score;regime_type;const_form;int_dollars;gini_index;score_ief;pop;region;country
+NOR;9,87;Full democracy;monarchy;64856;27;73,4;5384576;Western Europe;Norway
+ISL;9,58;Full democracy;republic;54482;26,8;77,1;368010;Western Europe;Iceland
+SWE;9,39;Full democracy;monarchy;52477;28,8;74,9;10377781;Western Europe;Sweden
+FIN;9,25;Full democracy;republic;49334;27,4;75,7;5505533;Western Europe;Finland
+IRL;9,24;Full democracy;republic;89383;32,8;80,9;4977400;Western Europe;Ireland
+DNK;9,22;Full democracy;monarchy;57781;28,7;78,3;5837213;Western Europe;Denmark
+CAN;9,22;Full democracy;monarchy;47569;33,8;78,2;38292573;North America;Canada
+AUS;9,09;Full democracy;monarchy;50845;34,4;82,6;25720332;Asia & Australasia;Australia
+CHE;9,03;Full democracy;republic;68340;32,7;82;8655100;Western Europe;Switzerland
+NLD;9,01;Full democracy;monarchy;57101;28,5;77;17544831;Western Europe;Netherlands (the)
+LUX;8,81;Full democracy;monarchy;112875;34,9;75,8;626108;Western Europe;Luxembourg
+DEU;8,68;Full democracy;republic;53571;31,9;73,5;83122889;Western Europe;Germany
+GBR;8,52;Full democracy;monarchy;44288;34,8;79,3;66796807;Western Europe;United Kingdom of Great Britain and Northern Ireland (the)
+URY;8,38;Full democracy;republic;21338;39,7;69,1;3530912;Latin America;Uruguay
+AUT;8,29;Full democracy;republic;55406;29,7;73,3;8935112;Western Europe;Austria
+ESP;8,29;Full democracy;monarchy;38143;34,7;66,8;47332614;Western Europe;Spain
+MUS;8,22;Full democracy;republic;20719;36,8;74,9;1266000;Sub-Saharan Africa;Mauritius
+CRI;8,13;Full democracy;republic;19309;48;65,8;5111238;Latin America;Costa Rica
+FRA;8,12;Full democracy;republic;45454;31,6;66;67153000;Western Europe;France
+CHL;8,08;Full democracy;republic;23455;44,4;76,8;19458310;Latin America;Chile
+PRT;8,03;Full democracy;republic;33131;33,8;67;10295909;Western Europe;Portugal
+KOR;8;Flawed democracy;republic;44292;31,6;74;51834302;Asia & Australasia;Korea (the Republic of)
+JPN;7,99;Flawed democracy;monarchy;41637;32,9;73,3;125710000;Asia & Australasia;Japan
+USA;7,96;Flawed democracy;republic;63051;41,4;76,6;330883134;North America;United States of America (the)
+MLT;7,95;Flawed democracy;republic;43087;29,2;69,5;514564;Western Europe;Malta
+EST;7,9;Flawed democracy;republic;37033;30,4;77,7;1328976;Eastern Europe;Estonia
+ISR;7,86;Flawed democracy;republic;39126;39;74;9299700;Middle East & North Africa;Israel
+BWA;7,81;Flawed democracy;republic;16153;53,3;69,6;2374698;Sub-Saharan Africa;Botswana
+CPV;7,78;Flawed democracy;republic;6980;47,2;63,6;556857;Sub-Saharan Africa;Cabo Verde
+CZE;7,69;Flawed democracy;republic;40293;24,9;74,8;10707839;Eastern Europe;Czechia
+BEL;7,64;Flawed democracy;monarchy;50114;27,4;68,9;11555790;Western Europe;Belgium
+CYP;7,59;Flawed democracy;republic;39079;31,4;70,1;888000;Western Europe;Cyprus
+CYP;7,59;Flawed democracy;republic;39079;31,4;70,1;351965;Western Europe;Cyprus
+ITA;7,52;Flawed democracy;republic;40066;35,9;63,8;59388035;Western Europe;Italy
+SVN;7,5;Flawed democracy;republic;38506;24,2;67,8;2100126;Eastern Europe;Slovenia
+LTU;7,5;Flawed democracy;republic;38605;37,3;76,7;2793694;Eastern Europe;Lithuania
+LVA;7,49;Flawed democracy;republic;30579;35,6;71,9;1896000;Eastern Europe;Latvia
+GRC;7,43;Flawed democracy;republic;29045;34,4;59,9;10724599;Western Europe;Greece
+ZAF;7,24;Flawed democracy;republic;11911;63;58,8;59622350;Sub-Saharan Africa;South Africa
+TLS;7,19;Flawed democracy;republic;4031;28,7;45,9;1299412;Asia & Australasia;Timor-Leste
+SVK;7,17;Flawed democracy;republic;32184;25,2;66,8;5464060;Eastern Europe;Slovakia
+MYS;7,16;Flawed democracy;monarchy;27287;41;74,7;32723160;Asia & Australasia;Malaysia
+TTO;7,16;Flawed democracy;republic;25964;40,3;58,3;1366725;Latin America;Trinidad and Tobago
+COL;7,13;Flawed democracy;republic;14137;50,4;69,2;50372424;Latin America;Colombia
+PAN;7,05;Flawed democracy;republic;30034;49,2;67,2;4278500;Latin America;Panama
+BGR;7,03;Flawed democracy;republic;23741;40,4;70,2;6951482;Eastern Europe;Bulgaria
+ARG;7,02;Flawed democracy;republic;20370;41,4;53,1;45376763;Latin America;Argentina
+SUR;6,98;Flawed democracy;republic;14605;57,6;49,5;590100;Latin America;Suriname
+JAM;6,96;Flawed democracy;monarchy;10221;45,5;68,5;2734093;Latin America;Jamaica
+IND;6,9;Flawed democracy;republic;6284;37,8;56,5;1371326420;Asia & Australasia;India
+BRA;6,86;Flawed democracy;republic;14563;53,9;53,7;212519397;Latin America;Brazil
+TUN;6,72;Flawed democracy;republic;10382;32,8;55,8;11708370;Middle East & North Africa;Tunisia
+PHL;6,64;Flawed democracy;republic;8574;44,4;64,5;109612120;Asia & Australasia;Philippines (the)
+GHA;6,63;Flawed democracy;republic;5707;43,5;59,4;30955202;Sub-Saharan Africa;Ghana
+HUN;6,63;Flawed democracy;republic;32434;30,6;66,4;9769526;Eastern Europe;Hungary
+POL;6,62;Flawed democracy;republic;33739;29,7;69,1;38335000;Eastern Europe;Poland
+PER;6,6;Flawed democracy;republic;11516;42,8;67,9;32625948;Latin America;Peru
+HRV;6,57;Flawed democracy;republic;27681;30,4;62,2;4058165;Eastern Europe;Croatia
+DOM;6,54;Flawed democracy;republic;18783;43,7;60,9;10448499;Latin America;Dominican Republic (the)
+LSO;6,54;Flawed democracy;monarchy;2886;44,9;54,5;2007201;Sub-Saharan Africa;Lesotho
+MNG;6,5;Flawed democracy;republic;12259;32,7;55,9;3354516;Asia & Australasia;Mongolia
+ROU;6,49;Flawed democracy;republic;30141;36;69,7;19317984;Eastern Europe;Romania
+IDN;6,48;Flawed democracy;republic;12345;39;67,2;269603400;Asia & Australasia;Indonesia
+NAM;6,43;Flawed democracy;republic;9537;59,1;60,9;2504498;Sub-Saharan Africa;Namibia
+SRB;6,41;Flawed democracy;republic;18840;36,2;66;6926705;Eastern Europe;Serbia
+ECU;6,33;Flawed democracy;republic;10617;45,4;51,3;17637892;Latin America;Ecuador
+THA;6,32;Flawed democracy;monarchy;18073;36,4;69,4;66592455;Asia & Australasia;Thailand
+LKA;6,27;Flawed democracy;republic;13114;39,8;57,4;21803000;Asia & Australasia;Sri Lanka
+PRY;6,24;Flawed democracy;republic;12503;46,2;63;7252672;Latin America;Paraguay
+SLV;6,15;Flawed democracy;republic;8401;38,6;61,6;6765753;Latin America;El Salvador
+GUY;6,15;Flawed democracy;republic;17360;44,6;56,2;744962;Latin America;Guyana
+MEX;6,09;Flawed democracy;republic;18804;45,4;66;127792286;Latin America;Mexico
+PNG;6,03;Flawed democracy;monarchy;3861;41,9;58,4;8935000;Asia & Australasia;Papua New Guinea
+MKD;5,97;Hybrid regime;republic;16609;34,2;69,5;2076255;Eastern Europe;Republic of North Macedonia
+UKR;5,9;Hybrid regime;republic;12710;26,1;54,9;41670812;Eastern Europe;Ukraine
+ALB;5,89;Hybrid regime;republic;13651;33,2;66,9;2845955;Eastern Europe;Albania
+BGD;5,88;Hybrid regime;republic;5139;32,4;56,4;169879688;Asia & Australasia;Bangladesh
+FJI;5,85;Hybrid regime;republic;11175;36,7;63,4;889327;Asia & Australasia;Fiji
+SEN;5,81;Hybrid regime;republic;3463;40,3;58;16705608;Sub-Saharan Africa;Senegal
+MDA;5,75;Hybrid regime;republic;13253;25,7;62;2640438;Eastern Europe;Moldova (the Republic of)
+MNE;5,65;Hybrid regime;republic;19931;39;61,5;621873;Eastern Europe;Montenegro
+MDG;5,64;Hybrid regime;republic;1647;42,6;60,5;26251309;Sub-Saharan Africa;Madagascar
+ARM;5,54;Hybrid regime;republic;13735;34,4;70,6;2967900;Eastern Europe;Armenia
+MWI;5,5;Hybrid regime;republic;995;44,7;52,8;18449828;Sub-Saharan Africa;Malawi
+LBR;5,45;Hybrid regime;republic;1536;35,3;49;4568298;Sub-Saharan Africa;Liberia
+GEO;5,42;Hybrid regime;republic;15142;36,4;77,1;3716858;Eastern Europe;Georgia
+HND;5,42;Hybrid regime;republic;5538;52,1;61,1;9304380;Latin America;Honduras
+BTN;5,3;Hybrid regime;monarchy;12058;37,4;62,1;748931;Asia & Australasia;Bhutan
+NPL;5,28;Hybrid regime;republic;3586;32,8;54,2;29996478;Asia & Australasia;Nepal
+GTM;5,26;Hybrid regime;republic;8267;48,3;64;16858333;Latin America;Guatemala
+KEN;5,18;Hybrid regime;republic;4993;40,8;55,3;47564296;Sub-Saharan Africa;Kenya
+TZA;5,16;Hybrid regime;republic;2851;40,5;61,7;57637628;Sub-Saharan Africa;Tanzania, United Republic of
+MAR;5,1;Hybrid regime;monarchy;7609;39,5;63,3;36115135;Middle East & North Africa;Morocco
+BEN;5,09;Hybrid regime;republic;3443;47,8;55,2;12114193;Sub-Saharan Africa;Benin
+ZMB;5,09;Hybrid regime;republic;3302;57,1;53,5;17885422;Sub-Saharan Africa;Zambia
+UGA;5,02;Hybrid regime;republic;2585;42,8;59,5;41583600;Sub-Saharan Africa;Uganda
+KGZ;4,89;Hybrid regime;republic;4824;27,7;62,9;6608500;Eastern Europe;Kyrgyzstan
+BIH;4,86;Hybrid regime;republic;14895;33;62,6;3332593;Eastern Europe;Bosnia and Herzegovina
+SLE;4,86;Hybrid regime;republic;1711;35,7;48;8100318;Sub-Saharan Africa;Sierra Leone
+BOL;4,84;Hybrid regime;republic;8342;42,2;42,8;11633371;Latin America;Bolivia (Plurinational State of)
+HTI;4,57;Hybrid regime;republic;1728;41,1;52,3;11743017;Latin America;Haiti
+LBN;4,36;Hybrid regime;republic;11562;31,8;51,7;6825442;Middle East & North Africa;Lebanon
+GMB;4,33;Hybrid regime;republic;2239;35,9;56,3;2335504;Sub-Saharan Africa;Gambia (the)
+PAK;4,25;Hybrid regime;republic;5160;33,5;54,8;220892331;Asia & Australasia;Pakistan
+NGA;4,12;Hybrid regime;republic;5066;35,1;57,2;206139587;Sub-Saharan Africa;Nigeria
+TUR;4,09;Hybrid regime;republic;28294;41,9;64,4;83154997;Western Europe;Turkey
+CIV;4,05;Hybrid regime;republic;5360;41,5;59,7;26453542;Sub-Saharan Africa;Cote d'Ivoire
+BFA;4,04;Hybrid regime;republic;2203;35,3;56,7;21510181;Sub-Saharan Africa;Burkina Faso
+DZA;4,01;Hybrid regime;republic;11041;27,6;46,9;43900000;Middle East & North Africa;Algeria
+JOR;3,93;Authoritarian;monarchy;10007;33,7;66;10843428;Middle East & North Africa;Jordan
+MRT;3,92;Authoritarian;republic;5797;32,6;55,3;4173077;Sub-Saharan Africa;Mauritania
+AGO;3,72;Authoritarian;republic;6978;51,3;52,2;31127674;Sub-Saharan Africa;Angola
+MOZ;3,65;Authoritarian;republic;1279;54;50,5;30066648;Sub-Saharan Africa;Mozambique
+GAB;3,61;Authoritarian;republic;15854;38;56,7;2176766;Sub-Saharan Africa;Gabon
+MMR;3,55;Authoritarian;republic;5179;30,7;54;54817919;Asia & Australasia;Myanmar
+NIC;3,55;Authoritarian;republic;5439;46,2;57,2;6527691;Latin America;Nicaragua
+ETH;3,44;Authoritarian;republic;2772;35;53,6;109612120;Sub-Saharan Africa;Ethiopia
+TGO;3,3;Authoritarian;republic;1640;43,1;54,1;7706000;Sub-Saharan Africa;Togo
+NER;3,29;Authoritarian;republic;1253;34,3;54,7;23196002;Sub-Saharan Africa;Niger (the)
+RWA;3,16;Authoritarian;republic;2393;43,7;70,9;12663116;Sub-Saharan Africa;Rwanda
+ZWE;3,16;Authoritarian;republic;2583;44,3;43,1;15473818;Sub-Saharan Africa;Zimbabwe
+COM;3,15;Authoritarian;republic;3014;45,3;53,7;758316;Sub-Saharan Africa;Comoros (the)
+SWZ;3,14;Authoritarian;monarchy;8955;54,6;55,3;1093238;Sub-Saharan Africa;Eswatini
+GIN;3,14;Authoritarian;republic;2516;33,7;56,5;12559623;Sub-Saharan Africa;Guinea
+COG;3,11;Authoritarian;republic;4233;48,9;41,8;5518092;Sub-Saharan Africa;Congo (the)
+RUS;3,11;Authoritarian;republic;27394;37,5;61;146748590;Eastern Europe;Russian Federation (the)
+VNM;3,08;Authoritarian;republic;10755;35,7;58,8;96483981;Asia & Australasia;Viet Nam
+EGY;3,06;Authoritarian;republic;12719;31,5;54;101355525;Middle East & North Africa;Egypt
+KAZ;2,94;Authoritarian;republic;26589;27,5;69,6;18839560;Eastern Europe;Kazakhstan
+CMR;2,85;Authoritarian;republic;3710;46,6;53,6;24348251;Sub-Saharan Africa;Cameroon
+DJI;2,77;Authoritarian;republic;5074;44,6;52,9;976107;Sub-Saharan Africa;Djibouti
+ARE;2,76;Authoritarian;monarchy;58466;32,5;76,2;9366829;Middle East & North Africa;United Arab Emirates (the)
+AZE;2,75;Authoritarian;republic;14499;26,6;69,3;10121809;Eastern Europe;Azerbaijan
+GNB;2,63;Authoritarian;republic;2340;50,7;53,3;1624945;Sub-Saharan Africa;Guinea-Bissau
+BLR;2,48;Authoritarian;republic;19759;25,2;61,7;9408400;Eastern Europe;Belarus
+IRN;2,38;Authoritarian;republic;11963;40,8;49,2;84062221;Middle East & North Africa;Iran (Islamic Republic of)
+CHN;2,26;Authoritarian;republic;17206;38,5;59,5;1405921520;Asia & Australasia;China
+BDI;2,15;Authoritarian;republic;783;38,6;49;12309600;Sub-Saharan Africa;Burundi
+LAO;2,14;Authoritarian;republic;8221;36,4;55,5;7231210;Asia & Australasia;Lao People's Democratic Republic (the)
+UZB;2,01;Authoritarian;republic;7378;35,3;57,2;34601978;Eastern Europe;Uzbekistan
+TJK;1,93;Authoritarian;republic;3560;34;52,2;9313800;Eastern Europe;Tajikistan
+TKM;1,72;Authoritarian;republic;16711;40,8;46,5;6031187;Eastern Europe;Turkmenistan
+TCD;1,61;Authoritarian;republic;1618;43,3;50,2;16244513;Sub-Saharan Africa;Chad
+CAF;1,32;Authoritarian;republic;972;56,2;50,7;5633412;Sub-Saharan Africa;Central African Republic (the)
+COD;1,13;Authoritarian;republic;978;42,1;49,5;90935800;Sub-Saharan Africa;Congo (the Democratic Republic of the)

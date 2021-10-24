@@ -1,0 +1,162 @@
+---
+title: Repúblicas y Monarquías
+author: Miguel Conde
+date: '2020-12-20'
+slug: []
+categories:
+  - Gráficos
+tags:
+  - Gráficos
+  - Highcharter
+  - Interactivos
+description: ''
+thumbnail: ''
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+
+library(readr)
+all_data <- read_delim("data/rep_mon.csv", 
+                       ";", escape_double = FALSE, trim_ws = TRUE)
+```
+
+Ya que el asunto quiere estar de moda, aquí tienen un gráfico interactivo con el que jugar comparando unas y otras.
+
+<br>
+
+```{r, fig.height = 1200}
+library(highcharter)
+
+colors <- c(
+  "#FB1108", "#FD150B", "#FA7806", "#FBE426", "#FCFB8F",
+  "#F3F5E7", "#C7E4EA", "#ABD6E6", "#9AD2E1"
+)
+
+all_data$color <- highcharter::colorize(log(all_data$int_dollars), colors)
+# all_data <- all_data %>% 
+#   mutate(shape = ifelse(const_form == "monarchy", "circle", "square"))
+
+# n <- 4
+# 
+# stops <- data.frame(
+#   q = 0:n/n,
+#   # c = colors[c(1,3,5,7,9)],
+#   c = colors,
+#   stringsAsFactors = FALSE
+# )
+# 
+# stops <- list_parse2(stops)
+stops <- color_stops(5, colors)
+
+x <- c("Country:", 
+       "Democracy Index 2018:", 
+       "Regime Type:", 
+       "Const. Form:", 
+       "Per Capita GDP (PPA int$):",
+       "Gini Index:",
+       "Population: ")
+y <- c("{point.country}", 
+       "{point.score:.2f}",
+       "{point.regime_type}",
+       "{point.const_form}",
+       "{point.int_dollars:.0f}",
+       "{point.gini_index:.2f}",
+       "{point.pop:.0f}")
+
+tltip <- tooltip_table(x, y)
+
+highchart() %>%
+  hc_add_series(all_data %>% filter(const_form == "monarchy"),
+                hcaes(x = score, # Democracy Index
+                      y = gini_index,
+                      color = color,
+                      # value = all_data %>%
+                      #   filter(const_form == "monarchy") %>%
+                      #   pull(int_dollars) %>%
+                      #   log(),
+                      size = pop),
+                marker = list(symbol = "square"),
+                type = "scatter",
+                name = "Monarchies") %>%
+  hc_add_series(all_data %>% filter(const_form == "republic"),
+                hcaes(x = score,
+                      y = gini_index,
+                      color = color,
+                      # value = all_data %>%
+                      #   filter(const_form == "republic") %>%
+                      #   pull(int_dollars) %>%
+                      #   log(),
+                      size = pop),
+                marker = list(symbol = "circle"),
+                type = "scatter",
+                name = "Republics") %>%
+  hc_chart(
+    backgroundColor = "black",
+    zoomType = "xy"# ,
+    # backgroundColor = hex_to_rgba("black", 0.5),
+    # divBackgroundImage = "http://www.wired.com/images_blogs/underwire/2013/02/xwing-bg.gif"
+  ) %>%
+  hc_plotOptions(
+    series = list(stickyTracking = FALSE)
+  ) %>%
+  hc_xAxis(
+    title = list(text = "Democracy Index 2018", style = list(color = "white")),
+    # type = "logarithmic",
+    gridLineWidth = 0
+  ) %>%
+  hc_yAxis(
+    title = list(text = "Gini Index", style = list(color = "white")),
+    # type = "logarithmic",
+    gridLineWidth = 0,
+    reversed = TRUE
+  ) %>%
+  hc_title(
+    # style = list(color = hex_to_rgba("white", 0.5)),
+    style = list(color = "white"),
+    text = "Comparing Republics vs. Monarchies"
+  ) %>%
+  hc_subtitle(
+    # style = list(color = hex_to_rgba("white", 0.5)),
+    style = list(color = "white"),
+    text = "Democracy Level, Income Equality and Economic Development"
+  ) %>%
+  hc_tooltip(
+    useHTML = TRUE,
+    headerFormat = "",
+    pointFormat = tltip
+  ) %>%
+  hc_colorAxis(type = "logarithmic",
+               stops = stops) %>%
+  hc_legend(enabled = TRUE,
+            # title = "Per Capita GDP (PPA international dollars)"#,
+            title = list(text = "Per Capita GDP (PPA international $)"),
+            # color = hex_to_rgba("white", 0.5),
+            color = "white",
+            # layout = "vertical",
+            # align = "right",
+            verticalAlign = "top"#,
+            # floating = TRUE
+            # bubbleLegend = list(enabled = TRUE, color = '#e4d354')
+  ) %>%
+  hc_add_theme(hc_theme_monokai())
+# hc_add_theme(hc_theme_chalk())
+# hc_add_theme(hc_theme_flatdark())
+# hc_add_theme(hc_theme_darkunica())
+
+```
+
+
+# Fuentes
+
++ Democracy Index: https://en.wikipedia.org/wiki/Democracy_Index
++ GDP (PPP) per capita: https://en.wikipedia.org/wiki/List_of_countries_by_GDP_(PPP)_per_capita
++ Income Equality (Gini Index): https://en.wikipedia.org/wiki/List_of_countries_by_income_equality
++ Population: https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population
++ Systems Of Government: https://en.wikipedia.org/wiki/List_of_countries_by_system_of_government
+
+Código en [GitHub](https://github.com/miguel-conde/republicas_vs_monarquias).
