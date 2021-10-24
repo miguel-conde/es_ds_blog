@@ -29,7 +29,7 @@ Ya que el asunto quiere estar de moda, aquí tienen un gráfico interactivo con 
 
 <br>
 
-```{r, fig.height = 1200}
+```{r, fig.height = 1800}
 library(highcharter)
 
 colors <- c(
@@ -150,6 +150,7 @@ highchart() %>%
 
 ```
 
+Y [aquí](republics_vs_monarchies.html) puedes verlo en pantalla completa.
 
 # Fuentes
 

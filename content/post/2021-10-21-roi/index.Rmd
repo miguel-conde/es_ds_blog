@@ -8,7 +8,7 @@ categories:
   - paquetes
   - optimización
 tags:
-  - ''
+  - 'optimización'
 description: 'Una infraestructura de optimización en R'
 thumbnail: ''
 ---
@@ -17,42 +17,37 @@ thumbnail: ''
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE, fig.align='center')
 ```
 
-# Intro
+El paquete [ROI](https://cran.r-project.org/web/packages/ROI/index.html) 
+(= *R Optimization Infrastructure*) 
+nos proporciona una infraestructura ampliable para modelado de problemas de optimización (lineal,
+  cuadrática, cónica y no lineal en generalgeneral). Además, administra múltiples *solvers*, 
+  reformulaciones, colecciones de problemas y funciones para leer y escribir 
+  problemas de optimización en varios formatos.
 
+El [*paper* de 2019](https:/epub.wu.ac.at/5858/) es muy recomendable para iniciarse
+en ROI y para profundizar luego en él. En su Apartado 2 encontrarás un
+resumen de teoría de optimización, en el 3 tienes una interesante panorámica del 
+software de optimización disponible en R, en los 4 y 5 dispones de la descripción 
+de la infraestructura y la librería. El *paper* termina con un apartado 6 dedicado a
+ejemplos.
 
-ROI = *R Optimization Infrastructure*
+En definitiva, la principal ventaja de **ROI** es que es a la optimización lo 
+que [*caret*](https://cran.r-project.org/web/packages/caret/index.html) fue a 
+*machine learning*: un *wrapper* que unifica la interfaz de 
+programación independientemente del *solver*.
 
-<small>
-- Infraestructura ampliable para modelado de problemas de optimización (lineal,
-  cuadrática, cónica y no lineal general).
-- Administra múltiples *solvers*, reformulaciones, colecciones de problemas y 
-  funciones para leer y escribir problemas de optimización en varios formatos.
-</small>
-  
-[*Paper* de 2019](https:/epub.wu.ac.at/5858/) muy recomendable: 
+Te muestro a continuación un pequeño ejemplo de su uso.
 
-<small>
-- Apartado 2: resumen de teoría de optimización
-- Apartado 3: panorámica del software de optimización disponible en R
-- Apartados 4 y 5: Descripción de la infraestructura y la librería
-- Apartado 6: Ejemplos
-</small>
-  
-<br><br>
-<center>
-**ROI** es a optimización lo que *caret* a *machine learning*.
-</center>
-
-# Ejemplo
-
-## Definir el problema
-
+Vamos a utilizarlo con este sencillo problema de optimización lineal:
 
 <center>
 ```{r, echo=FALSE, out.width="50%"}
 knitr::include_graphics("images/lp.png")
 ```
 </center>
+
+Lo primero que hacemos es **definir el problema** como un objeto `OP` (*Optimization
+Problem*):
 
 ```{r}
 library(ROI)
@@ -69,7 +64,7 @@ lp <- OP(objective   = L_objective(c(3, 7, -12)),
          maximum     = TRUE)
 ```
 
-## Definición alternativa
+Alternativamente lo podríamos definir así:
 
 ```{r}
 # ALTERNATIVA:
@@ -81,75 +76,94 @@ constraints(lp) <- L_constraint(A, dir = c("<=", "<=", "<="), rhs = rhs)
 bounds(lp)      <- V_bound(li = 3, ui = 3, lb = -10, ub = 10, nobj = 3)
 # types(lp)
 maximum(lp)     <- TRUE
+```
 
+Este es el problema que hemos definido:
+
+```{r}
 lp
 ```
 
-## *Solvers* disponibles 
+Como ves, ROI identifica el tipo de problema que le hemos definido. Esto facilita que,
+a continuación, busquemos un *solver* apropiado para *este* problema.
 
-+ Para ***este*** problema, la infraestructura ROI tiene disponibles los
-siguientes *solvers*:
+La infraestructura ROI tiene disponibles los siguientes *solvers*:
 
 ```{r}
 ROI_available_solvers(lp)[, c("Package", "Repository")] %>% head()
 ```
 
-## *Solvers* instalados
+(se muestran solo 6, pero hay bastantes más).
+
+¿Cuáles tenemos instalados en nuestro entorno?
 
 ```{r}
 ROI_installed_solvers()
 ```
 
-Si el que necesitas no está:
+Si el que necesitas no está instalado:
 
 ```
 install.packages("ROI.plugin.glpk")
 ```
 
-
-## *Solvers* registrados
+De los que tenemos instalados, ¿cuáles están ya **registrados** (porque ya los hemos
+utilizado anteriormente) ?
 
 ```{r}
 ROI_registered_solvers() %>% head(15)
 ```
 
-Para registrarlo la primera vez que lo usas:
+Para registrarlo la primera vez que lo usas lo único que hay que hacer es 
+cargar la librería del *plugin*:
 
 ```
 library("ROI.plugin.glpk")
 ```
 
-## Resolver el problema
+Ahora preguntamos a ROI qué *solvers* son aplicables a ***este*** problema:
 
 ```{r}
 ROI_applicable_solvers(lp)
+```
+
+Con el *solver* que elijamos ya podemos **resolver** el problema:
+
+```{r}
 
 (lp_sol <- ROI_solve(lp, solver = "glpk"))
 
 ```
 
-## Resultados 
+Y ver sus los resultados. El óptimo se encuentra en:
 
 ```{r}
 solution(lp_sol)
+```
 
+Y el valor de la función objetivo optimizada:
+
+```{r}
 objective(lp)(solution(lp_sol))
 ```
 
-## Resultados 
+También podemos ver el *status* del *solver*:
 
 ```{r}
 lp_sol$status
 ```
 
-## Resultados 
 
 ```{r}
 lp_sol$message
 ```
 
+Y hasta aquí el ejemplo. Como ves, la dinámica de uso es bastante clara y cómoda.
+Los problemas de optimización reales no son tan simples como este ejemplo, por
+supuesto. Pero usar ROI nos permite centrarnos en plantear y solucionar el problema
+sin malgastar demasiado esfuerzo en la programación de la solución.
 
-# Referencias y Recursos
+Por último, te dejo un par de enlaces que espero te sean útiles:
 
 
 - [ROI homepage](https:/roi.r-forge.r-project.org/)

@@ -8,7 +8,7 @@ categories:
   - paquetes
   - optimización
 tags:
-  - ''
+  - 'optimización'
 description: 'Una infraestructura de optimización en R'
 thumbnail: ''
 ---
@@ -16,34 +16,29 @@ thumbnail: ''
 <script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 
 
-<div id="intro" class="section level1">
-<h1>Intro</h1>
-<p>ROI = <em>R Optimization Infrastructure</em></p>
-<p><small>
-- Infraestructura ampliable para modelado de problemas de optimización (lineal,
-cuadrática, cónica y no lineal general).
-- Administra múltiples <em>solvers</em>, reformulaciones, colecciones de problemas y
-funciones para leer y escribir problemas de optimización en varios formatos.
-</small></p>
-<p><a href="https:/epub.wu.ac.at/5858/"><em>Paper</em> de 2019</a> muy recomendable:</p>
-<p><small>
-- Apartado 2: resumen de teoría de optimización
-- Apartado 3: panorámica del software de optimización disponible en R
-- Apartados 4 y 5: Descripción de la infraestructura y la librería
-- Apartado 6: Ejemplos
-</small></p>
-<br><br>
-<center>
-<strong>ROI</strong> es a optimización lo que <em>caret</em> a <em>machine learning</em>.
-</center>
-</div>
-<div id="ejemplo" class="section level1">
-<h1>Ejemplo</h1>
-<div id="definir-el-problema" class="section level2">
-<h2>Definir el problema</h2>
+<p>El paquete <a href="https://cran.r-project.org/web/packages/ROI/index.html">ROI</a>
+(= <em>R Optimization Infrastructure</em>)
+nos proporciona una infraestructura ampliable para modelado de problemas de optimización (lineal,
+cuadrática, cónica y no lineal en generalgeneral). Además, administra múltiples <em>solvers</em>,
+reformulaciones, colecciones de problemas y funciones para leer y escribir
+problemas de optimización en varios formatos.</p>
+<p>El <a href="https:/epub.wu.ac.at/5858/"><em>paper</em> de 2019</a> es muy recomendable para iniciarse
+en ROI y para profundizar luego en él. En su Apartado 2 encontrarás un
+resumen de teoría de optimización, en el 3 tienes una interesante panorámica del
+software de optimización disponible en R, en los 4 y 5 dispones de la descripción
+de la infraestructura y la librería. El <em>paper</em> termina con un apartado 6 dedicado a
+ejemplos.</p>
+<p>En definitiva, la principal ventaja de <strong>ROI</strong> es que es a la optimización lo
+que <a href="https://cran.r-project.org/web/packages/caret/index.html"><em>caret</em></a> fue a
+<em>machine learning</em>: un <em>wrapper</em> que unifica la interfaz de
+programación independientemente del <em>solver</em>.</p>
+<p>Te muestro a continuación un pequeño ejemplo de su uso.</p>
+<p>Vamos a utilizarlo con este sencillo problema de optimización lineal:</p>
 <center>
 <img src="images/lp.png" width="50%" style="display: block; margin: auto;" />
 </center>
+<p>Lo primero que hacemos es <strong>definir el problema</strong> como un objeto <code>OP</code> (<em>Optimization
+Problem</em>):</p>
 <pre class="r"><code>library(ROI)
 library(tidyverse)
 
@@ -56,9 +51,7 @@ lp &lt;- OP(objective   = L_objective(c(3, 7, -12)),
          types       = NULL, # NULL =&quot;C&quot;, &quot;I&quot;, &quot;B&quot;
          bounds      = V_bound(li = 3, ui = 3, lb = -10, ub = 10, nobj = 3),
          maximum     = TRUE)</code></pre>
-</div>
-<div id="definición-alternativa" class="section level2">
-<h2>Definición alternativa</h2>
+<p>Alternativamente lo podríamos definir así:</p>
 <pre class="r"><code># ALTERNATIVA:
 
 lp &lt;- OP()
@@ -67,9 +60,9 @@ objective(lp)   &lt;- L_objective(c(3, 7, -12)) # 3x_1 + 7x_2 -12x_3
 constraints(lp) &lt;- L_constraint(A, dir = c(&quot;&lt;=&quot;, &quot;&lt;=&quot;, &quot;&lt;=&quot;), rhs = rhs)
 bounds(lp)      &lt;- V_bound(li = 3, ui = 3, lb = -10, ub = 10, nobj = 3)
 # types(lp)
-maximum(lp)     &lt;- TRUE
-
-lp</code></pre>
+maximum(lp)     &lt;- TRUE</code></pre>
+<p>Este es el problema que hemos definido:</p>
+<pre class="r"><code>lp</code></pre>
 <pre><code>## ROI Optimization Problem:
 ## 
 ## Maximize a linear objective function of length 3 with
@@ -78,13 +71,9 @@ lp</code></pre>
 ## subject to
 ## - 3 constraints of type linear.
 ## - 1 lower and 1 upper non-standard variable bound.</code></pre>
-</div>
-<div id="solvers-disponibles" class="section level2">
-<h2><em>Solvers</em> disponibles</h2>
-<ul>
-<li>Para <strong><em>este</em></strong> problema, la infraestructura ROI tiene disponibles los
-siguientes <em>solvers</em>:</li>
-</ul>
+<p>Como ves, ROI identifica el tipo de problema que le hemos definido. Esto facilita que,
+a continuación, busquemos un <em>solver</em> apropiado para <em>este</em> problema.</p>
+<p>La infraestructura ROI tiene disponibles los siguientes <em>solvers</em>:</p>
 <pre class="r"><code>ROI_available_solvers(lp)[, c(&quot;Package&quot;, &quot;Repository&quot;)] %&gt;% head()</code></pre>
 <pre><code>##              Package                 Repository
 ## 1 ROI.plugin.alabama https://CRAN.R-project.org
@@ -93,9 +82,8 @@ siguientes <em>solvers</em>:</li>
 ## 5    ROI.plugin.ecos https://CRAN.R-project.org
 ## 6    ROI.plugin.glpk https://CRAN.R-project.org
 ## 7 ROI.plugin.lpsolve https://CRAN.R-project.org</code></pre>
-</div>
-<div id="solvers-instalados" class="section level2">
-<h2><em>Solvers</em> instalados</h2>
+<p>(se muestran solo 6, pero hay bastantes más).</p>
+<p>¿Cuáles tenemos instalados en nuestro entorno?</p>
 <pre class="r"><code>ROI_installed_solvers()</code></pre>
 <pre><code>##                nlminb               alabama               deoptim 
 ##   &quot;ROI.plugin.nlminb&quot;  &quot;ROI.plugin.alabama&quot;  &quot;ROI.plugin.deoptim&quot; 
@@ -103,11 +91,10 @@ siguientes <em>solvers</em>:</li>
 ##     &quot;ROI.plugin.glpk&quot;  &quot;ROI.plugin.lpsolve&quot;   &quot;ROI.plugin.nloptr&quot; 
 ##              quadprog 
 ## &quot;ROI.plugin.quadprog&quot;</code></pre>
-<p>Si el que necesitas no está:</p>
+<p>Si el que necesitas no está instalado:</p>
 <pre><code>install.packages(&quot;ROI.plugin.glpk&quot;)</code></pre>
-</div>
-<div id="solvers-registrados" class="section level2">
-<h2><em>Solvers</em> registrados</h2>
+<p>De los que tenemos instalados, ¿cuáles están ya <strong>registrados</strong> (porque ya los hemos
+utilizado anteriormente) ?</p>
 <pre class="r"><code>ROI_registered_solvers() %&gt;% head(15)</code></pre>
 <pre><code>##               nlminb              alabama             deoptimr 
 ##  &quot;ROI.plugin.nlminb&quot; &quot;ROI.plugin.alabama&quot; &quot;ROI.plugin.deoptim&quot; 
@@ -119,27 +106,24 @@ siguientes <em>solvers</em>:</li>
 ##  &quot;ROI.plugin.nloptr&quot;  &quot;ROI.plugin.nloptr&quot;  &quot;ROI.plugin.nloptr&quot; 
 ##        nloptr.newuoa         nloptr.sbplx         nloptr.stogo 
 ##  &quot;ROI.plugin.nloptr&quot;  &quot;ROI.plugin.nloptr&quot;  &quot;ROI.plugin.nloptr&quot;</code></pre>
-<p>Para registrarlo la primera vez que lo usas:</p>
+<p>Para registrarlo la primera vez que lo usas lo único que hay que hacer es
+cargar la librería del <em>plugin</em>:</p>
 <pre><code>library(&quot;ROI.plugin.glpk&quot;)</code></pre>
-</div>
-<div id="resolver-el-problema" class="section level2">
-<h2>Resolver el problema</h2>
+<p>Ahora preguntamos a ROI qué <em>solvers</em> son aplicables a <strong><em>este</em></strong> problema:</p>
 <pre class="r"><code>ROI_applicable_solvers(lp)</code></pre>
 <pre><code>## [1] &quot;alabama&quot;       &quot;glpk&quot;          &quot;lpsolve&quot;       &quot;nloptr.cobyla&quot;
 ## [5] &quot;nloptr.mma&quot;    &quot;nloptr.auglag&quot; &quot;nloptr.isres&quot;  &quot;nloptr.slsqp&quot;</code></pre>
+<p>Con el <em>solver</em> que elijamos ya podemos <strong>resolver</strong> el problema:</p>
 <pre class="r"><code>(lp_sol &lt;- ROI_solve(lp, solver = &quot;glpk&quot;))</code></pre>
 <pre><code>## Optimal solution found.
 ## The objective value is: 8.670149e+01</code></pre>
-</div>
-<div id="resultados" class="section level2">
-<h2>Resultados</h2>
+<p>Y ver sus los resultados. El óptimo se encuentra en:</p>
 <pre class="r"><code>solution(lp_sol)</code></pre>
 <pre><code>## [1]  0.000000  9.238806 -1.835821</code></pre>
+<p>Y el valor de la función objetivo optimizada:</p>
 <pre class="r"><code>objective(lp)(solution(lp_sol))</code></pre>
 <pre><code>## [1] 86.70149</code></pre>
-</div>
-<div id="resultados-1" class="section level2">
-<h2>Resultados</h2>
+<p>También podemos ver el <em>status</em> del <em>solver</em>:</p>
 <pre class="r"><code>lp_sol$status</code></pre>
 <pre><code>## $code
 ## [1] 0
@@ -150,9 +134,6 @@ siguientes <em>solvers</em>:</li>
 ##   symbol GLP_OPT
 ##  message Solution is optimal.
 ## roi_code 0</code></pre>
-</div>
-<div id="resultados-2" class="section level2">
-<h2>Resultados</h2>
 <pre class="r"><code>lp_sol$message</code></pre>
 <pre><code>## $optimum
 ## [1] 86.70149
@@ -176,12 +157,12 @@ siguientes <em>solvers</em>:</li>
 ## 
 ## $sensitivity_report
 ## [1] NA</code></pre>
-</div>
-</div>
-<div id="referencias-y-recursos" class="section level1">
-<h1>Referencias y Recursos</h1>
+<p>Y hasta aquí el ejemplo. Como ves, la dinámica de uso es bastante clara y cómoda.
+Los problemas de optimización reales no son tan simples como este ejemplo, por
+supuesto. Pero usar ROI nos permite centrarnos en plantear y solucionar el problema
+sin malgastar demasiado esfuerzo en la programación de la solución.</p>
+<p>Por último, te dejo un par de enlaces que espero te sean útiles:</p>
 <ul>
 <li><a href="https:/roi.r-forge.r-project.org/">ROI homepage</a></li>
 <li><a href="https:/cran.r-project.org/web/packages/ROI/index.html">ROI en CRAN</a></li>
 </ul>
-</div>
