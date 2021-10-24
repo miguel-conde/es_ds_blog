@@ -155,13 +155,13 @@ highchart() %>%
 
 <br>
 
-Y [aquí](images/republics_vs_monarchies.html){:target="_blank"} puedes verlo en pantalla completa.
+<!-- Y [aquí](images/republics_vs_monarchies.html){target="_blank"} puedes verlo en pantalla completa. -->
 
 <!-- Y <a href="https://es100x100datascience.com/wp-content/uploads/2020/12/republics_vs_monarchies.html" target="_blank" rel="noreferrer noopener">aquí </a>  -->
 <!-- puedes verlo en pantalla completa. -->
 
-<!-- Y <a href="republics_vs_monarchies.html" target="_blank" rel="noreferrer noopener">aquí </a> -->
-<!-- puedes verlo en pantalla completa. -->
+Y <a href="images/republics_vs_monarchies.html" target="_blank" rel="noreferrer noopener">aquí </a>
+puedes verlo en pantalla completa.
 
 # Fuentes
 
