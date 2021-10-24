@@ -16,7 +16,7 @@ thumbnail: ''
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
-Como nos propusimos en el [artículo anterior](http://es100x100datascience.com/machine-learning-ensembles-i/), vamos a preparar un primer *ensemble* entrenando un `random forest`, un `svm` tipo *radial* y un `xgbm` tipo "*tree*\* como modelos de primer nivel.
+Como nos propusimos en el [artículo anterior](http://es100x100datascience.com/machine-learning-ensembles-i/), vamos a preparar un primer *ensemble* entrenando un `random forest`, un `svm` tipo *radial* y un `xgbm` tipo *tree* como modelos de primer nivel.
 
 Para construirlos vamos a aprovechar las facilidades del paquete [`caret`](https://cran.r-project.org/web/packages/caret/index.html). Por ejemplo, nos permitirá validar los modelos construidos mediante *cross validation*, es decir, usando solo el *train set* sin necesidad de disponer de un *data set* específico para validación.
 

@@ -1,0 +1,33 @@
+---
+title: Prueba Rmarkdown
+author: Miguel Conde
+date: '2021-10-24'
+slug: []
+categories:
+  - ''
+tags:
+  - ''
+description: ''
+thumbnail: ''
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+```{r}
+library(dplyr)
+
+data("mtcars")
+
+m <- mtcars %>% as_tibble()
+
+m
+```
+
+```{r}
+plot(hp ~ wt, m)
+```
+

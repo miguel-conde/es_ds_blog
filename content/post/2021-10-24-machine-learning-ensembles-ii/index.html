@@ -15,7 +15,7 @@ thumbnail: ''
 <script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 
 
-<p>Como nos propusimos en el <a href="http://es100x100datascience.com/machine-learning-ensembles-i/">artículo anterior</a>, vamos a preparar un primer <em>ensemble</em> entrenando un <code>random forest</code>, un <code>svm</code> tipo <em>radial</em> y un <code>xgbm</code> tipo “<em>tree</em>* como modelos de primer nivel.</p>
+<p>Como nos propusimos en el <a href="http://es100x100datascience.com/machine-learning-ensembles-i/">artículo anterior</a>, vamos a preparar un primer <em>ensemble</em> entrenando un <code>random forest</code>, un <code>svm</code> tipo <em>radial</em> y un <code>xgbm</code> tipo <em>tree</em> como modelos de primer nivel.</p>
 <p>Para construirlos vamos a aprovechar las facilidades del paquete <a href="https://cran.r-project.org/web/packages/caret/index.html"><code>caret</code></a>. Por ejemplo, nos permitirá validar los modelos construidos mediante <em>cross validation</em>, es decir, usando solo el <em>train set</em> sin necesidad de disponer de un <em>data set</em> específico para validación.</p>
 <p>Como modelos de 2º nivel vamos a probar con una media, una media ponderada y una votación.</p>
 <p>Como estos modelos de segundo nivel no los construiremos con <code>caret</code>, necesitaremos un <em>data set</em> específico para validarlos.</p>
