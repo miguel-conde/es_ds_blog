@@ -1,0 +1,369 @@
+---
+title: Machine Learning Ensembles II
+author: Miguel Conde
+date: '2017-02-27'
+slug: []
+categories:
+  - Machine Learning
+tags:
+  - 'Ensemble'
+  - 'Machine Learning'
+description: 'Como nos propusimos en el artículo anterior, vamos a preparar un primer ensemble entrenando un random forest, un svm tipo radial y un xgbm tipo “tree* como modelos de primer nivel.'
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Como nos propusimos en el <a href="http://es100x100datascience.com/machine-learning-ensembles-i/">artículo anterior</a>, vamos a preparar un primer <em>ensemble</em> entrenando un <code>random forest</code>, un <code>svm</code> tipo <em>radial</em> y un <code>xgbm</code> tipo “<em>tree</em>* como modelos de primer nivel.</p>
+<p>Para construirlos vamos a aprovechar las facilidades del paquete <a href="https://cran.r-project.org/web/packages/caret/index.html"><code>caret</code></a>. Por ejemplo, nos permitirá validar los modelos construidos mediante <em>cross validation</em>, es decir, usando solo el <em>train set</em> sin necesidad de disponer de un <em>data set</em> específico para validación.</p>
+<p>Como modelos de 2º nivel vamos a probar con una media, una media ponderada y una votación.</p>
+<p>Como estos modelos de segundo nivel no los construiremos con <code>caret</code>, necesitaremos un <em>data set</em> específico para validarlos.</p>
+<p>El código lo podéis encontrar en <a href="https://github.com/miguel-conde/example_ensemble">github</a>.</p>
+<p>En primer lugar, vamos a cargar los datos:</p>
+<pre class="r"><code>library(C50)
+
+library(modeldata)
+
+data(mlc_churn)
+
+churn &lt;- mlc_churn</code></pre>
+<p>Hemos cargado un <em>train set</em> (<code>churnTrain</code>) y un <em>test set</em> (<code>churnTest</code>). El primero lo usaremos para construir y validar los modelos y el segundo será la “prueba de fuego”, es decir, datos que no habremos visto nunca durante la construcción de los modelos y que utilizaremos como datos en condiciones reales.</p>
+<p>No vamos a repetir aquí la exploración de los datos que ya hemos hecho en los posts <em>Arboles de Decisión</em> <a href="http://es100x100datascience.com/arboles-de-decision-i/">I</a>, <a href="http://es100x100datascience.com/arboles-de-decision-ii/">II</a>, <a href="http://es100x100datascience.com/arboles-de-decision-iii/">III</a> y <a href="http://es100x100datascience.com/arboles-de-decision-iv/">IV</a>, sino que vamos a ir directamente a la construcción del <em>ensemble</em>.</p>
+<p>Preparemos los datos y dividamos <code>churnTrain</code> en un <em>train set</em> y un <em>validation set</em>:</p>
+<pre class="r"><code>set.seed(127) 
+train_idx &lt;- sample(nrow(churn), 0.9*nrow(churn)) 
+churnTrain &lt;- churn[train_idx,] 
+churnTest &lt;- churn[-train_idx,]
+
+# Variables target y predictoras (features)
+target      &lt;- &quot;churn&quot;
+predictoras &lt;- names(churn)[names(churn) != target]
+
+# Convertimos factors a integer para que no nos de problemas con svm ni xgbm
+for (v in predictoras) {
+  if (is.factor(churn[, v])) {
+    newName &lt;- paste0(&quot;F_&quot;, v)
+    names(churn)[which(names(churn) == v)] &lt;- newName
+    churn[, v] &lt;-  unclass(churn[, newName])
+  }
+}
+
+churnTrain &lt;- churn[1:nrow(churnTrain), ]
+churnTest  &lt;- churn[(nrow(churnTrain) + 1):nrow(churn), ]
+
+rm(churn)
+
+library(caret)
+set.seed(123)
+train_idx   &lt;- createDataPartition(churnTrain$churn, p = 0.75, list = FALSE)
+churn_train &lt;- churnTrain[ train_idx, c(target, predictoras)]
+churn_valid &lt;- churnTrain[-train_idx, c(target, predictoras)]</code></pre>
+<p>Preparemos ahora los controles que vamos a utilizar al construir nuestros modelos:</p>
+<pre class="r"><code>trControl &lt;- trainControl(
+                          # 5-fold Cross Validation
+                          method = &quot;cv&quot;, 
+                          number = 5,
+                          # Save the predictions for the optimal tuning 
+                          # parameters
+                          savePredictions = &#39;final&#39;, 
+                          # Class probabilities will be computed along with
+                          # predicted values in each resample
+                          classProbs = TRUE
+                         )</code></pre>
+<p>Construimos nuestros tres modelos de primer nivel:</p>
+<pre class="r"><code>f &lt;- as.formula(paste0(target, &quot;~ .&quot;))
+
+model_rf   &lt;- train(f, churn_train,
+                    method     = &quot;rf&quot;,
+                    trControl  = trControl,
+                    tuneLength = 3)
+model_svm  &lt;- train(f, churn_train,
+                    method     = &quot;svmRadial&quot;,
+                    trControl  = trControl,
+                    tuneLength = 3)
+model_xgbm &lt;- train(f, churn_train,
+                    method     = &quot;xgbTree&quot;,
+                    trControl  = trControl,
+                    tuneLength = 3)</code></pre>
+<p>Veamos la <em>performance</em> de cada uno de los 3 modelos y comparemos (nótese que las medidas de rendimiento se toman mediante <em>cross validation</em> sobre el <em>training set</em>, no necesitamos acudir al <em>validation set</em>):</p>
+<pre class="r"><code>resamps &lt;- resamples(list(rf = model_rf, svm = model_svm, xgbm = model_xgbm))
+summary(resamps)</code></pre>
+<pre><code>## 
+## Call:
+## summary.resamples(object = resamps)
+## 
+## Models: rf, svm, xgbm 
+## Number of resamples: 5 
+## 
+## Accuracy 
+##           Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA&#39;s
+## rf   0.9452663 0.9525926 0.9554896 0.9546697 0.9555556 0.9644444    0
+## svm  0.9156805 0.9183976 0.9185185 0.9220749 0.9288889 0.9288889    0
+## xgbm 0.9451039 0.9482249 0.9526627 0.9522958 0.9540059 0.9614815    0
+## 
+## Kappa 
+##           Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA&#39;s
+## rf   0.7620081 0.7852627 0.7965958 0.7980141 0.8042343 0.8419697    0
+## svm  0.6120106 0.6181381 0.6215880 0.6408534 0.6747837 0.6777466    0
+## xgbm 0.7454319 0.7685022 0.7893384 0.7871371 0.8004584 0.8319545    0</code></pre>
+<pre class="r"><code>bwplot(resamps)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Los tres modelos presentan una elevada <em>accuracy</em> (rf = 0.9532, svm = 0.9212, xgbm = 0.9504), aunque la <em>kappa</em> del svm es notablemente menor que la de los otros dos.</p>
+<pre class="r"><code>diffs &lt;- diff(resamps)
+summary(diffs)</code></pre>
+<pre><code>## 
+## Call:
+## summary.diff.resamples(object = diffs)
+## 
+## p-value adjustment: bonferroni 
+## Upper diagonal: estimates of the difference
+## Lower diagonal: p-value for H0: difference = 0
+## 
+## Accuracy 
+##      rf        svm       xgbm     
+## rf              0.032595  0.002374
+## svm  0.0118266           -0.030221
+## xgbm 1.0000000 0.0001269          
+## 
+## Kappa 
+##      rf        svm       xgbm    
+## rf              0.15716   0.01088
+## svm  0.0106001           -0.14628
+## xgbm 1.0000000 0.0001234</code></pre>
+<p>Además xgbm y rf dan resultados completamente correlados.</p>
+<p>A partir de esto podríamos quedarnos con svm y elegir entre xgbm y rf para, a continuación, tratar de añadir más modelos poco correlados con los dos elegidos.</p>
+<p>Sin embargo, vamos a darnos por satisfechos con los tres modelos para continuar con el ejemplo y construir algunos modelos de nivel 2.</p>
+<p>Lo primero que necesito son las nuevas variables predictoras, esta vez de segundo nivel. Nótese que a partir de ahora tenemos que utilizar el <em>validation set</em> para validar los modelos de segundo nivel.</p>
+<pre class="r"><code># Utilizamos los modelos de 1er nivel para predecir 
+churn_valid$pred_rf   &lt;- predict(object = model_rf, 
+                                 churn_valid[ , predictoras])
+churn_valid$pred_svm  &lt;- predict(object = model_svm, 
+                                 churn_valid[ , predictoras])
+churn_valid$pred_xgbm &lt;- predict(object = model_xgbm, 
+                                 churn_valid[ , predictoras])
+
+# Y sus probabilidades
+churn_valid$pred_rf_prob   &lt;- predict(object = model_rf,
+                                      churn_valid[,predictoras],
+                                      type=&#39;prob&#39;)
+churn_valid$pred_svm_prob  &lt;- predict(object = model_svm,
+                                      churn_valid[,predictoras],
+                                      type=&#39;prob&#39;)
+churn_valid$pred_xgbm_prob &lt;- predict(object = model_xgbm,
+                                      churn_valid[,predictoras],
+                                      type=&#39;prob&#39;)</code></pre>
+<p>Empecemos con una simple media:</p>
+<pre class="r"><code>## PROMEDIO
+# Calculamos la media de las predictoras de primer nivel
+churn_valid$pred_avg &lt;- (churn_valid$pred_rf_prob$yes +
+                           churn_valid$pred_svm_prob$yes +
+                           churn_valid$pred_xgbm_prob$yes) / 3
+
+# Dividimos las clases binarias en p = 0.5
+churn_valid$pred_avg &lt;- as.factor(ifelse(churn_valid$pred_avg &gt; 0.5, 
+                                         &#39;yes&#39;, &#39;no&#39;))</code></pre>
+<p>Ahora la media ponderada. Como el orden de los modelos de primer nivel, según su <em>Accuracy</em>, era rf y xgbm (empatados) seguidos por svm, vamos a asignarle pesos 0.25, 0.25 y 0.5:</p>
+<pre class="r"><code>## MEDIA PONDERADA
+# Calculamos la media ponderada de las predictoras de primer nivel
+churn_valid$pred_weighted_avg &lt;- (churn_valid$pred_rf_prob$yes * 0.25) +
+  (churn_valid$pred_xgbm_prob$yes * 0.25) + 
+  (churn_valid$pred_svm_prob$yes * 0.5)
+
+# Dividimos las clases binarias en p = 0.5
+churn_valid$pred_weighted_avg &lt;- as.factor(ifelse(churn_valid$pred_weighted_avg &gt; 0.5, 
+                                              &#39;yes&#39;, &#39;no&#39;))</code></pre>
+<p>Por último, hagamos que los modelos “voten”:</p>
+<pre class="r"><code>## VOTACIÓN
+# La mayoría gana
+predictoras2N &lt;- c(&quot;pred_rf&quot;, &quot;pred_xgbm&quot;, &quot;pred_svm&quot;)
+churn_valid$pred_majority &lt;- 
+  as.factor(apply(churn_valid[, predictoras2N],
+                  1, 
+                  function(x) {
+                    if (sum(x == &quot;yes&quot;) &gt; sum(x == &quot;no&quot;))
+                      return(&quot;yes&quot;)
+                    else
+                      return(&quot;no&quot;)
+                    }))</code></pre>
+<p>Comparemos resultados contra el <em>test set</em>:</p>
+<pre class="r"><code>## PROMEDIO
+confusionMatrix(churn_valid$churn, churn_valid$pred_avg)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  no yes
+##        no  956   8
+##        yes  38 123
+##                                           
+##                Accuracy : 0.9591          
+##                  95% CI : (0.9458, 0.9699)
+##     No Information Rate : 0.8836          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.8193          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 1.904e-05       
+##                                           
+##             Sensitivity : 0.9618          
+##             Specificity : 0.9389          
+##          Pos Pred Value : 0.9917          
+##          Neg Pred Value : 0.7640          
+##              Prevalence : 0.8836          
+##          Detection Rate : 0.8498          
+##    Detection Prevalence : 0.8569          
+##       Balanced Accuracy : 0.9504          
+##                                           
+##        &#39;Positive&#39; Class : no              
+## </code></pre>
+<pre class="r"><code>## MEDIA PONDERADA
+confusionMatrix(churn_valid$churn, churn_valid$pred_weighted_avg)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  no yes
+##        no  955   9
+##        yes  42 119
+##                                           
+##                Accuracy : 0.9547          
+##                  95% CI : (0.9408, 0.9661)
+##     No Information Rate : 0.8862          
+##     P-Value [Acc &gt; NIR] : 4.320e-16       
+##                                           
+##                   Kappa : 0.7979          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 7.433e-06       
+##                                           
+##             Sensitivity : 0.9579          
+##             Specificity : 0.9297          
+##          Pos Pred Value : 0.9907          
+##          Neg Pred Value : 0.7391          
+##              Prevalence : 0.8862          
+##          Detection Rate : 0.8489          
+##    Detection Prevalence : 0.8569          
+##       Balanced Accuracy : 0.9438          
+##                                           
+##        &#39;Positive&#39; Class : no              
+## </code></pre>
+<pre class="r"><code>## VOTACIÓN
+confusionMatrix(churn_valid$churn, churn_valid$pred_majority)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  no yes
+##        no  955   9
+##        yes  40 121
+##                                           
+##                Accuracy : 0.9564          
+##                  95% CI : (0.9428, 0.9676)
+##     No Information Rate : 0.8844          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.8069          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 1.822e-05       
+##                                           
+##             Sensitivity : 0.9598          
+##             Specificity : 0.9308          
+##          Pos Pred Value : 0.9907          
+##          Neg Pred Value : 0.7516          
+##              Prevalence : 0.8844          
+##          Detection Rate : 0.8489          
+##    Detection Prevalence : 0.8569          
+##       Balanced Accuracy : 0.9453          
+##                                           
+##        &#39;Positive&#39; Class : no              
+## </code></pre>
+<p>Como se ve, los modelos de segundo nivel media y votación dan resultados ligeramente mejores que los de primer nivel. Podríamos elegir cualquiera de los dos.</p>
+<p>Supongamos que elegimos el modelo de votación. ¿Qué nos quedaría por hacer ahora? Pues construir el modelo final. Para ello, construiriamos los modelos definitivos de primer nivel utilizando esta vez <strong>todos</strong> los datos de entrenamiento (es decir, <code>churnTrain</code> completo) y los parámetros que optimizados por <code>caret</code>.</p>
+<pre class="r"><code># Parámetros a utilizar
+model_rf$bestTune</code></pre>
+<pre><code>##   mtry
+## 2   10</code></pre>
+<pre class="r"><code>model_svm$bestTune</code></pre>
+<pre><code>##        sigma C
+## 3 0.03337627 1</code></pre>
+<pre class="r"><code>model_xgbm$bestTune</code></pre>
+<pre><code>##    nrounds max_depth eta gamma colsample_bytree min_child_weight subsample
+## 45     150         3 0.3     0              0.6                1         1</code></pre>
+<pre class="r"><code>trControl &lt;- trainControl(
+                          method = &quot;none&quot;, 
+                          # Class probabilities will be computed along with
+                          # predicted values in each resample
+                          classProbs = TRUE
+                         ) 
+
+best_model_rf   &lt;- train(f, churnTrain,
+                         method     = &quot;rf&quot;,
+                         trControl  = trControl,
+                         tuneGrid   = model_rf$bestTune)
+best_model_svm  &lt;- train(f, churnTrain,
+                         method     = &quot;svmRadial&quot;,
+                         trControl  = trControl,
+                         tuneGrid   = model_svm$bestTune)
+best_model_xgbm &lt;- train(f, churnTrain,
+                         method     = &quot;xgbTree&quot;,
+                         trControl  = trControl,
+                         tuneGrid   = model_xgbm$bestTune)</code></pre>
+<p>Y ahora predeciriamos el <em>test set</em> con nuestro modelo de votación:</p>
+<pre class="r"><code>churn_test &lt;- churnTest
+
+# Utilizamos los modelos de 1er nivel para predecir 
+churn_test$pred_rf   &lt;- predict(object = model_rf, 
+                                churn_test[ , predictoras])
+churn_test$pred_svm  &lt;- predict(object = model_svm, 
+                                churn_test[ , predictoras])
+churn_test$pred_xgbm &lt;- predict(object = model_xgbm,
+                                churn_test[ , predictoras])
+
+# Y sus probabilidades
+churn_test$pred_rf_prob   &lt;- predict(object = model_rf,
+                                     churn_test[,predictoras],
+                                     type=&#39;prob&#39;)
+churn_test$pred_svm_prob  &lt;- predict(object = model_svm,
+                                     churn_test[,predictoras],
+                                     type=&#39;prob&#39;)
+churn_test$pred_xgbm_prob &lt;- predict(object = model_xgbm,
+                                     churn_test[,predictoras],
+                                     type=&#39;prob&#39;)
+
+churn_test$pred_majority &lt;- 
+  as.factor(apply(churn_test[, predictoras2N],
+                  1, 
+                  function(x) {
+                    if (sum(x == &quot;yes&quot;) &gt; sum(x == &quot;no&quot;))
+                      return(&quot;yes&quot;)
+                    else
+                      return(&quot;no&quot;)
+                    }))</code></pre>
+<p>Y estos son los resultados:</p>
+<pre class="r"><code>## VOTACIÓN
+confusionMatrix(churn_test$churn, churn_test$pred_majority)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  no yes
+##        no  437   0
+##        yes  11  52
+##                                         
+##                Accuracy : 0.978         
+##                  95% CI : (0.961, 0.989)
+##     No Information Rate : 0.896         
+##     P-Value [Acc &gt; NIR] : 9.921e-13     
+##                                         
+##                   Kappa : 0.892         
+##                                         
+##  Mcnemar&#39;s Test P-Value : 0.002569      
+##                                         
+##             Sensitivity : 0.9754        
+##             Specificity : 1.0000        
+##          Pos Pred Value : 1.0000        
+##          Neg Pred Value : 0.8254        
+##              Prevalence : 0.8960        
+##          Detection Rate : 0.8740        
+##    Detection Prevalence : 0.8740        
+##       Balanced Accuracy : 0.9877        
+##                                         
+##        &#39;Positive&#39; Class : no            
+## </code></pre>
+<p>Realmente son unos muy buenos resultados. Hasta ahora no habíamos visto estos datos de <code>churnTest</code> para nada, es la primera vez que nuestros modelos se enfrentan a ellos. Y han obtenido una <em>performance</em> comparable a la obtenida en el proceso de entrenamiento, cuando normalmente se obtiene inferior <em>performance</em> con los datos “nuevos” del <em>test set</em> que con los del <em>train set</em>, como es lógico.</p>

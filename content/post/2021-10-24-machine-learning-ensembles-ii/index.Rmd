@@ -1,0 +1,305 @@
+---
+title: Machine Learning Ensembles II
+author: Miguel Conde
+date: '2017-02-27'
+slug: []
+categories:
+  - Machine Learning
+tags:
+  - 'Ensemble'
+  - 'Machine Learning'
+description: 'Como nos propusimos en el artículo anterior, vamos a preparar un primer ensemble entrenando un random forest, un svm tipo radial y un xgbm tipo “tree* como modelos de primer nivel.'
+thumbnail: ''
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+Como nos propusimos en el [artículo anterior](http://es100x100datascience.com/machine-learning-ensembles-i/), vamos a preparar un primer *ensemble* entrenando un `random forest`, un `svm` tipo *radial* y un `xgbm` tipo "*tree*\* como modelos de primer nivel.
+
+Para construirlos vamos a aprovechar las facilidades del paquete [`caret`](https://cran.r-project.org/web/packages/caret/index.html). Por ejemplo, nos permitirá validar los modelos construidos mediante *cross validation*, es decir, usando solo el *train set* sin necesidad de disponer de un *data set* específico para validación.
+
+Como modelos de 2º nivel vamos a probar con una media, una media ponderada y una votación.
+
+Como estos modelos de segundo nivel no los construiremos con `caret`, necesitaremos un *data set* específico para validarlos.
+
+El código lo podéis encontrar en [github](https://github.com/miguel-conde/example_ensemble).
+
+En primer lugar, vamos a cargar los datos:
+
+```{r}
+library(C50)
+
+library(modeldata)
+
+data(mlc_churn)
+
+churn <- mlc_churn
+
+```
+
+Hemos cargado un *train set* (`churnTrain`) y un *test set* (`churnTest`). El primero lo usaremos para construir y validar los modelos y el segundo será la "prueba de fuego", es decir, datos que no habremos visto nunca durante la construcción de los modelos y que utilizaremos como datos en condiciones reales.
+
+No vamos a repetir aquí la exploración de los datos que ya hemos hecho en los posts *Arboles de Decisión* [I](http://es100x100datascience.com/arboles-de-decision-i/), [II](http://es100x100datascience.com/arboles-de-decision-ii/), [III](http://es100x100datascience.com/arboles-de-decision-iii/) y [IV](http://es100x100datascience.com/arboles-de-decision-iv/), sino que vamos a ir directamente a la construcción del *ensemble*.
+
+Preparemos los datos y dividamos `churnTrain` en un *train set* y un *validation set*:
+
+```{r}
+set.seed(127) 
+train_idx <- sample(nrow(churn), 0.9*nrow(churn)) 
+churnTrain <- churn[train_idx,] 
+churnTest <- churn[-train_idx,]
+
+# Variables target y predictoras (features)
+target      <- "churn"
+predictoras <- names(churn)[names(churn) != target]
+
+# Convertimos factors a integer para que no nos de problemas con svm ni xgbm
+for (v in predictoras) {
+  if (is.factor(churn[, v])) {
+    newName <- paste0("F_", v)
+    names(churn)[which(names(churn) == v)] <- newName
+    churn[, v] <-  unclass(churn[, newName])
+  }
+}
+
+churnTrain <- churn[1:nrow(churnTrain), ]
+churnTest  <- churn[(nrow(churnTrain) + 1):nrow(churn), ]
+
+rm(churn)
+
+library(caret)
+set.seed(123)
+train_idx   <- createDataPartition(churnTrain$churn, p = 0.75, list = FALSE)
+churn_train <- churnTrain[ train_idx, c(target, predictoras)]
+churn_valid <- churnTrain[-train_idx, c(target, predictoras)]
+```
+
+Preparemos ahora los controles que vamos a utilizar al construir nuestros modelos:
+
+```{r}
+trControl <- trainControl(
+                          # 5-fold Cross Validation
+                          method = "cv", 
+                          number = 5,
+                          # Save the predictions for the optimal tuning 
+                          # parameters
+                          savePredictions = 'final', 
+                          # Class probabilities will be computed along with
+                          # predicted values in each resample
+                          classProbs = TRUE
+                         )
+```
+
+Construimos nuestros tres modelos de primer nivel:
+
+```{r}
+f <- as.formula(paste0(target, "~ ."))
+
+model_rf   <- train(f, churn_train,
+                    method     = "rf",
+                    trControl  = trControl,
+                    tuneLength = 3)
+model_svm  <- train(f, churn_train,
+                    method     = "svmRadial",
+                    trControl  = trControl,
+                    tuneLength = 3)
+model_xgbm <- train(f, churn_train,
+                    method     = "xgbTree",
+                    trControl  = trControl,
+                    tuneLength = 3)
+
+```
+
+Veamos la *performance* de cada uno de los 3 modelos y comparemos (nótese que las medidas de rendimiento se toman mediante *cross validation* sobre el *training set*, no necesitamos acudir al *validation set*):
+
+```{r}
+resamps <- resamples(list(rf = model_rf, svm = model_svm, xgbm = model_xgbm))
+summary(resamps)
+```
+
+```{r}
+bwplot(resamps)
+```
+
+Los tres modelos presentan una elevada *accuracy* (rf = 0.9532, svm = 0.9212, xgbm = 0.9504), aunque la *kappa* del svm es notablemente menor que la de los otros dos.
+
+```{r}
+diffs <- diff(resamps)
+summary(diffs)
+```
+
+Además xgbm y rf dan resultados completamente correlados.
+
+A partir de esto podríamos quedarnos con svm y elegir entre xgbm y rf para, a continuación, tratar de añadir más modelos poco correlados con los dos elegidos.
+
+Sin embargo, vamos a darnos por satisfechos con los tres modelos para continuar con el ejemplo y construir algunos modelos de nivel 2.
+
+Lo primero que necesito son las nuevas variables predictoras, esta vez de segundo nivel. Nótese que a partir de ahora tenemos que utilizar el *validation set* para validar los modelos de segundo nivel.
+
+```{r}
+# Utilizamos los modelos de 1er nivel para predecir 
+churn_valid$pred_rf   <- predict(object = model_rf, 
+                                 churn_valid[ , predictoras])
+churn_valid$pred_svm  <- predict(object = model_svm, 
+                                 churn_valid[ , predictoras])
+churn_valid$pred_xgbm <- predict(object = model_xgbm, 
+                                 churn_valid[ , predictoras])
+
+# Y sus probabilidades
+churn_valid$pred_rf_prob   <- predict(object = model_rf,
+                                      churn_valid[,predictoras],
+                                      type='prob')
+churn_valid$pred_svm_prob  <- predict(object = model_svm,
+                                      churn_valid[,predictoras],
+                                      type='prob')
+churn_valid$pred_xgbm_prob <- predict(object = model_xgbm,
+                                      churn_valid[,predictoras],
+                                      type='prob')
+```
+
+Empecemos con una simple media:
+
+```{r}
+## PROMEDIO
+# Calculamos la media de las predictoras de primer nivel
+churn_valid$pred_avg <- (churn_valid$pred_rf_prob$yes +
+                           churn_valid$pred_svm_prob$yes +
+                           churn_valid$pred_xgbm_prob$yes) / 3
+
+# Dividimos las clases binarias en p = 0.5
+churn_valid$pred_avg <- as.factor(ifelse(churn_valid$pred_avg > 0.5, 
+                                         'yes', 'no'))
+```
+
+Ahora la media ponderada. Como el orden de los modelos de primer nivel, según su *Accuracy*, era rf y xgbm (empatados) seguidos por svm, vamos a asignarle pesos 0.25, 0.25 y 0.5:
+
+```{r}
+## MEDIA PONDERADA
+# Calculamos la media ponderada de las predictoras de primer nivel
+churn_valid$pred_weighted_avg <- (churn_valid$pred_rf_prob$yes * 0.25) +
+  (churn_valid$pred_xgbm_prob$yes * 0.25) + 
+  (churn_valid$pred_svm_prob$yes * 0.5)
+
+# Dividimos las clases binarias en p = 0.5
+churn_valid$pred_weighted_avg <- as.factor(ifelse(churn_valid$pred_weighted_avg > 0.5, 
+                                              'yes', 'no'))
+```
+
+Por último, hagamos que los modelos "voten":
+
+```{r}
+## VOTACIÓN
+# La mayoría gana
+predictoras2N <- c("pred_rf", "pred_xgbm", "pred_svm")
+churn_valid$pred_majority <- 
+  as.factor(apply(churn_valid[, predictoras2N],
+                  1, 
+                  function(x) {
+                    if (sum(x == "yes") > sum(x == "no"))
+                      return("yes")
+                    else
+                      return("no")
+                    }))
+```
+
+Comparemos resultados contra el *test set*:
+
+```{r}
+## PROMEDIO
+confusionMatrix(churn_valid$churn, churn_valid$pred_avg)
+```
+
+```{r}
+## MEDIA PONDERADA
+confusionMatrix(churn_valid$churn, churn_valid$pred_weighted_avg)
+```
+
+```{r}
+## VOTACIÓN
+confusionMatrix(churn_valid$churn, churn_valid$pred_majority)
+```
+
+Como se ve, los modelos de segundo nivel media y votación dan resultados ligeramente mejores que los de primer nivel. Podríamos elegir cualquiera de los dos.
+
+Supongamos que elegimos el modelo de votación. ¿Qué nos quedaría por hacer ahora? Pues construir el modelo final. Para ello, construiriamos los modelos definitivos de primer nivel utilizando esta vez **todos** los datos de entrenamiento (es decir, `churnTrain` completo) y los parámetros que optimizados por `caret`.
+
+```{r}
+# Parámetros a utilizar
+model_rf$bestTune
+```
+
+```{r}
+model_svm$bestTune
+```
+
+```{r}
+model_xgbm$bestTune
+```
+
+```{r}
+trControl <- trainControl(
+                          method = "none", 
+                          # Class probabilities will be computed along with
+                          # predicted values in each resample
+                          classProbs = TRUE
+                         ) 
+
+best_model_rf   <- train(f, churnTrain,
+                         method     = "rf",
+                         trControl  = trControl,
+                         tuneGrid   = model_rf$bestTune)
+best_model_svm  <- train(f, churnTrain,
+                         method     = "svmRadial",
+                         trControl  = trControl,
+                         tuneGrid   = model_svm$bestTune)
+best_model_xgbm <- train(f, churnTrain,
+                         method     = "xgbTree",
+                         trControl  = trControl,
+                         tuneGrid   = model_xgbm$bestTune)
+```
+
+Y ahora predeciriamos el *test set* con nuestro modelo de votación:
+
+```{r}
+churn_test <- churnTest
+
+# Utilizamos los modelos de 1er nivel para predecir 
+churn_test$pred_rf   <- predict(object = model_rf, 
+                                churn_test[ , predictoras])
+churn_test$pred_svm  <- predict(object = model_svm, 
+                                churn_test[ , predictoras])
+churn_test$pred_xgbm <- predict(object = model_xgbm,
+                                churn_test[ , predictoras])
+
+# Y sus probabilidades
+churn_test$pred_rf_prob   <- predict(object = model_rf,
+                                     churn_test[,predictoras],
+                                     type='prob')
+churn_test$pred_svm_prob  <- predict(object = model_svm,
+                                     churn_test[,predictoras],
+                                     type='prob')
+churn_test$pred_xgbm_prob <- predict(object = model_xgbm,
+                                     churn_test[,predictoras],
+                                     type='prob')
+
+churn_test$pred_majority <- 
+  as.factor(apply(churn_test[, predictoras2N],
+                  1, 
+                  function(x) {
+                    if (sum(x == "yes") > sum(x == "no"))
+                      return("yes")
+                    else
+                      return("no")
+                    }))
+```
+
+Y estos son los resultados:
+
+```{r}
+## VOTACIÓN
+confusionMatrix(churn_test$churn, churn_test$pred_majority)
+```
+
+Realmente son unos muy buenos resultados. Hasta ahora no habíamos visto estos datos de `churnTest` para nada, es la primera vez que nuestros modelos se enfrentan a ellos. Y han obtenido una *performance* comparable a la obtenida en el proceso de entrenamiento, cuando normalmente se obtiene inferior *performance* con los datos "nuevos" del *test set* que con los del *train set*, como es lógico.

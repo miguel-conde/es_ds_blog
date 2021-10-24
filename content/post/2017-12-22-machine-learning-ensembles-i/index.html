@@ -1,0 +1,32 @@
+---
+title: Machine Learning Ensembles I
+author: Miguel Conde
+date: '2017-12-22'
+slug: []
+categories:
+  - Machine Learning
+tags:
+  - ''
+description: 'Los términos models ensembles, stacking, bagging o boosting son cada vez más comunes en el campo de la creación de modelos de aprendizaje máquina para la clasificación y la regresión.'
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Los términos <em>models ensembles, stacking,</em> bagging o <em>boosting</em> son cada vez más comunes en el campo de la creación de modelos de aprendizaje máquina para la clasificación y la regresión<em>.</em></p>
+<p>En este y los próximos artículos vamos a ocuparnos de ellos. En general, cuando en aprendizaje máquina hablamos de <em>ensembles</em> nos referimos a <strong>modelos de modelos</strong>.</p>
+<p>La aproximación básica para crear un modelo de clasificación o regresión es construirlo a partir de unos datos de entrenamiento (<em>training data</em>) que contienen tanto la <em>variable objetivo</em> como las <em>variables predictoras</em>. Un modelo así construido nos permite entonce <em>predecir</em> la variable objetivo a partir de las variables predictoras de cualquier otro conjunto de datos estructurado como el de entrenamiento.</p>
+<p>Esto es lo que hemos visto, por ejemplo, en los posts <em>Arboles de Decisión</em> <a href="http://es100x100datascience.com/arboles-de-decision-i/">I</a>, <a href="http://es100x100datascience.com/arboles-de-decision-ii/">II</a>, <a href="http://es100x100datascience.com/arboles-de-decision-iii/">III</a> y <a href="http://es100x100datascience.com/arboles-de-decision-iv/">IV</a>, en los que construimos modelos de clasificación basados en algoritmos de ese tipo para predecir la tasa de rotación de los clientes de una operadora.</p>
+<p>Podemos dar un paso más en la construcción de modelos de aprendizaje máquina mediante la técnica conocida como <strong><em>ensemble</em></strong>. Hemos dicho arriba que se trata de <em>modelos de modelos</em>: en efecto, se trata de modelos construidos no directamente a partir de los datos de un conjunto de datos de entrenamiento, sino a partir de las predicciones de <strong>varios</strong> modelos construidos - estos si - a partir de los datos de entrenamiento.</p>
+<p>Es decir, primero entrenamos unos cuantos modelos tradicionales (modelos de primer nivel); y, a continuación, a partir de las predicciones de los modelos de primer nivel construimos un segundo modelo (modelo de segundo nivel). Normalmente paramos ahí, pero podríamos continuar creando nuevos niveles de modelos.</p>
+<p>Lo que estamos intentando con esto es construir un modelo “fuerte” a partir de otros modelos más “débiles”. Es una estrategia de juego en equipo: si logramos conjuntar el “juego” de varios modelos, quizá podamos construir un equipo más “fuerte” que cualquiera de sus componentes.</p>
+<p>Claro, para conseguir esto los componentes “débiles” deben estar especializados en diferentes cosas (por ejemplo, unos serán defensas, otros delanteros y otros centrocampistas; todos deben ser “buenos” en lo suyo aunque ninguno sea bueno “en todo”) todas ellas necesarias para que el equipo así obtenido sea más potente que sus componentes por separado. Esto último significa que los modelos que compongan el <em>ensemble</em> deben ser distintos entre sí (baja correlación entre sus predicciones).</p>
+<p>Por ejemplo, podríamos utilizar, como modelos de primer nivel, un <em>random forest</em>, una <em>máquina de vector soporte</em> y un <em>extreme gradient boosting</em>; y, como modelo de segundo nivel, una <em>red neuronal (</em>por cierto, excepto el SVM, los demás modelos mencionados son <em>ensembles</em> internamente<em>)</em>.</p>
+<center>
+<p><img src="images/ensemble2.png" title="Ejemplo de ensemble" /></p>
+</center>
+<p>Caben todo tipo de aproximaciones: podría haber muchos más modelos en el primer nivel, incluso del mismo tipo pero con diferentes parámetros. Y el modelo de segundo nivel podría ser tan sencillo como una <strong>media</strong>, una <strong>media ponderada</strong> o un <strong>recuento</strong> tipo “votación en la que la mayoría gana” de las predicciones de los modelos de primer nivel. Si el <em>ensemble</em> utiliza como modelo de segundo nivel uno complejo, basado en un algoritmo de aprendizaje máquina como <em>random forest</em>, <em>redes neuronales</em>, <em>support vector machines</em>, etc., entonces se denomina <strong>stack</strong> (“pila”) de modelos, y la técnica asociada se denomina <strong>stacking</strong>.</p>
+<p>Entre los incontables tipos de <em>ensembles</em> hay que destacar también dos técnicas avanzadas, el <em>bagging</em> y el <em>boosting</em>. Más adelante, en otros posts, hablaremos de ellas.</p>
+<p>Los <em>ensembles</em> suelen mejorar el rendimiento de los modelos de primer nivel, sobre todo si el de estos últimos no es espectacular.Pero debemos tener en cuenta las dos condiciones que hemos sugerido arriba: que los modelos que los forman cumplan un <strong>mínimo de rendimiento</strong> en cuanto a los criterios que definamos y que sus predicciones estén <strong>lo menos correladas que sea posible</strong>.</p>
+<p>Como ejemplo, en los siguientes artículos vamos a construir algunos ensembles para el mismo problema de predicción de la tasa de rotación de clientes de una operadora que tratamos en la serie <em>Arboles de Decisión</em>. <a href="http://es100x100datascience.com/arboles-de-decision-i/">I</a>, <a href="http://es100x100datascience.com/arboles-de-decision-ii/">II</a>, <a href="http://es100x100datascience.com/arboles-de-decision-iii/">III</a> y <a href="http://es100x100datascience.com/arboles-de-decision-iv/">IV</a></p>
