@@ -9,6 +9,7 @@ tags:
   - ''
 description: ''
 thumbnail: ''
+draft: true
 ---
 
 <center>
