@@ -1,0 +1,84 @@
+---
+title: '"Applied Predictive Modeling", de Kuhn y Jhonson'
+author: Miguel Conde
+date: '2016-02-05'
+slug: applied-predictive-modeling-de-kuhn-y-jhonson
+categories:
+  - Libros
+  - Machine Learning
+tags:
+  - Libros
+  - Machine Learning
+  - R
+description: '"Applied Predictive Modeling" no es un libro para completos principiantes, pero si tenéis ya una cierta idea de lo que es machine learning y manejáis mínimamente R, puede convertirse en una magnífica vía de aprendizaje práctico.'
+thumbnail: ''
+---
+
+ "[***Applied Predictive Modeling***](http://appliedpredictivemodeling.com/)" no es un libro para completos principiantes, pero si tenéis ya una cierta idea de lo que es *machine learning* y manejáis mínimamente R, puede convertirse en una magnífica vía de aprendizaje práctico.
+
+## Los autores
+
+Sus autores son [**Max Kuhn**](https://www.linkedin.com/in/max-kuhn-864a9110/es) y [**Kjell Johnson**](https://www.linkedin.com/in/kjell-johnson-9a65b33/es). Ambos vienen de la investigación en la industria farmacéutica, en donde han aplicado durante muchos años las técnicas de modelado predictivo que describen en el libro.
+
+Además el primero, Max Kuhn, es muy conocido en el mundo *machine learning* R por ser el autor y "mantenedor" del paquete [caret](https://cran.r-project.org/web/packages/caret/index.html) (*Classification And REgression Training*), ampliamente utilizado para agilizar el proceso de construcción y evaluación de modelos predictivos. Permite evaluar rápidamente muchos diferentes tipos de algoritmos para determinar cuál es el más apropiado para nuestros datos y proporciona una interfaz unificada a las funciones de construcción y evaluación de modelos, que, al provenir de diferentes paquetes, utilizan vocabulario y sintaxis diferentes.
+
+De hecho este paquete, caret, se utiliza profusamente en el libro. Aquí tenéis su [web](http://topepo.github.io/caret/index.html).
+
+## El enfoque
+
+[![Applied Predictive Modeling](http://es100x100datascience.com/wp-content/uploads/2016/02/Applied-Predictive-Modeling.jpg)](http://appliedpredictivemodeling.com/)
+
+Los propios autores, en la introducción, nos indican que nos encontramos ante un libro dedicado al *análisis de datos* haciendo foco específicamente en la ***práctica*** *del modelado predictivo*. Entienden acertadamente el modelado predictivo como algo más que un conjunto de técnicas y herramientas para encontrar patrones en los datos: en efecto, la práctica del modelado predictivo define un **proceso**, el proceso de desarrollo de modelos, de modo que podamos *comprender y cuantificar su capacidad de predicción en el futuro, con datos no empleados durante su construcción*.
+
+Su intención es hacer de este proceso completo el tema del libro, que conciben como una **guía práctica** a la que se pueda acudir para aprender acerca del enfoque y para hacerse con la intuición necesaria para manejar los muchos, diferentes, potentes y modernos modelos que se utilizan en la actualidad. No se van a encontrar aquí, por tanto, los entresijos matemáticos y estadísticos que constituyen la base de los modelos. Sólo aconsejan, como base para afrontar el libro, algún conocimiento básico de estadística: varianza, correlación, regresión lineal univariable y contraste de hipótesis.
+
+Dada esta filosofía de "manos a la obra", los autores desean que el lector sea capaz de **reproducir los resultados** de los ejemplos presentados en el libro y, a partir de esto aplicar lo aprendido a sus propios datos. Esta es una de las razones de emplear el **lenguaje R**, un software libremente accesible para programación estadística y matemática, en todas las etapas del proceso. Todos los ejemplos de datos están disponibles para el lector-practicante en paquetes R. Ponen a nuestra disposición un paquete - *AppliedPredictiveModeling* - que contiene la mayoría de los datos empleados y todos los *scripts* R, de manera que seamos capaces de reproducir por nosotros mismos los análisis que llevan a cabo en cada capítulo. Además, en un Anexo proporcionan una **guía de inicio al lenguaje R**.
+
+## Estructura y contenido
+
+El libro está dividido en **4 partes**:
+
+La primera, "***General Strategies***", presenta el proceso de modelado predictivo, aborda el tema de la **preparación de los datos** para su análisis y los conceptos de ***overfitting*** y **ajuste de los parámetros** de un modelo.
+
+En esta parte se bosqueja el proceso general del modelado. En palabras de los autores:
+
+> At face value, model building appears straightforward: pick a modeling technique,\
+> plug in data, and generate a prediction. While this approach will generate\
+> a predictive model, it will most likely not generate a reliable, trustworthy\
+> model for predicting new samples. To get this type of model, we must first\
+> understand the data and the objective of the modeling. Upon understanding\
+> the data and objectives, we then pre-process and split the data. Only\
+> after these steps do we finally proceed to building, evaluating, and selecting\
+> models.
+
+En el capitulo de preprocesado de datos se tratan temas como  centrado y escalado, transformaciones para manejar distribuciones sesgadas y *outliers,* PCA, manejo de valores NA, correlaciones entre predictores, *dummy variables*, etc.
+
+En el de ajuste de parámetros se presenta el procedimiento general: estimación de los parámetros, selección de predictores, evaluación del rendimiento del modelo y ajuste fino. Aparece el concepto de *data splitting* e importantes técnicas de *resampling* como *k-Fold Cross-Validation* y *The Bootstrap.*
+
+La segunda parte trata los "***Regression Models***", es decir, aquellos que tratan de modelar una respuesta continua (un número real) a partir de variables predictoras numéricas y/o categóricas. Tras discutir los métodos de **medición del rendimiento** (RMSE, MSE, R2) de este tipo de modelos, pasa a trabajar con los algoritmos de **regresión lineal** y **no lineal** (redes neuronales, MARS, SVM, K-Nearest Neighbour), **árboles de regresión** y **modelos basados en reglas** (tanto los modelos básicos como los más avanzados *bagged trees*, *boosting* o *random forest*). Termina esta parte con un **resumen** y un **caso de estudio** en el que se aplican las técnicas estudiadas y practicadas en los capítulos anteriores.
+
+Los "***Classification Models***" se abordan en la tercera parte. Estos son aquellos que modelan una respuesta categórica a partir de variables predictoras numéricas y/o categóricas. Sigue el guión de la Parte anterior: un primer capítulo sobre cómo medir la *performance* de estos modelos (matrices de confusión, curvas ROC), capítulos sobre diferentes algoritmos (lineales, como LDA y la regresión logística; no lineales, como redes neuronales, SVM, K-Nearest Neighbour y Naive Bayes; árboles de clasificación y modelos de reglas, tanto los básicos como los más avanzados *bageged trees*, *random forest*, *boosting* o C5.0), un capítulo de resumen y un caso práctico. Hay también un capítulo intermedio sobre los diferentes remedios que podemos aplicar cuando nos encontramos con datos que presentan desequilibrios severos  en la distribución de las clases.
+
+La última parte es la cuarta, "***Other Considerations***". Los temas tratados aquí son la medición de la **importancia de los predictores** y una introducción a la **selección** de las mismas, para terminar con un estudio de los factores que pueden afectar al rendimiento de un modelo.
+
+Cada capítulo está dividido en tantos apartados como técnicas o temas se tratan en él, profusamente ilustrados con ejemplos, gráficos y tablas relativos a casos de estudio concretos, más un último apartado ("*Computing*") dedicado a la implementación en R de todo lo visto en los apartados anteriores. Los primeros apartados son importantes: aunque más teóricos, nos proporcionan una idea suficiente acerca de cómo funcionan los algoritmos, lo que nos será útil a la hora de seleccionar los apropiados para el modelado de nuestros datos. Por útimo, al final de cada capítulo podemos encontrar sendas colecciones de problemas.
+
+## En resumen...
+
+Como se ve, el libro se ciñe, dentro de *machine learning*,  al proceso de entrenamiento de modelos predictivos (*supervised learning*) tanto de regresión como de clasificación; no trata conceptos ni técnicas ni de modelos descriptivos (*unsupervised learning)* como *pattern discovery* o *clustering* ni de *meta-learners.*
+
+Está bien enfocado y muy bien estructurado. Creo que tiene **dos usos**: el primero, como **curso práctico**. Tomarlo con disciplina y, por ejemplo, dedicar una semana a trabajar, por orden, cada uno de los capitulo aprovechando tres de las fortalezas del libro: la insistencia en el proceso, la oportunidad de aprender la teoría básica de cada modelo o técnica y que nos permite "pegarnos" con R para reproducir los resultados. El otro uso, ya posterior o para gente más avanzada, es utilizarlo como **libro de consulta o referencia**.
+
+¿Una pega? Claramente, el precio...
+
+Por último, os dejo un enlace donde encontraréis una [entrevista ](http://datascience.la/a-conversation-with-max-kuhn-the-user-2014-interview/)en la que Max Kuhn habla sobre el libro y el paquete caret para el grupo [<http://datascience.la/>](http://DataScience.LA).
+
+------------------------------------------------------------------------
+
+**Dónde encontrarlo**: En la web de [*Applied Predictive Modeling*](http://appliedpredictivemodeling.com/) o directamente en Amazon (versiones [electrónica](http://www.amazon.es/Applied-Predictive-Modeling-Max-Kuhn-ebook/dp/B00K15TZU0/ref=tmm_kin_swatch_0?_encoding=UTF8&qid=1454686536&sr=8-1) y en [papel](http://Applied Predictive Modeling))
+
+**Editor**: Springer; Edición: 2013 (3 de junio de 2013)
+
+**Idioma**: Inglés
+
+ 
