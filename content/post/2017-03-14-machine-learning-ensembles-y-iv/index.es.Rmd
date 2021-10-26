@@ -173,25 +173,22 @@ De manera que:
 
 ```{r}
 kpis <- getPerfKPIs(list_of_models, churnTest, 
-                        churnTest$churn, finalDecision)
+                    churnTest$churn, finalDecision)
 
-    par(mfrow = c(3,3))
-    kpiPlot(kpis, "Accuracy")
-    kpiPlot(kpis, "Kappa")
-    kpiPlot(kpis, "Sensitivity")
-    kpiPlot(kpis, "Specificity")
-    kpiPlot(kpis, "Pos Pred Value")
-    kpiPlot(kpis, "Neg Pred Value")
-    kpiPlot(kpis, "Precision")
-    kpiPlot(kpis, "Recall")
-    kpiPlot(kpis, "F1")
-```
+par(mfrow = c(3,3))
+kpiPlot(kpis, "Accuracy")
+kpiPlot(kpis, "Kappa")
+kpiPlot(kpis, "Sensitivity")
+kpiPlot(kpis, "Specificity")
+kpiPlot(kpis, "Pos Pred Value")
+kpiPlot(kpis, "Neg Pred Value")
+kpiPlot(kpis, "Precision")
+kpiPlot(kpis, "Recall")
+kpiPlot(kpis, "F1")
 
-```{r, include = FALSE}
 par(mfrow = c(1,1))
 ```
 
-    
 
 Las líneas rojas indican la ubicación de las medidas correspondientes a los diferentes KPIs para el modelo *bagged*; las *boxplots* se refieren al mismo KPI según esté distribuido en los 100 modelos individuales generados.
 

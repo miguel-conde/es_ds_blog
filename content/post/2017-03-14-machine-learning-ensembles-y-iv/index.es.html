@@ -164,19 +164,20 @@ str(churnBootstrap %&gt;% head(10))</code></pre>
     }</code></pre>
 <p>De manera que:</p>
 <pre class="r"><code>kpis &lt;- getPerfKPIs(list_of_models, churnTest, 
-                        churnTest$churn, finalDecision)
+                    churnTest$churn, finalDecision)
 
-    par(mfrow = c(3,3))
-    kpiPlot(kpis, &quot;Accuracy&quot;)
-    kpiPlot(kpis, &quot;Kappa&quot;)
-    kpiPlot(kpis, &quot;Sensitivity&quot;)
-    kpiPlot(kpis, &quot;Specificity&quot;)
-    kpiPlot(kpis, &quot;Pos Pred Value&quot;)
-    kpiPlot(kpis, &quot;Neg Pred Value&quot;)
-    kpiPlot(kpis, &quot;Precision&quot;)
-    kpiPlot(kpis, &quot;Recall&quot;)
-    kpiPlot(kpis, &quot;F1&quot;)</code></pre>
+par(mfrow = c(3,3))
+kpiPlot(kpis, &quot;Accuracy&quot;)
+kpiPlot(kpis, &quot;Kappa&quot;)
+kpiPlot(kpis, &quot;Sensitivity&quot;)
+kpiPlot(kpis, &quot;Specificity&quot;)
+kpiPlot(kpis, &quot;Pos Pred Value&quot;)
+kpiPlot(kpis, &quot;Neg Pred Value&quot;)
+kpiPlot(kpis, &quot;Precision&quot;)
+kpiPlot(kpis, &quot;Recall&quot;)
+kpiPlot(kpis, &quot;F1&quot;)</code></pre>
 <p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code>par(mfrow = c(1,1))</code></pre>
 <p>Las líneas rojas indican la ubicación de las medidas correspondientes a los diferentes KPIs para el modelo <em>bagged</em>; las <em>boxplots</em> se refieren al mismo KPI según esté distribuido en los 100 modelos individuales generados.</p>
 <p>Como se ve, la línea roja, como poco, está siempre en la zona de mejores resultados.</p>
 <p>Los modelos <em>bagging</em> reducen la varianza de la predicción pero suelen aportar mejoras poco impresionantes en cuanto a la eficacia predictiva.</p>
