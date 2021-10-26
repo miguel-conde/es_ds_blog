@@ -6,7 +6,7 @@ slug: []
 categories:
   - Machine Learning
 tags:
-  - ''
+  - 'Ensemble'
 description: 'Los términos models ensembles, stacking, bagging o boosting son cada vez más comunes en el campo de la creación de modelos de aprendizaje máquina para la clasificación y la regresión.'
 thumbnail: ''
 ---
