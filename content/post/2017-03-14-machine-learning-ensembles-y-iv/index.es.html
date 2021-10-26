@@ -1,0 +1,188 @@
+---
+title: Machine Learning Ensembles - y IV
+author: Miguel Conde
+date: '2017-03-14'
+slug: machine-learning-ensembles-y-iv
+categories:
+  - Machine Learning
+tags:
+  - Machine Learning
+  - Bagging
+  - Bootstrap
+  - Ensemble
+description: ''
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index.es_files/header-attrs/header-attrs.js"></script>
+
+
+<p>La técnica conocida como <strong><em>bagging</em></strong> consiste en muestrear los datos de entrenamiento de una manera muy concreta llamada <em>bootstrapping</em> y utilizar luego cada muestra así tomada para ajustar sendos modelos (de clasificación o regresión) con los que construir un <em>enesemble</em>.</p>
+<p>Así, la estructura del método es muy sencilla: primero, generamos N muestras <em>bootstrap</em> a partir de los datos originales. A continuación utilizamos cada muestra para construir un modelo del <em>ensemble</em> que luego usaremos para realizar una predicción sobre otra muestra diferente. Repetimos el proceso con todas las muestras que hayamos generado y, por último, contamos o promediamos las predicciones para calcular la predicción del <em>ensemble</em>.</p>
+<p><em>Bagging</em> significa <em>Bootstrap</em> + <em>Aggregating</em>. Veamos qué significa cada término.</p>
+<div id="el-bootstrap" class="section level2">
+<h2>El <em>Bootstrap</em></h2>
+<p>El <em>Bootstrap</em> es una <strong>técnica de remuestreo</strong>. Como se dice en <a href="http://appliedpredictivemodeling.com/">Kuhn and Jhonson’s “Applied predictive Modeling”:</a></p>
+<blockquote>
+<p>“Las técnicas de remuestreo se suelen usar para estimar el rendimiento de un modelo y funcionan de manera similar: se toma un subconjunto de muestras para entrenar el modelo y las muestras restantes se usan para estimar su eficacia. En efecto, si repetimos este proceso muchas veces podremos estimar lo”bueno” que es el modelo, promediando, por ejemplo la medida de eficacia que nos interese.</p>
+<p>Una muestra <strong><em>bootstrap</em></strong> es una muestra de los datos que se obtiene por extracción aleatoria <em>con reemplazamiento</em>.</p>
+<p><em>Esto significa que, después de extraer de los datos una observación determinada, queda todavía disponible para ulteriores extracciones.</em></p>
+<p>Las muestras <em>bootstrap</em> se construyen del mismo tamaño que el <em>data set</em> original. Por tanto, en cada muestra <em>bootstrap</em> lo más probable es que algunas observaciones aparezcan múltiples veces mientras que otras no estarán presentes.</p>
+<p>De las observaciones del <em>data set</em> original no seleccionadas para formar parte de la muestra <em>bootstrap</em> se dice que son observaciones ‘<strong><em>out-of-bag</em></strong>’.</p>
+<p>En cada iteración de este remuestreo <em>bootstrap</em> se entrena un modelo a partir de las observaciones seleccionadas de la manera explicada y se usa para predecir a partir de las observaciones ‘<em>out-of-bag</em>’“.</p>
+</blockquote>
+<p><span class="math display">\[caption id=&quot;attachment_1724&quot; align=&quot;aligncenter&quot; width=&quot;500&quot;\]</span><a href="http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg"><img src="http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg" alt="In Rudolph Eric Raspe’s tale, Baron Munchausen had, in one of his many adventurous travels, fallen to th ebottom of a deep lake and just as he was to succumb to his fate he thought to pull himself up by his own BOOTSTRAP. The original version is in German, where Munchausen actually draws himself up by the hair, not the bootstraps." /></a> En el cuento de Rudolph Eric Raspe se relata cómo, en uno de sus viajes de aventuras, el Barón Munchausen cayó con su caballo en una profunda ciénaga y, cuando ya estaba a punto de sucumbir a su fatal destino, se le ocurrió que podía sacarse a sí mismo (¡y a su caballo!) tirando de sus <em>bootstraps</em>, las cinchas o tiradores situadas en la parte posterior de sus botas para facilitar la operación de calzarse. Sin embargo, en la versión original en alemán, Munchausen se sacaba a sí mismo de la ciénaga (¡con su caballo!) tirando de su coleta, como se ve en la ilustración, no de sus <em>bootstraps</em>.<br />
+<br />
+<span class="math display">\[/caption\]</span></p>
+<div id="el-paquete-caret-y-el-bootstrap" class="section level3">
+<h3>El paquete <code>caret</code> y el <em>Bootstrap</em></h3>
+<p>El paquete <a href="https://cran.r-project.org/web/packages/caret/index.html"><code>caret</code></a> proporciona herramientas para generar muestras <em>bootstrap</em>.</p>
+<p>Como en <a href="http://es100x100datascience.com/arboles-de-decision-iv/">Árboles de decisión (IV)</a> y en <a href="http://es100x100datascience.com/machine-learning-ensembles-ii/">Machine Learning Ensembles II</a> y <a href="http://es100x100datascience.com/machine-learning-ensembles-iii/">III</a>, usemos los datos sobre rotación de clientes en una operadora para ver un ejemplo:</p>
+<pre class="r"><code>library(C50)
+library(modeldata)
+
+data(mlc_churn)
+
+churn &lt;- mlc_churn
+
+set.seed(127) 
+train_idx &lt;- sample(nrow(churn), 0.9*nrow(churn)) 
+churnTrain &lt;- churn[train_idx,] 
+churnTest &lt;- churn[-train_idx,]
+
+dim(churnTrain)</code></pre>
+<pre><code>## [1] 4500   20</code></pre>
+<p>Para generar 100 muestras <em>bootstrap</em> lo único que hay que hacer es:</p>
+<pre class="r"><code>library(dplyr)
+library(caret)
+
+NUM_BOOTS_RESAMPS = 100
+
+set.seed(123)
+churnBootstrap &lt;- createResample(churnTrain$churn, times = NUM_BOOTS_RESAMPS)
+str(churnBootstrap %&gt;% head(10))</code></pre>
+<pre><code>## List of 10
+##  $ Resample001: int [1:4500] 1 1 2 5 5 9 13 16 17 18 ...
+##  $ Resample002: int [1:4500] 1 1 2 2 2 4 5 6 7 7 ...
+##  $ Resample003: int [1:4500] 1 1 2 2 3 4 4 5 7 7 ...
+##  $ Resample004: int [1:4500] 2 3 3 3 4 5 5 7 10 13 ...
+##  $ Resample005: int [1:4500] 1 2 3 4 4 5 6 8 8 9 ...
+##  $ Resample006: int [1:4500] 1 2 3 3 5 6 7 7 8 9 ...
+##  $ Resample007: int [1:4500] 9 13 13 14 16 16 16 18 19 21 ...
+##  $ Resample008: int [1:4500] 3 6 8 8 8 9 10 10 14 14 ...
+##  $ Resample009: int [1:4500] 1 2 2 2 2 4 6 6 10 11 ...
+##  $ Resample010: int [1:4500] 1 1 3 3 4 4 5 5 8 8 ...</code></pre>
+<p>Como se ve, hemos obtenido una lista de 100 elementos, cada uno de los cuales es una muestra <em>bootstrap</em> de los índices de <code>churnTrain$churn</code>.</p>
+<p>Nótese también que las longitudes de todas las muestras bootstrap son iguales al número de observaciones (filas) de <code>churnTrain</code> y que en cualquiera de las muestras se dan repeticiones de los índices, lo que es debido a la estrategia de selección con reemplazamiento que se ha seguido para construirlas.</p>
+</div>
+</div>
+<div id="aggregating" class="section level2">
+<h2><em>Aggregating</em></h2>
+<p>Ahora podemos utilizar cada una de estas muestras <em>bootstrap</em> para construir un modelo que prediga churnTrain$churn. Usaremos los resultados de estos 100 modelos para construir nuestro modelo <em>bagged</em> final.</p>
+<p>Para nuestro ejemplo usaremos árboles <a href="http://es100x100datascience.com/arboles-de-decision-iv/">C5.0 CART</a>:</p>
+<pre class="r"><code>list_of_models &lt;- lapply(churnBootstrap, function(x) {
+      C5.0(x       = churnTrain[x, -20],
+           y       = churnTrain[x, ]$churn,
+           trials  = 1,
+           rules   = FALSE,
+           weights = NULL,
+           control = C5.0Control(),
+           costs   = NULL)
+      })</code></pre>
+<p>Ahora ya podemos usar cada modelo para predecir en el <em>test set</em> (en este sencillo ejemplo, la estrategia va a ser: “un modelo, un voto”).</p>
+<pre class="r"><code>multiPredict &lt;- sapply(list_of_models, predict, churnTest)</code></pre>
+<p><a href="http://es100x100datascience.com/wp-content/uploads/2016/12/voting.jpg"><img src="http://es100x100datascience.com/wp-content/uploads/2016/12/voting.jpg" title="Bagged trees - voting" alt="Bagged trees - voting" /></a></p>
+<p>Y contar los votos para emitir la decisión final:</p>
+<pre class="r"><code>finalDecision &lt;- apply(multiPredict, 1, function(x) {
+      if (sum(x == &quot;yes&quot;) &gt; sum(x == &quot;no&quot;))
+        return(&quot;yes&quot;)
+      else
+        return(&quot;no&quot;)
+    })
+
+    finalDecision &lt;- factor(finalDecision, levels = levels(churnTest$churn))</code></pre>
+<p>Comprobemos la eficiencia nediante una <a href="http://es100x100datascience.com/matrices-de-confusion/">matriz de confusión</a>:</p>
+<pre class="r"><code>confusionMatrix(reference = churnTest$churn, data = finalDecision)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction yes  no
+##        yes  59   2
+##        no   23 416
+##                                           
+##                Accuracy : 0.95            
+##                  95% CI : (0.9271, 0.9674)
+##     No Information Rate : 0.836           
+##     P-Value [Acc &gt; NIR] : 3.722e-15       
+##                                           
+##                   Kappa : 0.7967          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 6.334e-05       
+##                                           
+##             Sensitivity : 0.7195          
+##             Specificity : 0.9952          
+##          Pos Pred Value : 0.9672          
+##          Neg Pred Value : 0.9476          
+##              Prevalence : 0.1640          
+##          Detection Rate : 0.1180          
+##    Detection Prevalence : 0.1220          
+##       Balanced Accuracy : 0.8574          
+##                                           
+##        &#39;Positive&#39; Class : yes             
+## </code></pre>
+<p>Sería interesante comparar estos resultados con los obttenidos en <a href="http://es100x100datascience.com/arboles-de-decision-iv/">Árboles de decisión (IV)</a>.</p>
+</div>
+<div id="rendimiento" class="section level2">
+<h2>Rendimiento</h2>
+<p>Lo que si vamos a hacer es comparar la eficiencia del modelo <em>bagging</em> final con el rendimiento de los modelos individuales. Para ello vamos a usar las siguientes funciones:</p>
+<pre class="r"><code>kpiPlot&lt;- function(kpis, kpi = &quot;Accuracy&quot;) {
+      boxplot(kpis[, kpi], 
+              # ylim = c(0.9995*min(kpis[, kpi]), 1.0005*max(kpis[, kpi]))
+              main = kpi)
+      abline(h = kpis[&quot;Bagging Model&quot;, kpi], col = &quot;red&quot;)
+    }
+
+    getPerfKPIs &lt;- function(list_of_models, pred, tgt, finalDecision) {
+      cms &lt;- lapply(list_of_models, function(x) {
+        confusionMatrix(data = predict(x, pred), tgt)
+      })
+      
+      kpis &lt;- 
+        rbind(as.data.frame(t(sapply(cms, function(x) {x$overal}))), 
+              confusionMatrix(reference = tgt, data = finalDecision)$overall)
+      kpis &lt;- 
+        cbind(kpis,
+              rbind(as.data.frame(t(sapply(cms, function(x) {x$byClass}))),
+                    confusionMatrix(reference = tgt, data = finalDecision)$byClass))
+      
+      rownames(kpis) &lt;- c(sprintf(&quot;Modelo %d&quot;, 1:NUM_BOOTS_RESAMPS), &quot;Bagging Model&quot;)
+      
+      kpis
+    }</code></pre>
+<p>De manera que:</p>
+<pre class="r"><code>kpis &lt;- getPerfKPIs(list_of_models, churnTest, 
+                        churnTest$churn, finalDecision)
+
+    par(mfrow = c(3,3))
+    kpiPlot(kpis, &quot;Accuracy&quot;)
+    kpiPlot(kpis, &quot;Kappa&quot;)
+    kpiPlot(kpis, &quot;Sensitivity&quot;)
+    kpiPlot(kpis, &quot;Specificity&quot;)
+    kpiPlot(kpis, &quot;Pos Pred Value&quot;)
+    kpiPlot(kpis, &quot;Neg Pred Value&quot;)
+    kpiPlot(kpis, &quot;Precision&quot;)
+    kpiPlot(kpis, &quot;Recall&quot;)
+    kpiPlot(kpis, &quot;F1&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><a href="http://es100x100datascience.com/wp-content/uploads/2016/12/kpis_bagging.png"><img src="http://es100x100datascience.com/wp-content/uploads/2016/12/kpis_bagging-1024x731.png" alt="kpis_bagging" /></a></p>
+<pre><code>par(mfrow = c(1,1))</code></pre>
+<p>Las líneas rojas indican la ubicación de las medidas correspondientes a los diferentes KPIs para el modelo <em>bagged</em>; las <em>boxplots</em> se refieren al mismo KPI según esté distribuido en los 100 modelos individuales generados.</p>
+<p>Como se ve, la línea roja, como poco, está siempre en la zona de mejores resultados.</p>
+<p>Los modelos <em>bagging</em> reducen la varianza de la predicción pero suelen aportar mejoras poco impresionantes en cuanto a la eficacia predictiva.</p>
+<p>En su forma básica, la elección que podemos hacer para construir modelos <em>bagging</em> es el número de muestras <em>bootstrap</em> que agregar. A menudo se aprecia un descenso importante en la mejora predictiva al aumentar el número de iteraciones: la mayor parte de la mejora se obtiene con un número relativamente pequeño de árboles (m &lt; 10).</p>
+<p>Aunque la técnica <em>bagging</em> normalmente mejore la eficacia predictiva de modelos poco estables, hay un par de reflexiones que considerar sobre ellos:</p>
+<ul>
+<li><p>Primero, los costes en cuanto a recursos de computación y memoria aumentan al aumentar el número de muestras <em>bootstrap</em>. Esto puede mitigarse si tenemos acceso a algún tipo de computación paralela, ya que los procesos <em>bagging</em> son fácilmente paralelizables: cada muestra es independiente de las demás y, por tanto, cada modelo es independiente de las otras muestras y modelos, lo que significa que podemos construirlos por separado y solo juntarlos al final para generar la predicción.</p></li>
+<li><p>La otra desventaja de esta técnica es que los modelos <em>bagged</em> sacrifican interpretabilidad en aras de la eficiencia.</p></li>
+</ul>
+</div>
