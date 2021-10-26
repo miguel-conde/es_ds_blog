@@ -31,12 +31,7 @@ churn &lt;- mlc_churn</code></pre>
 <p>Hemos cargado un <em>train set</em> (<code>churnTrain</code>) y un <em>test set</em> (<code>churnTest</code>). El primero lo usaremos para construir y validar los modelos y el segundo será la “prueba de fuego”, es decir, datos que no habremos visto nunca durante la construcción de los modelos y que utilizaremos como datos en condiciones reales.</p>
 <p>No vamos a repetir aquí la exploración de los datos que ya hemos hecho en los posts <em>Arboles de Decisión</em> <a href="http://es100x100datascience.com/arboles-de-decision-i/">I</a>, <a href="http://es100x100datascience.com/arboles-de-decision-ii/">II</a>, <a href="http://es100x100datascience.com/arboles-de-decision-iii/">III</a> y <a href="http://es100x100datascience.com/arboles-de-decision-iv/">IV</a>, sino que vamos a ir directamente a la construcción del <em>ensemble</em>.</p>
 <p>Preparemos los datos y dividamos <code>churnTrain</code> en un <em>train set</em> y un <em>validation set</em>:</p>
-<pre class="r"><code>set.seed(127) 
-train_idx &lt;- sample(nrow(churn), 0.9*nrow(churn)) 
-churnTrain &lt;- churn[train_idx,] 
-churnTest &lt;- churn[-train_idx,]
-
-# Variables target y predictoras (features)
+<pre class="r"><code># Variables target y predictoras (features)
 target      &lt;- &quot;churn&quot;
 predictoras &lt;- names(churn)[names(churn) != target]
 
@@ -49,8 +44,10 @@ for (v in predictoras) {
   }
 }
 
-churnTrain &lt;- churn[1:nrow(churnTrain), ]
-churnTest  &lt;- churn[(nrow(churnTrain) + 1):nrow(churn), ]
+set.seed(127) 
+train_idx &lt;- sample(nrow(churn), 0.9*nrow(churn)) 
+churnTrain &lt;- churn[train_idx,] 
+churnTest &lt;- churn[-train_idx,]
 
 rm(churn)
 
@@ -98,15 +95,15 @@ summary(resamps)</code></pre>
 ## 
 ## Accuracy 
 ##           Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA&#39;s
-## rf   0.9452663 0.9525926 0.9554896 0.9546697 0.9555556 0.9644444    0
-## svm  0.9156805 0.9183976 0.9185185 0.9220749 0.9288889 0.9288889    0
-## xgbm 0.9451039 0.9482249 0.9526627 0.9522958 0.9540059 0.9614815    0
+## rf   0.9482249 0.9556213 0.9569733 0.9564602 0.9600000 0.9614815    0
+## svm  0.9274074 0.9318519 0.9319527 0.9315757 0.9333333 0.9333333    0
+## xgbm 0.9406528 0.9497041 0.9600000 0.9558597 0.9644444 0.9644970    0
 ## 
 ## Kappa 
 ##           Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA&#39;s
-## rf   0.7620081 0.7852627 0.7965958 0.7980141 0.8042343 0.8419697    0
-## svm  0.6120106 0.6181381 0.6215880 0.6408534 0.6747837 0.6777466    0
-## xgbm 0.7454319 0.7685022 0.7893384 0.7871371 0.8004584 0.8319545    0</code></pre>
+## rf   0.7660206 0.7961112 0.8004094 0.8037613 0.8228811 0.8333840    0
+## svm  0.6522265 0.6718383 0.6806162 0.6752822 0.6817326 0.6899972    0
+## xgbm 0.7173352 0.7647589 0.8211885 0.7970728 0.8387789 0.8433026    0</code></pre>
 <pre class="r"><code>bwplot(resamps)</code></pre>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>Los tres modelos presentan una elevada <em>accuracy</em> (rf = 0.9532, svm = 0.9212, xgbm = 0.9504), aunque la <em>kappa</em> del svm es notablemente menor que la de los otros dos.</p>
@@ -121,16 +118,16 @@ summary(diffs)</code></pre>
 ## Lower diagonal: p-value for H0: difference = 0
 ## 
 ## Accuracy 
-##      rf        svm       xgbm     
-## rf              0.032595  0.002374
-## svm  0.0118266           -0.030221
-## xgbm 1.0000000 0.0001269          
+##      rf        svm        xgbm      
+## rf              0.0248845  0.0006005
+## svm  0.0003744            -0.0242840
+## xgbm 1.0000000 0.0183899            
 ## 
 ## Kappa 
-##      rf        svm       xgbm    
-## rf              0.15716   0.01088
-## svm  0.0106001           -0.14628
-## xgbm 1.0000000 0.0001234</code></pre>
+##      rf        svm       xgbm     
+## rf              0.128479  0.006688
+## svm  0.0006129           -0.121791
+## xgbm 1.0000000 0.0175165</code></pre>
 <p>Además xgbm y rf dan resultados completamente correlados.</p>
 <p>A partir de esto podríamos quedarnos con svm y elegir entre xgbm y rf para, a continuación, tratar de añadir más modelos poco correlados con los dos elegidos.</p>
 <p>Sin embargo, vamos a darnos por satisfechos con los tres modelos para continuar con el ejemplo y construir algunos modelos de nivel 2.</p>
@@ -193,26 +190,26 @@ confusionMatrix(churn_valid$churn, churn_valid$pred_avg)</code></pre>
 ## 
 ##           Reference
 ## Prediction  no yes
-##        no  956   8
-##        yes  38 123
+##        no  962   6
+##        yes  42 114
 ##                                           
-##                Accuracy : 0.9591          
-##                  95% CI : (0.9458, 0.9699)
-##     No Information Rate : 0.8836          
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                Accuracy : 0.9573          
+##                  95% CI : (0.9438, 0.9683)
+##     No Information Rate : 0.8932          
+##     P-Value [Acc &gt; NIR] : 5.071e-15       
 ##                                           
-##                   Kappa : 0.8193          
+##                   Kappa : 0.8022          
 ##                                           
-##  Mcnemar&#39;s Test P-Value : 1.904e-05       
+##  Mcnemar&#39;s Test P-Value : 4.376e-07       
 ##                                           
-##             Sensitivity : 0.9618          
-##             Specificity : 0.9389          
-##          Pos Pred Value : 0.9917          
-##          Neg Pred Value : 0.7640          
-##              Prevalence : 0.8836          
-##          Detection Rate : 0.8498          
-##    Detection Prevalence : 0.8569          
-##       Balanced Accuracy : 0.9504          
+##             Sensitivity : 0.9582          
+##             Specificity : 0.9500          
+##          Pos Pred Value : 0.9938          
+##          Neg Pred Value : 0.7308          
+##              Prevalence : 0.8932          
+##          Detection Rate : 0.8559          
+##    Detection Prevalence : 0.8612          
+##       Balanced Accuracy : 0.9541          
 ##                                           
 ##        &#39;Positive&#39; Class : no              
 ## </code></pre>
@@ -222,26 +219,26 @@ confusionMatrix(churn_valid$churn, churn_valid$pred_weighted_avg)</code></pre>
 ## 
 ##           Reference
 ## Prediction  no yes
-##        no  955   9
-##        yes  42 119
+##        no  958  10
+##        yes  43 113
 ##                                           
-##                Accuracy : 0.9547          
-##                  95% CI : (0.9408, 0.9661)
-##     No Information Rate : 0.8862          
-##     P-Value [Acc &gt; NIR] : 4.320e-16       
+##                Accuracy : 0.9528          
+##                  95% CI : (0.9388, 0.9645)
+##     No Information Rate : 0.8906          
+##     P-Value [Acc &gt; NIR] : 8.075e-14       
 ##                                           
-##                   Kappa : 0.7979          
+##                   Kappa : 0.7835          
 ##                                           
-##  Mcnemar&#39;s Test P-Value : 7.433e-06       
+##  Mcnemar&#39;s Test P-Value : 1.105e-05       
 ##                                           
-##             Sensitivity : 0.9579          
-##             Specificity : 0.9297          
-##          Pos Pred Value : 0.9907          
-##          Neg Pred Value : 0.7391          
-##              Prevalence : 0.8862          
-##          Detection Rate : 0.8489          
-##    Detection Prevalence : 0.8569          
-##       Balanced Accuracy : 0.9438          
+##             Sensitivity : 0.9570          
+##             Specificity : 0.9187          
+##          Pos Pred Value : 0.9897          
+##          Neg Pred Value : 0.7244          
+##              Prevalence : 0.8906          
+##          Detection Rate : 0.8523          
+##    Detection Prevalence : 0.8612          
+##       Balanced Accuracy : 0.9379          
 ##                                           
 ##        &#39;Positive&#39; Class : no              
 ## </code></pre>
@@ -251,26 +248,26 @@ confusionMatrix(churn_valid$churn, churn_valid$pred_majority)</code></pre>
 ## 
 ##           Reference
 ## Prediction  no yes
-##        no  955   9
-##        yes  40 121
+##        no  964   4
+##        yes  42 114
 ##                                           
-##                Accuracy : 0.9564          
-##                  95% CI : (0.9428, 0.9676)
-##     No Information Rate : 0.8844          
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                Accuracy : 0.9591          
+##                  95% CI : (0.9458, 0.9699)
+##     No Information Rate : 0.895           
+##     P-Value [Acc &gt; NIR] : 2.681e-15       
 ##                                           
-##                   Kappa : 0.8069          
+##                   Kappa : 0.8093          
 ##                                           
-##  Mcnemar&#39;s Test P-Value : 1.822e-05       
+##  Mcnemar&#39;s Test P-Value : 4.888e-08       
 ##                                           
-##             Sensitivity : 0.9598          
-##             Specificity : 0.9308          
-##          Pos Pred Value : 0.9907          
-##          Neg Pred Value : 0.7516          
-##              Prevalence : 0.8844          
-##          Detection Rate : 0.8489          
-##    Detection Prevalence : 0.8569          
-##       Balanced Accuracy : 0.9453          
+##             Sensitivity : 0.9583          
+##             Specificity : 0.9661          
+##          Pos Pred Value : 0.9959          
+##          Neg Pred Value : 0.7308          
+##              Prevalence : 0.8950          
+##          Detection Rate : 0.8577          
+##    Detection Prevalence : 0.8612          
+##       Balanced Accuracy : 0.9622          
 ##                                           
 ##        &#39;Positive&#39; Class : no              
 ## </code></pre>
@@ -282,10 +279,10 @@ model_rf$bestTune</code></pre>
 ## 2   10</code></pre>
 <pre class="r"><code>model_svm$bestTune</code></pre>
 <pre><code>##        sigma C
-## 3 0.03337627 1</code></pre>
+## 3 0.03400684 1</code></pre>
 <pre class="r"><code>model_xgbm$bestTune</code></pre>
 <pre><code>##    nrounds max_depth eta gamma colsample_bytree min_child_weight subsample
-## 45     150         3 0.3     0              0.6                1         1</code></pre>
+## 40      50         3 0.3     0              0.6                1      0.75</code></pre>
 <pre class="r"><code>trControl &lt;- trainControl(
                           method = &quot;none&quot;, 
                           # Class probabilities will be computed along with
@@ -343,27 +340,27 @@ confusionMatrix(churn_test$churn, churn_test$pred_majority)</code></pre>
 ## 
 ##           Reference
 ## Prediction  no yes
-##        no  437   0
-##        yes  11  52
-##                                         
-##                Accuracy : 0.978         
-##                  95% CI : (0.961, 0.989)
-##     No Information Rate : 0.896         
-##     P-Value [Acc &gt; NIR] : 9.921e-13     
-##                                         
-##                   Kappa : 0.892         
-##                                         
-##  Mcnemar&#39;s Test P-Value : 0.002569      
-##                                         
-##             Sensitivity : 0.9754        
-##             Specificity : 1.0000        
-##          Pos Pred Value : 1.0000        
-##          Neg Pred Value : 0.8254        
-##              Prevalence : 0.8960        
-##          Detection Rate : 0.8740        
-##    Detection Prevalence : 0.8740        
-##       Balanced Accuracy : 0.9877        
-##                                         
-##        &#39;Positive&#39; Class : no            
+##        no  416   2
+##        yes  24  58
+##                                           
+##                Accuracy : 0.948           
+##                  95% CI : (0.9247, 0.9658)
+##     No Information Rate : 0.88            
+##     P-Value [Acc &gt; NIR] : 1.736e-07       
+##                                           
+##                   Kappa : 0.7874          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 3.814e-05       
+##                                           
+##             Sensitivity : 0.9455          
+##             Specificity : 0.9667          
+##          Pos Pred Value : 0.9952          
+##          Neg Pred Value : 0.7073          
+##              Prevalence : 0.8800          
+##          Detection Rate : 0.8320          
+##    Detection Prevalence : 0.8360          
+##       Balanced Accuracy : 0.9561          
+##                                           
+##        &#39;Positive&#39; Class : no              
 ## </code></pre>
 <p>Realmente son unos muy buenos resultados. Hasta ahora no habíamos visto estos datos de <code>churnTest</code> para nada, es la primera vez que nuestros modelos se enfrentan a ellos. Y han obtenido una <em>performance</em> comparable a la obtenida en el proceso de entrenamiento, cuando normalmente se obtiene inferior <em>performance</em> con los datos “nuevos” del <em>test set</em> que con los del <em>train set</em>, como es lógico.</p>

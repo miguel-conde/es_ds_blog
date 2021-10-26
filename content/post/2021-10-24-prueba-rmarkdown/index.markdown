@@ -8,7 +8,16 @@ categories:
 tags:
   - ''
 description: ''
-thumbnail: ''
+draft: true
+thumbnail: 'img/tst.jpg'
+# thumbnail:
+#   src: "img/tst.jpg"
+#   visibility:
+#     - list
+#     - post
+# header:
+#   image: "headers/my_header.jpg"
+#   caption: "Yay! It works!"
 ---
 
 

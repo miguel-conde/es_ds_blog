@@ -1,4 +1,4 @@
-baseurl = "/"
+baseurl = "https://datago.netlify.app"
 title = "ES 100x100 DATA SCIENCE"
 languageCode = "es"
 paginate = "10" # Number of posts per page
@@ -52,6 +52,9 @@ customJS = ["js/custom.js"] # Include custom JS files
   image = "https://i1.wp.com/es100x100datascience.com/wp-content/uploads/2015/09/JoshWills05072013Slide25-e1442913156968.png?w=749&ssl=1"
   title = "ES 100x100 DATA SCIENCE" # Logo title, otherwise will use site title
   subtitle = "Aprendiendo Data Science" # Logo subtitle
+  
+[Params.thumbnail]
+  visibility = ["post", "list"] # ["list", "post"] # Control thumbnail visibility
 
 [Params.sidebar]
   home = "right" # Configure layout for home page
@@ -97,3 +100,6 @@ customJS = ["js/custom.js"] # Include custom JS files
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+
+[permalinks]
+    post = "/:year/:month/:day/:slug/" # In the [previous post](/2019/04/29/old-post/) we covered... ([previous post](/:year/:month/:day/:slug/))

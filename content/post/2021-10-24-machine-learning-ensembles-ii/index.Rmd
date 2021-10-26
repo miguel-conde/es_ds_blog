@@ -46,11 +46,6 @@ No vamos a repetir aquí la exploración de los datos que ya hemos hecho en los 
 Preparemos los datos y dividamos `churnTrain` en un *train set* y un *validation set*:
 
 ```{r}
-set.seed(127) 
-train_idx <- sample(nrow(churn), 0.9*nrow(churn)) 
-churnTrain <- churn[train_idx,] 
-churnTest <- churn[-train_idx,]
-
 # Variables target y predictoras (features)
 target      <- "churn"
 predictoras <- names(churn)[names(churn) != target]
@@ -64,8 +59,10 @@ for (v in predictoras) {
   }
 }
 
-churnTrain <- churn[1:nrow(churnTrain), ]
-churnTest  <- churn[(nrow(churnTrain) + 1):nrow(churn), ]
+set.seed(127) 
+train_idx <- sample(nrow(churn), 0.9*nrow(churn)) 
+churnTrain <- churn[train_idx,] 
+churnTest <- churn[-train_idx,]
 
 rm(churn)
 
