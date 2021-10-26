@@ -7,7 +7,7 @@ categories:
   - Machine Learning
 tags:
   - Confusion Matrix
-description: ''
+description: 'La plaga zombie empezó hace ya varios meses. El gobierno informa de que, en nuestro país, con una población de 47 milones de habitantes, la prevalencia de la enfermedad es “tan solo” del 1% (es decir, el 1% de la población padece esta terrible enfermedad en un momento determinado - el actual).'
 thumbnail: ''
 ---
 
