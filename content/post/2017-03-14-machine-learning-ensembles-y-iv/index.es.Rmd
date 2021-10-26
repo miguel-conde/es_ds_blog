@@ -36,15 +36,17 @@ El *Bootstrap* es una **técnica de remuestreo**. Como se dice en [Kuhn and Jhon
 >
 > Las muestras *bootstrap* se construyen del mismo tamaño que el *data set* original. Por tanto, en cada muestra *bootstrap* lo más probable es que algunas observaciones aparezcan múltiples veces mientras que otras no estarán presentes.
 >
-> De las  observaciones del *data set* original no seleccionadas para formar parte de la muestra *bootstrap* se dice que son observaciones '***out-of-bag***'.
+> De las observaciones del *data set* original no seleccionadas para formar parte de la muestra *bootstrap* se dice que son observaciones '***out-of-bag***'.
 >
 > En cada iteración de este remuestreo *bootstrap* se entrena un modelo a partir de las observaciones seleccionadas de la manera explicada y se usa para predecir a partir de las observaciones '*out-of-bag*'".
 
-\[caption id="attachment_1724" align="aligncenter" width="500"\][![In Rudolph Eric Raspe's tale, Baron Munchausen had, in one of his many adventurous travels, fallen to th ebottom of a deep lake and just as he was to succumb to his fate he thought to pull himself up by his own BOOTSTRAP. The original version is in German, where Munchausen actually draws himself up by the hair, not the bootstraps.](http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg)](http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg) En el cuento de Rudolph Eric Raspe se relata cómo, en uno de sus viajes de aventuras, el Barón Munchausen cayó con su caballo en una profunda ciénaga y, cuando ya estaba a punto de sucumbir a su fatal destino, se le ocurrió que podía sacarse a sí mismo (¡y a su caballo!) tirando de sus *bootstraps*, las cinchas o tiradores situadas en la parte posterior de sus botas para facilitar la operación de calzarse. Sin embargo, en la versión original en alemán, Munchausen se sacaba a sí mismo de la ciénaga (¡con su caballo!) tirando de su coleta, como se ve en la ilustración, no de sus *bootstraps*.\
-\
-\[/caption\]
+<center>
 
- 
+[![In Rudolph Eric Raspe's tale, Baron Munchausen had, in one of his many adventurous travels, fallen to th ebottom of a deep lake and just as he was to succumb to his fate he thought to pull himself up by his own BOOTSTRAP. The original version is in German, where Munchausen actually draws himself up by the hair, not the bootstraps.](http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg)](http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg) 
+</center>
+
+En el cuento de Rudolph Eric Raspe se relata cómo, en uno de sus viajes de aventuras, el Barón Munchausen cayó con su caballo en una profunda ciénaga y, cuando ya estaba a punto de sucumbir a su fatal destino, se le ocurrió que podía sacarse a sí mismo (¡y a su caballo!) tirando de sus *bootstraps*, las cinchas o tiradores situadas en la parte posterior de sus botas para facilitar la operación de calzarse. Sin embargo, en la versión original en alemán, Munchausen se sacaba a sí mismo de la ciénaga (¡con su caballo!) tirando de su coleta, como se ve en la ilustración, no de sus *bootstraps*.
+
 
 ### El paquete `caret` y el *Bootstrap*
 
@@ -68,7 +70,6 @@ churnTest <- churn[-train_idx,]
 dim(churnTrain)
 ```
 
-
 Para generar 100 muestras *bootstrap* lo único que hay que hacer es:
 
 ```{r}
@@ -81,7 +82,6 @@ set.seed(123)
 churnBootstrap <- createResample(churnTrain$churn, times = NUM_BOOTS_RESAMPS)
 str(churnBootstrap %>% head(10))
 ```
-    
 
 Como se ve, hemos obtenido una lista de 100 elementos, cada uno de los cuales es una muestra *bootstrap* de los índices de `churnTrain$churn`.
 
@@ -104,16 +104,18 @@ list_of_models <- lapply(churnBootstrap, function(x) {
            costs   = NULL)
       })
 ```
-    
 
 Ahora ya podemos usar cada modelo para predecir en el *test set* (en este sencillo ejemplo, la estrategia va a ser: "un modelo, un voto").
 
 ```{r}
 multiPredict <- sapply(list_of_models, predict, churnTest)
 ```
-    
+
+<center>
 
 [![Bagged trees - voting](http://es100x100datascience.com/wp-content/uploads/2016/12/voting.jpg "Bagged trees - voting")](http://es100x100datascience.com/wp-content/uploads/2016/12/voting.jpg)
+
+</center>
 
 Y contar los votos para emitir la decisión final:
 
@@ -127,14 +129,12 @@ finalDecision <- apply(multiPredict, 1, function(x) {
 
     finalDecision <- factor(finalDecision, levels = levels(churnTest$churn))
 ```
-    
 
 Comprobemos la eficiencia nediante una [matriz de confusión](http://es100x100datascience.com/matrices-de-confusion/):
 
 ```{r}
 confusionMatrix(reference = churnTest$churn, data = finalDecision)
 ```
-    
 
 Sería interesante comparar estos resultados con los obttenidos en [Árboles de decisión (IV)](http://es100x100datascience.com/arboles-de-decision-iv/).
 
@@ -168,7 +168,6 @@ kpiPlot<- function(kpis, kpi = "Accuracy") {
       kpis
     }
 ```
-    
 
 De manera que:
 
@@ -187,11 +186,12 @@ kpis <- getPerfKPIs(list_of_models, churnTest,
     kpiPlot(kpis, "Recall")
     kpiPlot(kpis, "F1")
 ```
+
+```{r, include = FALSE}
+par(mfrow = c(1,1))
+```
+
     
-
-[![kpis_bagging](http://es100x100datascience.com/wp-content/uploads/2016/12/kpis_bagging-1024x731.png)](http://es100x100datascience.com/wp-content/uploads/2016/12/kpis_bagging.png)
-
-    par(mfrow = c(1,1))
 
 Las líneas rojas indican la ubicación de las medidas correspondientes a los diferentes KPIs para el modelo *bagged*; las *boxplots* se refieren al mismo KPI según esté distribuido en los 100 modelos individuales generados.
 

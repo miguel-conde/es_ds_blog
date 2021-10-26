@@ -31,9 +31,10 @@ thumbnail: ''
 <p>De las observaciones del <em>data set</em> original no seleccionadas para formar parte de la muestra <em>bootstrap</em> se dice que son observaciones ‘<strong><em>out-of-bag</em></strong>’.</p>
 <p>En cada iteración de este remuestreo <em>bootstrap</em> se entrena un modelo a partir de las observaciones seleccionadas de la manera explicada y se usa para predecir a partir de las observaciones ‘<em>out-of-bag</em>’“.</p>
 </blockquote>
-<p><span class="math display">\[caption id=&quot;attachment_1724&quot; align=&quot;aligncenter&quot; width=&quot;500&quot;\]</span><a href="http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg"><img src="http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg" alt="In Rudolph Eric Raspe’s tale, Baron Munchausen had, in one of his many adventurous travels, fallen to th ebottom of a deep lake and just as he was to succumb to his fate he thought to pull himself up by his own BOOTSTRAP. The original version is in German, where Munchausen actually draws himself up by the hair, not the bootstraps." /></a> En el cuento de Rudolph Eric Raspe se relata cómo, en uno de sus viajes de aventuras, el Barón Munchausen cayó con su caballo en una profunda ciénaga y, cuando ya estaba a punto de sucumbir a su fatal destino, se le ocurrió que podía sacarse a sí mismo (¡y a su caballo!) tirando de sus <em>bootstraps</em>, las cinchas o tiradores situadas en la parte posterior de sus botas para facilitar la operación de calzarse. Sin embargo, en la versión original en alemán, Munchausen se sacaba a sí mismo de la ciénaga (¡con su caballo!) tirando de su coleta, como se ve en la ilustración, no de sus <em>bootstraps</em>.<br />
-<br />
-<span class="math display">\[/caption\]</span></p>
+<center>
+<a href="http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg"><img src="http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg" alt="In Rudolph Eric Raspe’s tale, Baron Munchausen had, in one of his many adventurous travels, fallen to th ebottom of a deep lake and just as he was to succumb to his fate he thought to pull himself up by his own BOOTSTRAP. The original version is in German, where Munchausen actually draws himself up by the hair, not the bootstraps." /></a>
+</center>
+<p>En el cuento de Rudolph Eric Raspe se relata cómo, en uno de sus viajes de aventuras, el Barón Munchausen cayó con su caballo en una profunda ciénaga y, cuando ya estaba a punto de sucumbir a su fatal destino, se le ocurrió que podía sacarse a sí mismo (¡y a su caballo!) tirando de sus <em>bootstraps</em>, las cinchas o tiradores situadas en la parte posterior de sus botas para facilitar la operación de calzarse. Sin embargo, en la versión original en alemán, Munchausen se sacaba a sí mismo de la ciénaga (¡con su caballo!) tirando de su coleta, como se ve en la ilustración, no de sus <em>bootstraps</em>.</p>
 <div id="el-paquete-caret-y-el-bootstrap" class="section level3">
 <h3>El paquete <code>caret</code> y el <em>Bootstrap</em></h3>
 <p>El paquete <a href="https://cran.r-project.org/web/packages/caret/index.html"><code>caret</code></a> proporciona herramientas para generar muestras <em>bootstrap</em>.</p>
@@ -91,7 +92,9 @@ str(churnBootstrap %&gt;% head(10))</code></pre>
       })</code></pre>
 <p>Ahora ya podemos usar cada modelo para predecir en el <em>test set</em> (en este sencillo ejemplo, la estrategia va a ser: “un modelo, un voto”).</p>
 <pre class="r"><code>multiPredict &lt;- sapply(list_of_models, predict, churnTest)</code></pre>
+<center>
 <p><a href="http://es100x100datascience.com/wp-content/uploads/2016/12/voting.jpg"><img src="http://es100x100datascience.com/wp-content/uploads/2016/12/voting.jpg" title="Bagged trees - voting" alt="Bagged trees - voting" /></a></p>
+</center>
 <p>Y contar los votos para emitir la decisión final:</p>
 <pre class="r"><code>finalDecision &lt;- apply(multiPredict, 1, function(x) {
       if (sum(x == &quot;yes&quot;) &gt; sum(x == &quot;no&quot;))
@@ -174,8 +177,6 @@ str(churnBootstrap %&gt;% head(10))</code></pre>
     kpiPlot(kpis, &quot;Recall&quot;)
     kpiPlot(kpis, &quot;F1&quot;)</code></pre>
 <p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
-<p><a href="http://es100x100datascience.com/wp-content/uploads/2016/12/kpis_bagging.png"><img src="http://es100x100datascience.com/wp-content/uploads/2016/12/kpis_bagging-1024x731.png" alt="kpis_bagging" /></a></p>
-<pre><code>par(mfrow = c(1,1))</code></pre>
 <p>Las líneas rojas indican la ubicación de las medidas correspondientes a los diferentes KPIs para el modelo <em>bagged</em>; las <em>boxplots</em> se refieren al mismo KPI según esté distribuido en los 100 modelos individuales generados.</p>
 <p>Como se ve, la línea roja, como poco, está siempre en la zona de mejores resultados.</p>
 <p>Los modelos <em>bagging</em> reducen la varianza de la predicción pero suelen aportar mejoras poco impresionantes en cuanto a la eficacia predictiva.</p>
