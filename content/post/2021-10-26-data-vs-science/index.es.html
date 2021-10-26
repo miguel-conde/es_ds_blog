@@ -1,0 +1,39 @@
+---
+title: '"Data" vs. "Science"'
+author: Miguel Conde
+date: '2021-10-26'
+slug: data-vs-science
+categories:
+  - Data Science
+tags:
+  - Data Science
+description: ''
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index.es_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Buscando “<em>what is data science</em>” en Google obtenemos 68.5 millones de respuestas. Si hacemos la búsqueda en español (“<em>qué es ciencia de datos</em>”) salen 28.5 millones.</p>
+<p>Si buscamos “Ciencia de datos” en la Wikipedia en español encontramos esta definición:</p>
+<blockquote>
+<p>La <strong>Ciencia de datos</strong> es un campo interdisciplinario que involucra los procesos y sistemas para extraer conocimiento o un mejor entendimiento de grandes volúmenes de datos en sus diferentes formas (estructurados o no estructurados) y formatos (.txt, .dat, .doc, .jpg, etcétera). Es una continuación de algunos campos de análisis de datos como son: la <a href="https://es.wikipedia.org/wiki/Miner%C3%ADa_de_datos" title="Minería de datos">minería de datos</a> y la <a href="https://es.wikipedia.org/wiki/An%C3%A1lisis_predictivo" title="Análisis predictivo">analítica predictiva</a>.</p>
+</blockquote>
+<p>Y la refiere a la presentación “<a href="http://www.researchmethods.org/DataScienceDataScientists.pdf">Data Science and Data Scientist</a>” del Dr. Alex Liu, Principal Data Scientist en IBM.</p>
+<p>Si ahora buscamos “Data Science” en la Wikipedia en inglés, esto es lo que leeremos:</p>
+<blockquote>
+<p><strong>Data science</strong> is an interdisciplinary field about processes and systems to extract <a href="https://en.wikipedia.org/wiki/Knowledge" title="Knowledge">knowledge</a> or insights from <a href="https://en.wikipedia.org/wiki/Data" title="Data">data</a> in various forms, either structured or unstructured, which is a continuation of some of the data analysis fields such as <a href="https://en.wikipedia.org/wiki/Statistics" title="Statistics">statistics</a>, <a href="https://en.wikipedia.org/wiki/Data_mining" title="Data mining">data mining</a>, and <a href="https://en.wikipedia.org/wiki/Predictive_analytics" title="Predictive analytics">predictive analytics</a>, similar to <a href="https://en.wikipedia.org/wiki/Knowledge_Discovery_in_Databases" title="Knowledge Discovery in Databases">Knowledge Discovery in Databases</a> (KDD).</p>
+</blockquote>
+<p>Notaréis sólo sutiles diferencias: básicamente, en la versión en español los datos son “grandes” (en la versión en inglés sólo dice “data”) y no menciona “estadística) (en la versión en inglés si lo hace).</p>
+<p>En estas diferencias resuenan solo algunas de las abundantes y recurrentes discusiones acerca de lo que es y lo que no es Data Science. No sé si entrará en el marco de esas discusiones, pero lo que a mi me interesa es lo siguiente: casi todo el mundo se centra en la primera palabra, “data”: su volumen, velocidad, variedad y también las herramientas para tratar datos: Hadoop, Spark, EC2, Pig, Hive, python, R, etc, etc.</p>
+<p><span class="math display">\[caption id=&quot;attachment_1669&quot; align=&quot;aligncenter&quot; width=&quot;600&quot;\]</span><a href="http://es100x100datascience.com/wp-content/uploads/2016/05/bigDataHumour.png"><img src="http://es100x100datascience.com/wp-content/uploads/2016/05/bigDataHumour.png" alt="Y lo mismo podría decirse de “Data Science”…" /></a> Y lo mismo podría decirse de “Data Science”…<span class="math display">\[/caption\]</span></p>
+<p>Pero se habla muy poco de la segunda, “Science”. Siguiendo a la gente de la <a href="https://www.coursera.org/specializations/jhu-data-science">Especialización Data Science de Coursera</a> (<a href="http://www.bcaffo.com/">Brian Caffo</a>, <a href="http://www.biostat.jhsph.edu/~rpeng/index.html">Robert D. Peng</a> y <a href="http://jtleek.com/">Jeffrey Leek</a> - <a href="http://jhudatascience.org/">Johns Hopkings Data Science Lab</a>), el carácter científico de la Ciencia de Datos viene dado porque los datos se utilizan <strong>para responder preguntas</strong>.: <em>los datos son un medio; responder preguntas es el verdadero fin</em>.</p>
+<p>Lo que ocurre es que esta perspectiva es mucho más complicada y azarosa que la que se queda en las Vs de los datos o en las herramientas. Como dicen en su libro “<a href="https://leanpub.com/eds">Executive Data Science</a>”, es más fácil decir : “Mis datos son más grandes que los tuyos” o “Yo sé programar Hadoop, ¿y tú?” que decir “Tengo una pregunta verdaderamente difícil de contestar, ¿puedo hacerlo con los datos que tengo?”</p>
+<p>Pongamos un <a href="https://www.quora.com/What-are-good-examples-of-using-data-science-for-development-and-or-social-good">ejemplo</a>: <a href="http://www.givedirectly.org/"><u>GiveDirectly</u></a> es una ONG que lleva a cabo transferencias directas de efectivo a familias con bajos ingresos en Uganda y Kenia mediante pagos a través del móvil . Estas donaciones se dan sin ningún compromiso, confiando en que las personas sabrán cómo utilizar el dinero de la manera más efectiva. <a href="http://www.givewell.org/international/top-charities/give-directly">GiveDirectly</a>es una de las organizaciones benéficas <a href="http://www.givewell.org/charities/top-charities">mejor valoradas</a> en <a href="http://www.givewell.org/international/top-charities/give-directly">GiveWell</a>; ha sido sometida a ensayos controlados aleatorios para evaluar la efectividad de su enfoque, con resultados altamente positivos.</p>
+<p><a href="https://www.givedirectly.org/"><img src="http://es100x100datascience.com/wp-content/uploads/2016/05/giveDirectly.jpg" alt="giveDirectly" /></a>El modelo de GiveDirectly es llevar a cabo las transferencias directas de efectivo a las aldeas con mayor número de pobres . Para evaluar de qué aldeas se trata, la organización tenía que enviar personal a visitar una por una las aldeas de Uganda y Kenia.</p>
+<p>Este método es costoso tanto por el tiempo necesario para visitar cada sitio como porque implica utilizar parte de las donaciones para pagar los salarios del personal que realiza las inspecciones, que de otro modo podrían ir directamente a los pobres.</p>
+<p>Junto a <a href="http://www.datakind.org/">DataKind</a>, una organización sin ánimo de lucro que pone en contacto a científicos de datos voluntarios con ONGs, <strong>se preguntaron si había una forma mejor de localizar las aldeas más pobres</strong>.</p>
+<p>Partiendo del conocimiento de GiveDirectly, que constataba que se puede utilizar el tipo de tejado como indicador del nivel de pobreza de una casa, diseñaron un algoritmo para analizar las imágenes de Google Maps para determinar si los tejados de las casas estaban hechos de metal (señal de que está habitada por una familia acomodada) o de paja (lo que suele indicar que la habita una familia pobre).</p>
+<p>A primeros de 2014 GiveDirectly empleó este algoritmo para detectar los niveles de pobreza en 50 aldeas de Kenia durante una de sus mayores campañas, en las que se 4 millones de dólares a hogares del oeste del país.</p>
+<p>Empleando este algoritmo GiveDirectly se ahorró más de 100 días de inspección in-situ en cada pueblo, más de $ 4,000 que permitieron a GiveDirectly financiar cuatro hogares más .</p>
+<p>Creo que en este ejemplo se ve claro que la pregunta era <em>¿podemos localizar mejor las aldeas más pobres dados nuestros escasos recursos?</em> Luego utilizaron los datos que tenían a mano, los de Google Maps, y desarrollaron un algoritmo que resultó útil para lograr su objetivo. Pero la pregunta clave que se estaban planteando, la razón principal por la que este era un problema de Ciencia de Datos, era “¿Podemos utilizar los datos a nuestro alcance para responder una cuestión específica, como es <em>localizar mejor las aldeas más pobres</em>?</p>

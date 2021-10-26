@@ -1,0 +1,32 @@
+---
+title: El equipo de Data Science
+author: Miguel Conde
+date: '2015-09-30'
+slug: el-equipo-de-data-science
+categories:
+  - ''
+tags:
+  - ''
+description: 'Cuando pensamos, como organización, en adquirir la competencia Data Science, tenemos que pensar en un equipo multidisciplinar. Esta competencia puede incluir gran número de conocimientos, habilidades y actitudes; y no podemos pedir a todas las personas que las posean todas.'
+thumbnail: 'https://i0.wp.com/es100x100datascience.com/wp-content/uploads/2015/09/Data-Science-Team.jpg?resize=930%2C520&ssl=1'
+---
+
+Cuando pensamos, como organización, en adquirir la competencia Data Science, tenemos que pensar en un equipo multidisciplinar. Esta competencia puede incluir gran número de conocimientos, habilidades y actitudes; y no podemos pedir a todas las personas que las posean todas.
+
+En un equipo de Data Science podemos distinguir 3 roles principales:
+
+El primero es el **ingeniero de datos** (*Data Engineer).*
+
+\[caption id="" align="alignleft" width="389"\]![Data Engineer](http://ww1.prweb.com/prfiles/2012/08/10/9790635/EngineerDataCenter.jpg) Data Engineer\[/caption\]
+
+Se trata de las personas que se encargarán de la infraestructura *hardware* y *software* que permita almacenar y gestionar los datos sobre los que trabajará el equipo, así como de implementar los productos de datos, las aplicaciones que serán puestas en producción basadas en los modelos y prototipos de los *data scientist*. Por lo tanto, deben tener habilidades tanto de administración de sistemas como de bases de datos e ingeniería software.
+
+\[caption id="" align="alignright" width="391"\][![Data Scientist](http://www.marketingdistillery.com/wp-content/uploads/2014/11/mds_f-723x1024.png)](http://www.marketingdistillery.com/wp-content/uploads/2014/11/mds_f-723x1024.png) Data Scientist\[/caption\]
+
+Los **científicos de datos** (*data scientists*), por su parte, se ocuparán del análisis de los datos según los problemas o preguntas que la organización quiera resolver o responder. Realizarán experimentos sobre ellos, crearán modelos y visualizaciones de los mismos y comunicarán los resultados al *data manager*, a los ingenieros de datos y a otras personas de la organización.
+
+El tercer rol clave es el **data science manager**, que se asegura de la coordinación del equipo y la realización de las tareas. También se ocupa de la propia construcción del equipo  Data Science y de actuar como interfaz de comunicación hacia el resto de la organización.
+
+[![](https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Estudiantes_time_out.jpg/1280px-Estudiantes_time_out.jpg)](https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Estudiantes_time_out.jpg/1280px-Estudiantes_time_out.jpg)
+
+Por supuesto, hemos de tener en cuenta también a todas las personas de la organización que interactuarán de una otra forma con nuestro equipo Data Science.

@@ -1,0 +1,71 @@
+---
+title: "Matrices de confusión"
+author: Miguel Conde
+date: '2016-12-13'
+slug: matrices-de-confusion
+categories:
+  - Machine Learning
+tags:
+  - Confusion Matrix
+description: ''
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index.es_files/header-attrs/header-attrs.js"></script>
+
+
+<p>La plaga zombie empezó hace ya varios meses. El gobierno informa de que, en nuestro país, con una <strong>población</strong> de 47 millones de habitantes, la <strong>prevalencia</strong> de la enfermedad es “tan solo” del 1% (es decir, el 1% de la población padece esta terrible enfermedad en un momento determinado - el actual). Desgraciadamente, la enfermedad tiene un largo periodo de incubación y se desconocen aún las causas de contagio (no, no es necesario que te muerda un infectado). Pero, por fortuna, nuestros científicos del CSIC han hecho su trabajo y han logrado una prueba diagnóstica. Nos informan de que esta prueba tiene exactitud (<em>accuracy</em>) del 95,04%. Mañana vendrán los camiones del Gobierno a tu barrio para aplicar la prueba a todos los vecinos y por fin podrás saber si tú y tus seres queridos estáis o no en peligro. Con casi total certeza (<em>una exactitud del 95,04% es casi total certeza ¿no?</em> <strong>Pues no</strong>. Al menos, <em>no exactamente</em>) Leyendo la letra pequeña de la noticia del CSIC en Internet nos damos cuenta de que se refieren también a otros dos “valores predictivos” de la prueba diagnóstica: su <strong>sensibilidad</strong> es del 99.0% y su <strong>especificidad</strong>, del 95.0%. <em>¿Qué quiere decir esto?</em>, te preguntas.</p>
+<div id="una-matriz-de-confusión" class="section level2">
+<h2>Una matriz de confusión</h2>
+<p>Una prueba diagnóstica como esta nos permite clasificar a los sujetos que se someten a ella en dos clases, una positiva (<em>está infectado</em>) y otra negativa (<em>no está infectado</em>). La prueba intenta predecir el estado real de cada sujeto, pero puede no acertar. En casos como este, de clasificación binaria, pueden darse 4 posibilidades:</p>
+<ul>
+<li><p>El sujeto está realmente infectado y la prueba lo diagnostica correctamente. Se trata de los casos denominados como <strong>VERDADEROS POSITIVOS</strong>.</p></li>
+<li><p>El sujeto no está infectado y la prueba también lo diagnostica correctamente. Estamos hablando de los <strong>VERDADEROS NEGATIVOS</strong>.</p></li>
+<li><p>El sujeto está realmente infectado y la prueba lo diagnostica equivocadamente como no infectado. Se trata de los <strong>FALSOS NEGATIVOS</strong>. También se conocen como <strong>errores de tipo II</strong></p></li>
+<li><p>El sujeto no está infectado pero la prueba lo diagnostica equivocadamente como infectado. Son los <strong>FALSOS POSITIVOS</strong>, <strong>errores de tipo I</strong> o <strong>falsas alarmas</strong>.</p></li>
+</ul>
+<p>Podemos expresarlo como una tabla. Con los núemros que el Gobierno ha proporcionado - población, prevalencia, <em>accuracy</em>, sensibilidad, especificidad - los números en España resultarían ser:</p>
+<p><a href="http://es100x100datascience.com/wp-content/uploads/2016/12/CM.png"><img src="http://es100x100datascience.com/wp-content/uploads/2016/12/CM.png" alt="Matriz de Confusión" /></a></p>
+</div>
+<div id="cómo-interpretarla" class="section level2">
+<h2>Cómo interpretarla</h2>
+<p>Como vemos, el número de realmente infectados es de 470.000:</p>
+<p><span class="math display">\[
+\text{Realmente infectados} = \text{Poblacion} \times \text{Prevalencia}=47.000.000 \times 1\%=470.000
+\]</span></p>
+<p>Sin embargo ¡nuestro test diagnostica como infectados a 2.791.800 personas! Por otra parte, el número de no infectados es de 46.530.000 personas. Aquí nuestro test acierta con 44.203.500 personas. Pero hay 4.700 que, aunque realmente están infectadas, la prueba no los detecta. <strong>Sensibilidad</strong> y <strong>Especificidad</strong> miden la <em>VALIDEZ</em> de una prueba diagnóstica, es decir, <em>en qué grado un ensayo mide lo que se supone debe medir</em>. Podemos interpretarlas de la siguiente manera:</p>
+<ul>
+<li><strong>Sensibilidad</strong> (también conocida como <em>recall</em>): es la probabilidad de que, dado que un individuo realmente está infectado, la prueba lo detecte. Es decir, podemos estimar esta probabilidad como:</li>
+</ul>
+<p><span class="math display">\[
+\text{Sensibilidad} = \frac{TP}{TP+FN}= \frac{465.300}{465.300+4.700}=99.0\%
+\]</span></p>
+<ul>
+<li><strong>Especificidad</strong>: es la probabilidad de que, dado que un individuo no está realmente infectado, la prueba llegue a la misma conclusión. La estimamos como:</li>
+</ul>
+<p><span class="math display">\[
+\text{Especificidad} = \frac{TN}{FP + TN} = \frac{44.203.500}{2.326.500 + 44.203.500}=95.0\%
+\]</span></p>
+<p>Por su parte, el <strong>Valor de Predicción Positiva</strong> (<em>Positive Prediction Value</em>, PPV) y el <strong>Valor de Predcción Negativa</strong> (<em>Negative Prediction Values</em>, NPV) miden la <em>SEGURIDAD</em> de la prueba diagnóstica: <em>con qué seguridad el test predecirá la presencia o ausencia de enfermedad</em>.</p>
+<ul>
+<li><strong>Valor de Predicción Positiva</strong> (<em>Positive Prediction Value</em>, PPV), también conocido como <em>precision</em>: es la probabilidad de que, si el test ha dado positivo, el individuo esté realmente enfermo. Se estima como:</li>
+</ul>
+<p><span class="math display">\[
+\text{PPV} = \frac{TP}{TP + FP} = \frac{465.300}{465.300 + 2.326.500} = 16.67\% 
+\]</span></p>
+<ul>
+<li><strong>Valor de Predicción Negativa</strong> (<em>Negative Prediction Value</em>, NPV): es la probabilidad de que, si el test ha dado negativo, el individuo no esté realmente enfermo. Se estima como:</li>
+</ul>
+<p><span class="math display">\[
+\text{NPV} = \frac{TN}{FN + TN} = \frac{44.203.500}{4.700 + 44.203.500} = 99.99\% 
+\]</span></p>
+<p>La prueba parece bastante segura: si el test me da negativo, es casi seguro (al 99,99%) que no estoy enfermo; pero si me sale positivo, la probabilidad de que realmente lo esté es sólo del 16,67%. Realmente podemos decir que <em>nos curamos en salud</em> - literalmente. De manera que la <strong>accuracy</strong>, es decir, el porcentaje total de aciertos del test:</p>
+<p><span class="math display">\[
+\text{Accuracy} = \frac{TP+TN}{TP+FP+TN+FN}
+\]</span></p>
+<p>no es tan importante.</p>
+</div>
+<div id="algunas-reflexiones" class="section level2">
+<h2>Algunas reflexiones</h2>
+<p>Resulta interesante jugar con estos números para ver cómo varían con ellos la validez y la seguridad del ensayo. Y todavía más, aplicarlos a caso reales en los que, casi siempre, de lo único que nos informan es de la <em>accuracy</em>. Las matrices de confusión son inmediatamente aplicables a los resultados de los modelos de clasificación binaria. Y se trata de un concepto casi inmediatamente aplicable a clasificadores multiclase. Os animo a pensar cómo serían en estos caso, por ejemplo cuando clasificamos nuestros ejemplos entre tres posibles clases. Por último, se puede encontrar información sobre el origen de la extraña expresión <em>confusion matrix</em> en <a href="https://www.quora.com/What-is-the-origin-of-the-term-confusion-matrix">What is the origin of the term confusion matrix?</a></p>
+</div>
