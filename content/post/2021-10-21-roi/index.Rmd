@@ -9,6 +9,7 @@ categories:
   - optimización
 tags:
   - 'optimización'
+  - 'video'
 description: 'Una infraestructura de optimización en R'
 thumbnail: ''
 ---
