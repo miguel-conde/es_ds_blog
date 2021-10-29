@@ -168,3 +168,9 @@ Por último, te dejo un par de enlaces que espero te sean útiles:
 
 - [ROI homepage](https:/roi.r-forge.r-project.org/)
 - [ROI en CRAN](https:/cran.r-project.org/web/packages/ROI/index.html)
+
+Y un video que cuenta más o menos lo mismo que este post:
+
+<center>
+<iframe width="560" height="315" src="https://youtu.be/yfz6IkBElpA" frameborder="0" allowfullscreen></iframe>
+</center>

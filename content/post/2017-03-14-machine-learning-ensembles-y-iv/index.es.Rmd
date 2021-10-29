@@ -190,6 +190,7 @@ par(mfrow = c(1,1))
 ```
 
 
+
 Las líneas rojas indican la ubicación de las medidas correspondientes a los diferentes KPIs para el modelo *bagged*; las *boxplots* se refieren al mismo KPI según esté distribuido en los 100 modelos individuales generados.
 
 Como se ve, la línea roja, como poco, está siempre en la zona de mejores resultados.
