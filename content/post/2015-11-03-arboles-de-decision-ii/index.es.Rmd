@@ -1,5 +1,5 @@
 ---
-title: Arboles de Decision II
+title: Arboles de Decision (II)
 author: Miguel Conde
 date: '2015-11-03'
 slug: arboles-de-decision-ii
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 En esta entrada y la siguiente veremos la implementación en R de dos árboles de decisión: *rpart* y *C5.0*. Nos servirán para profundizar en el mecanismo de 
-[particionamiento recursivo](/2015/09/18/arboles-de-decision-i/) empleado.
+[particionamiento recursivo](/2015/09/28/arboles-de-decision-i/) empleado.
 
 ## Chief Data Scientist
 

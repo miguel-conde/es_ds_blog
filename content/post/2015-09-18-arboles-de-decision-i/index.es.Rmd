@@ -161,4 +161,4 @@ En resumen, con este sencillo árbol de decisión:
 
 hemos clasificado correctamente 25 de las 30 empresas que contenían nuestros datos.
 
-En el [siguiente artículo](http://es100x100datascience.com/arboles-de-decision-ii/) veremos cómo crear árboles de decisión con R.
+En el [siguiente artículo](/2015/11/03/arboles-de-decision-ii/) veremos cómo crear árboles de decisión con R.
