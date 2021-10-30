@@ -1,0 +1,297 @@
+---
+title: Árboles de decisión (III)
+author: Miguel Conde
+date: '2015-12-02'
+slug: arboles-de-decision-iii
+categories:
+  - Machine Learning
+tags:
+  - Machine Learning
+  - Data Science
+  - Clasificación
+  - Árboles de Decisión
+description: 'Continuamos con la implementación en R de dos tipos de árboles de decisión, probablemente los algoritmos más empleados en Machine Learning. En este artículo construiremos un modelo rpart.'
+thumbnail: ''
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+Continuamos con la implementación en R de dos tipos de árboles de decisión, probablemente los algoritmos más empleados en Machine Learning. En este artículo construiremos un modelo [*rpart*](https://cran.r-project.org/web/packages/rpart/index.html)*.* En el [artículo anterior](/2015/11/03/arboles-de-decision-ii/) planteamos un problema de clasificación, consistente en la predicción de posibles bajas (*churn*) de clientes de una operadora móvil. Cargamos allí los datos e hicimos una sencilla exploración de los mismos. En este vamos a preparar los datos para construir a continuación nuestro modelo de predicción. Evaluaremos después su rendimiento y, por último, veremos si podemos mejorarlo.
+
+## Preparación de los datos
+
+Vamos a dividir nuestros datos en dos conjuntos:
+
+-   Un **train set**, con el que construiremos nuestro modelo de árbol de decisión.
+
+-   Un **test set**, sobre el que evaluaremos la eficiencia de nuestro modelo (esta técnica no es perfecta, ya veremos técnicas mejores).
+
+Cargamos de nuevo los datos:
+
+```{r}
+library(C50)
+
+library(modeldata)
+
+data(mlc_churn)
+
+churn <- mlc_churn
+```
+
+
+Y realizaremos esta división tomando muestras aleatorias del total de los datos:
+
+```{r}
+set.seed(127) 
+train_idx <- sample(nrow(churn), 0.9*nrow(churn)) 
+churnTrain <- churn[train_idx,] 
+churnTest <- churn[-train_idx,]
+```
+
+
+Hemos seleccionado aleatoriamente para el `train set`el 90% de los datos, dejando el 10% restante para el `test set`. Si lo hemos hecho bien, la distribución de la variable objetivo en ambos conjuntos de datos debe de ser parecida:
+
+```{r}
+prop.table(table(churnTrain$churn))
+```
+
+
+(Hay otras formas de hacer esta división de los datos, iremos viéndolas)
+
+## Creación del modelo
+
+Como primer intento, vamos a crear un árbol de decisión `rpart` (si no tienes instalado el paquete: `install packages("rpart")`).
+
+```{r}
+library(rpart)
+
+rpart_churn_model <- rpart(formula = churn ~ ., 
+                           data = churnTrain)
+```
+    
+
+Con esta sentencia hemos creado un modelo que toma como base el `train set` y que trata de predecir la variable categórica objetivo `churn`a partir de todas las demás variables (eso es lo que significa la fórmula `churn ~ .`)
+
+Para mostrar los detalles del árbol:
+
+```{r}
+rpart_churn_model
+```
+
+`n` indica el número de observaciones que alcanzan a cada nodo, `loss` el número de observaciones que se clasifican mal, `yval` es el valor de clasificación que se toma como referencia ("no", en este caso) e `yprob` las probabilidades de ambas clases (el primer valor se refiere a la probabilidad de alcanzar el valor "no" y el segundo a la de alcanzar el valor "si").
+
+Por ejemplo, la primera línea es:
+
+    1) root 3333 483 no (0.14491449 0.85508551)
+
+Se trata del nodo raíz, con 3333 observaciones (como ya sabiamos) de las que 483 se han clasificado mal. El valor de referencia es "no". La proporción de observaciones clasificadas como "no" es 0.14491449 y la de clasificadas como "si", 0.85508551.
+
+A partir del nodo raíz tenemos la primera decisión:
+
+    2) total_day_minutes>=264.45 211  84 yes (0.60189573 0.39810427)
+
+Es decir, la decisión de la primera bifurcación se toma mirando la variable `total_day_minutes`. Si es mayor o igual que 264.45, se clasifica como "yes". A este nodo llegan 211 observaciones de las que 84 están mal clasificadas. El 0.60189573 se han clasificado como "yes" y el 0.39810427 (84/211) como "no".
+
+Nótese que el nodo 3 es la otra rama de la decisión:
+
+    3) total_day_minutes< 264.45 3122 356 no (0.11402947 0.88597053)
+
+Todo esto es más fácil verlo gráficamente:
+
+```{r}
+plot(rpart_churn_model, uniform = TRUE, branch = 0.6, margin = 0.1)
+text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .5)
+```
+
+```{r}
+plot(rpart_churn_model, uniform = TRUE, branch = 0.6, margin = 0.01)
+text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .7)
+```
+
+
+    
+
+[![Tree](http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-1024x448.png)](http://es100x100datascience.com/wp-content/uploads/2015/12/Tree.png)
+
+Para ver los parámetros de complejidad del modelo:
+
+```{r}
+printcp(x= rpart_churn_model)
+```
+
+
+Utilizaremos los parámetros de complejidad (`CP`) como una penalización para controlar el tamaño del árbol. En resumen, cuanto mayor es el parámetro de complejidad, menos decisiones contiene el árbol (`nsplit`). El valor `rel error` representa la desviación media del árbol al que se refiera dividida entre la desviación media del árbol nulo (`nsplit = 0`). El valor `xerror` es el valor medio estimado mediante un procedimiento de *cross validation* que ya veremos. `xstd` es el error estándar del error relativo.
+
+La información sobre el `CP`se puede visualizar:
+
+[![CP plot](http://es100x100datascience.com/wp-content/uploads/2015/12/CP-plot.png)](http://es100x100datascience.com/wp-content/uploads/2015/12/CP-plot.png)
+
+El eje x inferior representa el `CP`, el eje y es el error relativo y el eje x superior es el tamaño del árbol.
+
+## Rendimiento del modelo
+
+Ahora que ya hemos construido nuestro modelo, podemos utilizarlo para predecir la categoría basándonos en nuevas observaciones. Pero antes de esto, veamos cuál es el poder de predicción de nuestro modelo utilizando los datos del *test set*.
+
+Para hacer predicciones sobre nuestro *test set*:
+
+```{r}
+rpart_predictions <- predict(object = rpart_churn_model,
+                                 newdata = churnTest, 
+                                 type = "class")
+```
+
+    
+
+Y ahora usaremos la función `table` para crear una tabla de las clasificaciones realizadas:
+
+```{r}
+table(churnTest$churn, rpart_predictions)
+```
+
+
+
+Esta tabla nos dice que, de los 66 verdaderos "yes" en el *test set*, hemos acertado 41 pero 25 los hemos clasificado como "no"; y que de los verdaderos 434 "no" en el *test set*, 427 los hemos clasificado correctamente pero 7 los hemos clasificado como "yes".
+
+Esto se ve mejor con la función `confusionMatrix` del paquete `caret`:
+
+```{r}
+library(caret)
+
+confusionMatrix(data = rpart_predictions, 
+                reference = churnTest$churn)$table
+```
+    
+
+Al número total de aciertos lo llamamos **Accuracy** o **exactitud**:
+
+$$
+Accuracy = \\frac{41+427}{41+25+7+427} = 0.936\
+$$
+
+El porcentaje de **falsos positivos** es:
+
+$$
+FP = \\frac{25}{41+25} = 0.3787879\
+$$
+
+Y el de **falsos negativos**:
+
+$$
+FN = \\frac{7}{427+7} = 0.016129\
+$$
+
+La **sensibilidad** (verdaderos positivos) es:
+
+$$
+Sensitivity = 1 - FP = \\frac{41}{41+25} = 0.6212121\
+$$
+
+Y la **especificidad** (verdaderos negativos):
+
+$$
+Specificity = 1 - FN = \\frac{427}{427+7} = 0.983871\
+$$
+
+Estas son algunas de las medidas que se utilizan para estimar el rendimiento de un modelo de clasificación. Más adelante veremos este temas con más detenimiento y profundidad.
+
+## Mejorando el modelo: podar el árbol
+
+Uno de los principales problemas de los árboles de decisión es su tendencia al *overfitting*: se ajustan tan bien al *train set* que capturan no sólo la "señal" existente en el *train set*, sino tambien el "ruido", de manera que su rendimiento es mucho peor con el *test set* (cuando realizan predicciones sobre observaciones que no se han visto durante el entrenamiento).
+
+Para reducir este problema, y para intentar mejorar la *accuracy*, se recurre a una técnica conocida como *prunning* o "podado" del árbol: eliminaremos las ramas del árbol que no contribuyen a capturar "señal".
+
+En el caso de los árboles `rpart`, utiliaremos el `CP` para realizar el podado.
+
+Primero buscaremos el menor error de *cross-validation* (`xerror`) en el modelo. Para ello acudiremos a la tabla que ya hemos visto antes:
+
+```{r}
+rpart_churn_model$cptable
+```
+    
+
+¿En qué fila de la tabla se encuentra el mínimo `CP`?
+
+```{r}
+row_min_xerror <- which.min(rpart_churn_model$cptable[, "xerror"])
+    row_min_xerror
+```
+
+
+El `CP` correspondiente es:
+
+```{r}
+CP_min_xerror <- rpart_churn_model$cptable[row_min_xerror, "CP"]
+    CP_min_xerror
+```
+
+
+Ahora podamos el árbol:
+
+```{r}
+rpart_churn_prunned_model <- prune(tree = rpart_churn_model, 
+                                       cp = CP_min_xerror)
+```
+  
+
+Visualizamos el nuevo árbol:
+
+```{r}
+plot(rpart_churn_prunned_model, uniform = TRUE, branch = 0.6, margin = 0.01)
+    text(rpart_churn_prunned_model, all = TRUE, use.n = TRUE, cex = .7)
+```
+    
+
+[![Tree 2](http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-2-1024x448.png)](http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-2.png)
+
+Y comprobamos su rendimiento:
+
+```{r}
+rpart_prunned_predictions <- predict(object = rpart_churn_prunned_model,
+                                 newdata = churnTest, 
+                                 type = "class")
+    confusionMatrix(data = rpart_prunned_predictions, 
+                    reference = churnTest$churn)$table
+```
+    
+
+Comparemos los resultados:
+
+| Indicador   | Árbol Completo | Árbol podado |
+|-------------|----------------|--------------|
+| Accuracy    | 0.948          | 0.942        |
+| FP          | 0.3333333      | 0.4333333    |
+| FN          | 0.0136364      | 0.0068182    |
+| Sensitivity | 0.6666667      | 0.5666667    |
+| Specificity | 0.9863636      | 0.9931818    |
+
+¿Cuáles son las diferencias?
+
+-   El nuevo árbol tiene un nivel menos que el originario, es algo más sencillo.
+
+-   La *accuracy* ha disminuido ligeramente.
+
+-   Los falsos positivos han aumentado pero han disminuido los falsos negativos.
+
+-   Los verdaderos positivos han disminuido pero han aumentado los verdaderos negativos.
+
+¿Qué modelo es mejor? Pues depende. Depende de lo que queramos. Aquí si que no pueden ayudarnos los sistemas automáticos, es una decisión humana.
+
+En este caso no parece demasiado interesante (¿recuerdas la pregunta original? Era: *¿podemos prever qué clientes se van a ir?*) no parece apropiado dejar escapar verdaderos positivos... aunque sea a costa de considerar en riesgo a más clientes de los que verdaderamente van a irse...
+
+En mi opinión, en este caso, aunque el árbol podado sea más robusto al haber eliminado decisiones que podrían aumentar el riesgo de *overfitting*, deberíamos quedarnos con el árbol original.
+
+En el siguiente artículo aplicaremos a este mismo problema otro tipo de árbol de decisión, el [C5.0](https://cran.r-project.org/web/packages/C50/index.html).
+
+Para terminar, solo resumir los pasos que hemos seguido:
+
+-   Obtención de los datos
+
+-   Exploración y preparación de los datos
+
+-   Construcción del modelo
+
+-   Evaluación de su rendimiento
+
+-   Posibilidades de mejora

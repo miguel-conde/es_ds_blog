@@ -10,7 +10,7 @@ tags:
   - Data Science
   - Clasificación
   - Árboles de Decisión
-description: ''
+description: 'Los Árboles de Decisión o Clasificación constituyen un buen ejemplo de clasificadores Machine Learning. Son relativamente sencillos de entender y sobre ellos se basan otros algoritmos más complicados.'
 thumbnail: ''
 ---
 

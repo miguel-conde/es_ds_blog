@@ -1,0 +1,1269 @@
+---
+title: Árboles de decisión (y IV)
+author: Miguel Conde
+date: '2016-01-18'
+slug: arboles-de-decision-y-iv
+categories:
+  - Machine Learning
+tags:
+  - Machine Learning
+  - Data Science
+  - Clasificación
+  - arbo
+description: 'En este artículo vamos a repetir el mismo ejercicio que en el anterior pero esta vez construiremos un modelo C5.0.'
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index.es_files/header-attrs/header-attrs.js"></script>
+
+
+<p>En este artículo vamos a repetir el mismo ejercicio que en el <a href="/2015/15/02/arboles-de-decision-iii/">anterior</a> pero esta vez construiremos un modelo C5.0.</p>
+<p>Como recordaréis, nuestro problema de clasificación consiste en la predicción de posibles bajas (<em>churn</em>) de clientes de una operadora móvil.</p>
+<p>Los pasos que seguiremos son, como siempre:</p>
+<ul>
+<li><p>Obtención de los datos</p></li>
+<li><p>Exploración y preparación de los datos</p></li>
+<li><p>Construcción del modelo</p></li>
+<li><p>Evaluación de su rendimiento</p></li>
+<li><p>Posibilidades de mejora</p></li>
+</ul>
+<div id="obtención-de-los-datos" class="section level3">
+<h3>Obtención de los datos</h3>
+<p>Cargamos de nuevo los datos:</p>
+<pre class="r"><code>library(C50)
+
+library(modeldata)
+
+data(mlc_churn)
+
+churn &lt;- mlc_churn</code></pre>
+</div>
+<div id="exploración-y-preparación-de-los-datos" class="section level3">
+<h3>Exploración y preparación de los datos</h3>
+<p>Este ejercicio ya lo hicimos aquí, pero refresquemos un poco nuestro conocimiento del <em>dataset</em>:</p>
+<pre class="r"><code>str(churn)</code></pre>
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    5000 obs. of  20 variables:
+##  $ state                        : Factor w/ 51 levels &quot;AK&quot;,&quot;AL&quot;,&quot;AR&quot;,..: 17 36 32 36 37 2 20 25 19 50 ...
+##  $ account_length               : int  128 107 137 84 75 118 121 147 117 141 ...
+##  $ area_code                    : Factor w/ 3 levels &quot;area_code_408&quot;,..: 2 2 2 1 2 3 3 2 1 2 ...
+##  $ international_plan           : Factor w/ 2 levels &quot;no&quot;,&quot;yes&quot;: 1 1 1 2 2 2 1 2 1 2 ...
+##  $ voice_mail_plan              : Factor w/ 2 levels &quot;no&quot;,&quot;yes&quot;: 2 2 1 1 1 1 2 1 1 2 ...
+##  $ number_vmail_messages        : int  25 26 0 0 0 0 24 0 0 37 ...
+##  $ total_day_minutes            : num  265 162 243 299 167 ...
+##  $ total_day_calls              : int  110 123 114 71 113 98 88 79 97 84 ...
+##  $ total_day_charge             : num  45.1 27.5 41.4 50.9 28.3 ...
+##  $ total_eve_minutes            : num  197.4 195.5 121.2 61.9 148.3 ...
+##  $ total_eve_calls              : int  99 103 110 88 122 101 108 94 80 111 ...
+##  $ total_eve_charge             : num  16.78 16.62 10.3 5.26 12.61 ...
+##  $ total_night_minutes          : num  245 254 163 197 187 ...
+##  $ total_night_calls            : int  91 103 104 89 121 118 118 96 90 97 ...
+##  $ total_night_charge           : num  11.01 11.45 7.32 8.86 8.41 ...
+##  $ total_intl_minutes           : num  10 13.7 12.2 6.6 10.1 6.3 7.5 7.1 8.7 11.2 ...
+##  $ total_intl_calls             : int  3 3 5 7 3 6 7 6 4 5 ...
+##  $ total_intl_charge            : num  2.7 3.7 3.29 1.78 2.73 1.7 2.03 1.92 2.35 3.02 ...
+##  $ number_customer_service_calls: int  1 1 0 2 3 0 3 0 1 0 ...
+##  $ churn                        : Factor w/ 2 levels &quot;yes&quot;,&quot;no&quot;: 2 2 2 2 2 2 2 2 2 2 ...</code></pre>
+<p>Tenemos 5000 observaciones y 17 variables, 16 de ellas predictores y 1, <em>churn</em>, nuestra variable objetivo.</p>
+<p>¿Cuántas observaciones corresponden a clientes que desertaron?</p>
+<pre class="r"><code>table(churn$churn)</code></pre>
+<pre><code>## 
+##  yes   no 
+##  707 4293</code></pre>
+<p>Y en porcentajes:</p>
+<pre class="r"><code>prop.table(table(churn$churn))</code></pre>
+<pre><code>## 
+##    yes     no 
+## 0.1414 0.8586</code></pre>
+<p>Preparemos ahora los datos para la posterior construcción del modelo. Los dividiremos en un <em>training set</em> (con el que construiremos el modelo) y un <em>test set</em> (con el que evaluaremos el rendimiento dle modelo). Existen sistemas más sofisticados, como la <strong>validación cruzada</strong> o <em>cross-validation</em> que ya veremos, de momento mantendremos las cosas sencillas.</p>
+<p>Para dividir los datos entre el <em>training set</em> y el <em>test set</em> utilizaremos el muestreo aleatorio, un procedimiento que selecciona aleatoriamente observaciones del conjunto total. Haremos que al <em>training set</em> vayan a parar aleatoriamente el 90% de las observaciones y el 10 % restante al<em>test set</em>:</p>
+<pre class="r"><code>set.seed(127)
+train_idx &lt;- sample(nrow(churn), 0.9*nrow(churn))
+
+churn_train &lt;- churn[train_idx,]
+churn_test  &lt;- churn[-train_idx,]</code></pre>
+<p>Efectivamente, las dos muestras son muy parecidas:</p>
+<pre class="r"><code>prop.table(table(churn_train$churn))</code></pre>
+<pre><code>## 
+##       yes        no 
+## 0.1388889 0.8611111</code></pre>
+<pre class="r"><code>prop.table(table(churn_test$churn))</code></pre>
+<pre><code>## 
+##   yes    no 
+## 0.164 0.836</code></pre>
+</div>
+<div id="construcción-del-modelo" class="section level3">
+<h3>Construcción del modelo</h3>
+<p>Vamos a utilizar el algoritmo C5.0 del paquete <code>C50</code>. Ya lo hemos cargado antes (<code>library(C50)</code>) ya que este paquete también contiene nuestros datos.</p>
+<p>En primera aproximación usaremos las opciones por defecto (<code>trials = 1</code>, <code>costs = NULL</code>, <code>rules = FALSE</code>, <code>weights = NULL</code>,<code>control = C5.0Control()</code>. Por claridad las voy a explicitar:</p>
+<pre class="r"><code>C50_churn_model &lt;- C5.0(x       = churn_train[-20], 
+                            y       = churn_train$churn, 
+                            trials  = 1, 
+                            rules   = FALSE, 
+                            weights = NULL, 
+                            control = C5.0Control(), 
+                            costs   = NULL)</code></pre>
+<p>Como se ve, este algoritmo tiene muchas opciones. En particular, véase la función de control del algoritmo:</p>
+<pre class="r"><code>C5.0Control()</code></pre>
+<pre><code>## $subset
+## [1] TRUE
+## 
+## $bands
+## [1] 0
+## 
+## $winnow
+## [1] FALSE
+## 
+## $noGlobalPruning
+## [1] FALSE
+## 
+## $CF
+## [1] 0.25
+## 
+## $minCases
+## [1] 2
+## 
+## $fuzzyThreshold
+## [1] FALSE
+## 
+## $sample
+## [1] 0
+## 
+## $earlyStopping
+## [1] TRUE
+## 
+## $label
+## [1] &quot;outcome&quot;
+## 
+## $seed
+## [1] 2993</code></pre>
+<p>Te resultará interesante echarle un ojo a <code>?C5.0</code> y <code>C5.0Control</code>.</p>
+<p>Veamos el modelo que ha resultado:</p>
+<pre class="r"><code>C50_churn_model</code></pre>
+<pre><code>## 
+## Call:
+## C5.0.default(x = churn_train[-20], y = churn_train$churn, trials = 1, rules
+##  = FALSE, weights = NULL, control = C5.0Control(), costs = NULL)
+## 
+## Classification Tree
+## Number of samples: 4500 
+## Number of predictors: 19 
+## 
+## Tree size: 29 
+## 
+## Non-standard options: attempt to group attributes</code></pre>
+<p>Vemos que la “profundidad” de las decisiones del árbol llega a 27. Veámoslas:</p>
+<pre class="r"><code>summary(C50_churn_model)</code></pre>
+<pre><code>## 
+## Call:
+## C5.0.default(x = churn_train[-20], y = churn_train$churn, trials = 1, rules
+##  = FALSE, weights = NULL, control = C5.0Control(), costs = NULL)
+## 
+## 
+## C5.0 [Release 2.07 GPL Edition]      Sat Oct 30 12:30:01 2021
+## -------------------------------
+## 
+## Class specified by attribute `outcome&#39;
+## 
+## Read 4500 cases (20 attributes) from undefined.data
+## 
+## Decision tree:
+## 
+## number_customer_service_calls &gt; 3:
+## :...total_day_minutes &lt;= 162.7:
+## :   :...total_eve_charge &lt;= 19.83: yes (105/5)
+## :   :   total_eve_charge &gt; 19.83:
+## :   :   :...total_day_minutes &lt;= 134.5: yes (17/1)
+## :   :       total_day_minutes &gt; 134.5: no (16/3)
+## :   total_day_minutes &gt; 162.7:
+## :   :...international_plan = yes:
+## :       :...total_night_calls &lt;= 96: yes (10/1)
+## :       :   total_night_calls &gt; 96: no (11/3)
+## :       international_plan = no:
+## :       :...total_day_minutes &gt; 263.4:
+## :           :...voice_mail_plan = no: yes (15/2)
+## :           :   voice_mail_plan = yes: no (5)
+## :           total_day_minutes &lt;= 263.4:
+## :           :...total_eve_charge &gt; 11.48: no (158/21)
+## :               total_eve_charge &lt;= 11.48:
+## :               :...total_day_minutes &lt;= 201.3: yes (10)
+## :                   total_day_minutes &gt; 201.3: no (9/3)
+## number_customer_service_calls &lt;= 3:
+## :...total_day_minutes &lt;= 244.6:
+##     :...international_plan = yes:
+##     :   :...total_intl_minutes &gt; 13: yes (60)
+##     :   :   total_intl_minutes &lt;= 13:
+##     :   :   :...total_intl_calls &lt;= 2: yes (48)
+##     :   :       total_intl_calls &gt; 2: no (214/5)
+##     :   international_plan = no:
+##     :   :...total_day_minutes &lt;= 220.8: no (2932/72)
+##     :       total_day_minutes &gt; 220.8:
+##     :       :...total_eve_charge &lt;= 22.7: no (368/18)
+##     :           total_eve_charge &gt; 22.7:
+##     :           :...voice_mail_plan = no: yes (35/4)
+##     :               voice_mail_plan = yes: no (11)
+##     total_day_minutes &gt; 244.6:
+##     :...voice_mail_plan = yes: no (115/8)
+##         voice_mail_plan = no:
+##         :...total_eve_minutes &gt; 201:
+##             :...total_night_charge &gt; 9.5: yes (75)
+##             :   total_night_charge &lt;= 9.5:
+##             :   :...total_day_minutes &gt; 264.6: yes (57/3)
+##             :       total_day_minutes &lt;= 264.6:
+##             :       :...total_eve_minutes &lt;= 242.4: no (25/3)
+##             :           total_eve_minutes &gt; 242.4: yes (21/5)
+##             total_eve_minutes &lt;= 201:
+##             :...total_day_minutes &lt;= 277.7:
+##                 :...international_plan = no: no (112/12)
+##                 :   international_plan = yes:
+##                 :   :...total_intl_calls &lt;= 2: yes (6)
+##                 :       total_intl_calls &gt; 2: no (14/3)
+##                 total_day_minutes &gt; 277.7:
+##                 :...total_eve_minutes &gt; 167.3: yes (23)
+##                     total_eve_minutes &lt;= 167.3:
+##                     :...total_night_charge &gt; 9.31: yes (10)
+##                         total_night_charge &lt;= 9.31:
+##                         :...total_day_minutes &lt;= 303: no (15)
+##                             total_day_minutes &gt; 303: yes (3)
+## 
+## 
+## Evaluation on training data (4500 cases):
+## 
+##      Decision Tree   
+##    ----------------  
+##    Size      Errors  
+## 
+##      29  172( 3.8%)   &lt;&lt;
+## 
+## 
+##     (a)   (b)    &lt;-classified as
+##    ----  ----
+##     474   151    (a): class yes
+##      21  3854    (b): class no
+## 
+## 
+##  Attribute usage:
+## 
+##  100.00% total_day_minutes
+##  100.00% number_customer_service_calls
+##   89.29% international_plan
+##   16.20% total_eve_charge
+##   12.04% voice_mail_plan
+##    8.02% total_eve_minutes
+##    7.16% total_intl_minutes
+##    6.27% total_intl_calls
+##    4.58% total_night_charge
+##    0.47% total_night_calls
+## 
+## 
+## Time: 0.1 secs</code></pre>
+<p>Donde se ven claramente las decisiones según las cuales se crean las ramas del árbol. Los números entre paréntesis indican el número de muestras que llegan a la decisión y cuántas de ellas se clasifican mal. Por ejemplo, a la decisión de la 3ª línea llegan 106 muestras que se clasifican como “yes” y, de ellas, 4 quedan mal clasificadas.</p>
+</div>
+<div id="evaluación-del-modelo" class="section level3">
+<h3>Evaluación del modelo</h3>
+<p>Los árboles de decisión tienen tendencia a sobreajustarse (<em>overfit</em>) a los ejemplos que se le presentan en el <em>training set</em>. Cualquier algoritmo <em>machine learning</em> se comportará peor con los datos de <em>test set</em> que con los del <em>training set</em> (al fin y al cabo, no los ha visto nunca ;-), pero en el caso de los árboles de decisión puede ser peor. Comprobémoslo. Hahamos una predicción sobre las muestras del <em>test set</em>:</p>
+<pre class="r"><code>C50_predictions &lt;- predict(C50_churn_model, churn_test)</code></pre>
+<p>La <em>confusion matrix</em> obtenida es:</p>
+<pre class="r"><code>library(caret)
+    C50_cm &lt;- confusionMatrix(data      = C50_predictions, 
+                              reference = churn_test$churn)
+    C50_cm$table</code></pre>
+<pre><code>##           Reference
+## Prediction yes  no
+##        yes  60   5
+##        no   22 413</code></pre>
+<p>La <em>accuracy</em> o <strong>exactitud</strong> (aciertos sobre el total de casos) es:</p>
+<pre class="r"><code>C50_cm$overall[&quot;Accuracy&quot;]</code></pre>
+<pre><code>## Accuracy 
+##    0.946</code></pre>
+<p>No está nada mal, con el <em>training test</em> era solo ligeramente superior, el 95.5 %. Pero investiguemos un poco más.</p>
+<p>La <strong>sensibilidad</strong> (de todos los verdaderos “yes”, ¿cuántos se clasificaron como tales? o: si un ejemplo es verdaderamente “yes” ¿cuál es la probabilidad de que lo hayamos clasificado correctamente?) es:</p>
+<pre class="r"><code>C50_cm$byClass[&quot;Sensitivity&quot;]</code></pre>
+<pre><code>## Sensitivity 
+##   0.7317073</code></pre>
+<p>Ya que de 60 verdaderos “yes” solo se clasificaron como tales 41.</p>
+<p>La <strong>especificidad</strong> (de todos los verdaderos “no”, ¿cuántos se clasificaron como tales? o: si un ejemplo es verdaeramente “no” ¿cuál es la probabilidad de que lo hayamos clasificado correctamente?) es:</p>
+<pre class="r"><code>C50_cm$byClass[&quot;Specificity&quot;]</code></pre>
+<pre><code>## Specificity 
+##   0.9880383</code></pre>
+<p>Ya que de 440 verdaderos “no” se clasificaron como tales 434.</p>
+<p>Por lo tanto la <strong>false positive rate</strong> (de todos los verdaderos “no”, ¿cuántos se clasificaron como “yes”?) es:</p>
+<pre class="r"><code>as.numeric(C50_cm$byClass[&quot;Specificity&quot;])</code></pre>
+<pre><code>## [1] 0.9880383</code></pre>
+<p>Y la <strong>false negative rate</strong> (de todos los verdaderos “yes”, ¿cuántos se clasificaron como “no”?):</p>
+<pre class="r"><code>as.numeric(C50_cm$byClass[&quot;Sensitivity&quot;])</code></pre>
+<pre><code>## [1] 0.7317073</code></pre>
+<p>También podemos hablar del <strong>valor de predicción positiva</strong> (de todos las predicciones “yes”, ¿cuántas lo eran realmente? o: si hemos clasificado una obeservación como “yes” ¿cuál es la probabilidad de que realmente lo sea?)</p>
+<pre class="r"><code>C50_cm$byClass[&quot;Pos Pred Value&quot;]</code></pre>
+<pre><code>## Pos Pred Value 
+##      0.9230769</code></pre>
+<p>(ya que se predijeron 47 “yes” y solo 41 lo eran)</p>
+<p>Y el <strong>valor de predicción negativa</strong> (de todas las predicciones “no”, cuántas lo eran realmente? o: si hemos clasificado una obeservación como “no” ¿cuál es la probabilidad de que realmente lo sea?):</p>
+<pre class="r"><code>C50_cm$byClass[&quot;Neg Pred Value&quot;]</code></pre>
+<pre><code>## Neg Pred Value 
+##      0.9494253</code></pre>
+<p>(ya que se predijeron 453 “yes” y solo 434 lo eran)</p>
+</div>
+<div id="posibilidades-de-mejora" class="section level3">
+<h3>Posibilidades de mejora</h3>
+<div id="boosting" class="section level4">
+<h4>Boosting</h4>
+<p><code>C5.0</code> nos proporciona la posibilidad de utilizar un mecanismo llamado <em>boosting</em> adaptativo, un proceso en el que se construyen muchos árboles de decisión que “votan” para decidir la clase de cada observación.</p>
+<p>Se puede aplicar <em>boosting</em> a cualquier algoritmo <em>machine learning</em>, no sólo a los árboles de decisión. Por el momento, nos contentaremos con mencionar que la filosofía en que se basa consite en combinar un conjunto de clasificadores débiles para construir un clasificador más potente que cualquiera de ellos.</p>
+<p>La función <code>C5.0()</code> permite emplear <em>boosting</em> muy fácilmente, simplemente especificando mediante el argumento <code>trials</code> el número de árboles que se quiere emplear. Se suelen emplear 10 árboles, lo que, según algunos estudios, suele permitir disminuir la tasa de error más o menos un 25%.</p>
+<p><code>trials</code>especifica el límite superior de árboles que añadir; si al añadir árboles se observa que la exactitud no mejora significativamente, dejan de añadirse árboles.</p>
+<pre class="r"><code>C50_churn_model_boost10 &lt;- C5.0(x       = churn_train[-20],
+                                    y       = churn_train$churn, 
+                                    trials  = 10, 
+                                    rules   = FALSE,         # Default
+                                    weights = NULL,          # Default
+                                    control = C5.0Control(), # Default
+                                    costs   = NULL           # Default
+                                    )</code></pre>
+<p>Examinemos el modelo resultante. Observaremos que aparecen algunas lineas más:</p>
+<pre class="r"><code>C50_churn_model_boost10</code></pre>
+<pre><code>## 
+## Call:
+## C5.0.default(x = churn_train[-20], y = churn_train$churn, trials = 10, rules
+##  = FALSE, weights = NULL, control = C5.0Control(), costs = NULL)
+## 
+## Classification Tree
+## Number of samples: 4500 
+## Number of predictors: 19 
+## 
+## Number of boosting iterations: 10 
+## Average tree size: 30.1 
+## 
+## Non-standard options: attempt to group attributes</code></pre>
+<p>En efecto, aparecen el número de <code>trials</code> y el tamaño medio de cada árbol.</p>
+<p>Mediante:</p>
+<pre class="r"><code>summary(C50_churn_model_boost10)</code></pre>
+<pre><code>## 
+## Call:
+## C5.0.default(x = churn_train[-20], y = churn_train$churn, trials = 10, rules
+##  = FALSE, weights = NULL, control = C5.0Control(), costs = NULL)
+## 
+## 
+## C5.0 [Release 2.07 GPL Edition]      Sat Oct 30 12:30:03 2021
+## -------------------------------
+## 
+## Class specified by attribute `outcome&#39;
+## 
+## Read 4500 cases (20 attributes) from undefined.data
+## 
+## -----  Trial 0:  -----
+## 
+## Decision tree:
+## 
+## number_customer_service_calls &gt; 3:
+## :...total_day_minutes &lt;= 162.7:
+## :   :...total_eve_charge &lt;= 19.83: yes (105/5)
+## :   :   total_eve_charge &gt; 19.83:
+## :   :   :...total_day_minutes &lt;= 134.5: yes (17/1)
+## :   :       total_day_minutes &gt; 134.5: no (16/3)
+## :   total_day_minutes &gt; 162.7:
+## :   :...international_plan = yes:
+## :       :...total_night_calls &lt;= 96: yes (10/1)
+## :       :   total_night_calls &gt; 96: no (11/3)
+## :       international_plan = no:
+## :       :...total_day_minutes &gt; 263.4:
+## :           :...voice_mail_plan = no: yes (15/2)
+## :           :   voice_mail_plan = yes: no (5)
+## :           total_day_minutes &lt;= 263.4:
+## :           :...total_eve_charge &gt; 11.48: no (158/21)
+## :               total_eve_charge &lt;= 11.48:
+## :               :...total_day_minutes &lt;= 201.3: yes (10)
+## :                   total_day_minutes &gt; 201.3: no (9/3)
+## number_customer_service_calls &lt;= 3:
+## :...total_day_minutes &lt;= 244.6:
+##     :...international_plan = yes:
+##     :   :...total_intl_minutes &gt; 13: yes (60)
+##     :   :   total_intl_minutes &lt;= 13:
+##     :   :   :...total_intl_calls &lt;= 2: yes (48)
+##     :   :       total_intl_calls &gt; 2: no (214/5)
+##     :   international_plan = no:
+##     :   :...total_day_minutes &lt;= 220.8: no (2932/72)
+##     :       total_day_minutes &gt; 220.8:
+##     :       :...total_eve_charge &lt;= 22.7: no (368/18)
+##     :           total_eve_charge &gt; 22.7:
+##     :           :...voice_mail_plan = no: yes (35/4)
+##     :               voice_mail_plan = yes: no (11)
+##     total_day_minutes &gt; 244.6:
+##     :...voice_mail_plan = yes: no (115/8)
+##         voice_mail_plan = no:
+##         :...total_eve_minutes &gt; 201:
+##             :...total_night_charge &gt; 9.5: yes (75)
+##             :   total_night_charge &lt;= 9.5:
+##             :   :...total_day_minutes &gt; 264.6: yes (57/3)
+##             :       total_day_minutes &lt;= 264.6:
+##             :       :...total_eve_minutes &lt;= 242.4: no (25/3)
+##             :           total_eve_minutes &gt; 242.4: yes (21/5)
+##             total_eve_minutes &lt;= 201:
+##             :...total_day_minutes &lt;= 277.7:
+##                 :...international_plan = no: no (112/12)
+##                 :   international_plan = yes:
+##                 :   :...total_intl_calls &lt;= 2: yes (6)
+##                 :       total_intl_calls &gt; 2: no (14/3)
+##                 total_day_minutes &gt; 277.7:
+##                 :...total_eve_minutes &gt; 167.3: yes (23)
+##                     total_eve_minutes &lt;= 167.3:
+##                     :...total_night_charge &gt; 9.31: yes (10)
+##                         total_night_charge &lt;= 9.31:
+##                         :...total_day_minutes &lt;= 303: no (15)
+##                             total_day_minutes &gt; 303: yes (3)
+## 
+## -----  Trial 1:  -----
+## 
+## Decision tree:
+## 
+## number_customer_service_calls &gt; 3:
+## :...state in {AK,AR,CA,CT,DC,DE,FL,GA,IA,ID,KS,KY,LA,MA,ME,MI,MN,MO,MS,MT,NC,
+## :   :         ND,NH,NJ,NM,NV,NY,OH,OK,OR,PA,RI,SC,SD,TX,VT,WA,WI,WV,
+## :   :         WY}: yes (416.8/109.8)
+## :   state in {AL,AZ,CO,HI,IL,IN,MD,NE,TN,UT,VA}: no (98.7/16.7)
+## number_customer_service_calls &lt;= 3:
+## :...total_day_minutes &gt; 236.3:
+##     :...total_night_charge &lt;= 7.32: no (164.2/31.4)
+##     :   total_night_charge &gt; 7.32:
+##     :   :...voice_mail_plan = no: yes (444.3/118.8)
+##     :       voice_mail_plan = yes: no (129.1/49.3)
+##     total_day_minutes &lt;= 236.3:
+##     :...international_plan = yes:
+##         :...total_intl_charge &lt;= 3.51: no (218.1/61.6)
+##         :   total_intl_charge &gt; 3.51: yes (42.6)
+##         international_plan = no:
+##         :...total_eve_minutes &lt;= 167: no (682.2/70.4)
+##             total_eve_minutes &gt; 167:
+##             :...total_day_calls &lt;= 77: no (268.3/30.4)
+##                 total_day_calls &gt; 77:
+##                 :...state in {AK,AR,CO,CT,DE,GA,HI,IA,IL,KS,KY,MA,MO,NM,OK,PA,
+##                     :         RI,SD}: no (517.9/5.3)
+##                     state in {AL,AZ,CA,DC,FL,ID,IN,LA,MD,ME,MI,MN,MS,MT,NC,ND,
+##                     :         NE,NH,NJ,NV,NY,OH,OR,SC,TN,TX,UT,VA,VT,WA,WI,WV,
+##                     :         WY}:
+##                     :...total_eve_charge &gt; 27.69: yes (28/6.1)
+##                         total_eve_charge &lt;= 27.69:
+##                         :...account_length &gt; 151: no (192.6/93)
+##                             account_length &lt;= 151:
+##                             :...total_night_calls &gt; 135: no (30.4)
+##                                 total_night_calls &lt;= 135:
+##                                 :...total_eve_calls &gt; 137: no (29.6)
+##                                     total_eve_calls &lt;= 137:
+##                                     :...total_intl_calls &gt; 7: no (115.9/15.6)
+##                                         total_intl_calls &lt;= 7:
+##                                         :...total_day_minutes &gt; 210.5:
+##                                             :...state in {AL,CA,FL,MI,MS,NV,OH,
+##                                             :   :         OR,SC,TX,UT,VA,VT,WA,
+##                                             :   :         WI}: yes (180.7/64.2)
+##                                             :   state in {AZ,DC,ID,IN,LA,MD,ME,
+##                                             :             MN,MT,NC,ND,NE,NH,NJ,
+##                                             :             NY,TN,WV,
+##                                             :             WY}: no (72.2/3.8)
+##                                             total_day_minutes &lt;= 210.5:
+##                                             :...state in {AL,FL,MD,MI,NV,NY,SC,
+##                                                 :         VT,
+##                                                 :         WI}: no (182.4)
+##                                                 state in {AZ,CA,DC,ID,IN,LA,ME,
+##                                                 :         MN,MS,MT,NC,ND,NE,NH,
+##                                                 :         NJ,OH,OR,TN,TX,UT,VA,
+##                                                 :         WA,WV,WY}: [S1]
+## 
+## SubTree [S1]
+## 
+## total_day_minutes &gt; 202.4: no (33.4)
+## total_day_minutes &lt;= 202.4:
+## :...total_day_minutes &gt; 198.4: yes (50.4/15.2)
+##     total_day_minutes &lt;= 198.4:
+##     :...total_eve_charge &gt; 17.87: no (266.1/56.3)
+##         total_eve_charge &lt;= 17.87:
+##         :...state in {AZ,ID,IN,LA,NH,NJ,OR,VA,WY}: no (75.2)
+##             state in {CA,DC,ME,MN,MS,MT,NC,ND,NE,OH,TN,TX,UT,WA,WV}:
+##             :...total_eve_charge &lt;= 17.75: no (213.3/98.6)
+##                 total_eve_charge &gt; 17.75: yes (47.6/5.3)
+## 
+## -----  Trial 2:  -----
+## 
+## Decision tree:
+## 
+## international_plan = yes:
+## :...total_intl_calls &lt;= 2: yes (147.2)
+## :   total_intl_calls &gt; 2:
+## :   :...total_intl_minutes &lt;= 13: no (278.8/73.9)
+## :       total_intl_minutes &gt; 13: yes (78.1)
+## international_plan = no:
+## :...total_day_minutes &gt; 266:
+##     :...total_eve_charge &lt;= 13.32: no (73.9/11.4)
+##     :   total_eve_charge &gt; 13.32: yes (204.1/46.3)
+##     total_day_minutes &lt;= 266:
+##     :...total_intl_minutes &lt;= 3.8: no (50.5/0.6)
+##         total_intl_minutes &gt; 3.8:
+##         :...total_day_calls &gt; 146: yes (48.3/18.6)
+##             total_day_calls &lt;= 146:
+##             :...state in {AK,AL,AZ,CT,DE,FL,HI,IL,KS,MA,MO,NH,NM,OK,PA,RI,SD,
+##                 :         VA,VT,WI}: no (1188.3/154.4)
+##                 state in {AR,CA,CO,DC,GA,IA,ID,IN,KY,LA,MD,ME,MI,MN,MS,MT,NC,
+##                 :         ND,NE,NJ,NV,NY,OH,OR,SC,TN,TX,UT,WA,WV,WY}:
+##                 :...number_vmail_messages &gt; 36: no (89.9/6.9)
+##                     number_vmail_messages &lt;= 36:
+##                     :...total_eve_calls &lt;= 63: no (49.2/3.2)
+##                         total_eve_calls &gt; 63:
+##                         :...number_customer_service_calls &gt; 3:
+##                             :...total_day_minutes &lt;= 120.5: yes (27.9)
+##                             :   total_day_minutes &gt; 120.5:
+##                             :   :...total_eve_charge &gt; 23: no (25.6)
+##                             :       total_eve_charge &lt;= 23:
+##                             :       :...total_intl_calls &gt; 7: no (17.8/1.8)
+##                             :           total_intl_calls &lt;= 7:
+##                             :           :...total_day_minutes &lt;= 148.6: yes (23.4)
+##                             :               total_day_minutes &gt; 148.6:
+##                             :               :...state in {AR,DC,GA,IA,KY,LA,MI,
+##                             :                   :         MN,MS,MT,NE,NJ,NV,OH,
+##                             :                   :         TN,TX,WA,
+##                             :                   :         WY}: yes (178.6/62.2)
+##                             :                   state in {CA,CO,ID,IN,MD,ME,NC,
+##                             :                             ND,NY,OR,SC,UT,
+##                             :                             WV}: no (73.3/8.9)
+##                             number_customer_service_calls &lt;= 3:
+##                             :...total_day_minutes &lt;= 78.4: no (37)
+##                                 total_day_minutes &gt; 78.4:
+##                                 :...total_day_minutes &lt;= 82.7: yes (31/6.1)
+##                                     total_day_minutes &gt; 82.7:
+##                                     :...total_day_charge &lt;= 16.37: no (35.6)
+##                                         total_day_charge &gt; 16.37:
+##                                         :...total_eve_minutes &gt; 243:
+##                                             :...state in {DC,GA,IA,ID,IN,KY,LA,
+##                                             :   :         ME,MS,NC,OH,
+##                                             :   :         TN}: no (95.2/8.5)
+##                                             :   state in {AR,CA,CO,MD,MI,MN,MT,
+##                                             :   :         ND,NE,NJ,NV,NY,OR,SC,
+##                                             :   :         TX,UT,WA,WV,WY}: [S1]
+##                                             total_eve_minutes &lt;= 243:
+##                                             :...account_length &lt;= 48: no (117.3/0.6)
+##                                                 account_length &gt; 48:
+##                                                 :...account_length &gt; 128: [S2]
+##                                                     account_length &lt;= 128: [S3]
+## 
+## SubTree [S1]
+## 
+## number_vmail_messages &gt; 23: no (30.8/5.7)
+## number_vmail_messages &lt;= 23:
+## :...total_night_charge &lt;= 9.02: no (85.5/31.9)
+##     total_night_charge &gt; 9.02: yes (205.9/37.5)
+## 
+## SubTree [S2]
+## 
+## state in {AR,CA,CO,GA,IA,KY,ME,MI,ND,NE,NV,TX}: no (77.2)
+## state in {DC,ID,IN,LA,MD,MN,MS,MT,NC,NJ,NY,OH,OR,SC,TN,UT,WA,WV,WY}:
+## :...total_day_calls &lt;= 91: no (53/8.3)
+##     total_day_calls &gt; 91:
+##     :...total_intl_minutes &gt; 15.2: yes (23.5/1.2)
+##         total_intl_minutes &lt;= 15.2:
+##         :...total_intl_minutes &lt;= 12.2: yes (225.8/76.9)
+##             total_intl_minutes &gt; 12.2: no (26.1)
+## 
+## SubTree [S3]
+## 
+## total_eve_charge &gt; 17.87: no (214.5/20.1)
+## total_eve_charge &lt;= 17.87:
+## :...total_intl_minutes &gt; 13.9: no (40)
+##     total_intl_minutes &lt;= 13.9:
+##     :...total_eve_charge &lt;= 14.43: no (239.5/30.6)
+##         total_eve_charge &gt; 14.43:
+##         :...state in {AR,CO,DC,IA,IN,KY,LA,MD,NV,NY,OR,UT,WA,
+##             :         WY}: no (106.9)
+##             state in {CA,GA,ID,ME,MI,MN,MS,MT,NC,ND,NE,NJ,OH,SC,TN,TX,WV}:
+##             :...total_day_calls &gt; 121: yes (54.4/9.8)
+##                 total_day_calls &lt;= 121:
+##                 :...account_length &lt;= 105: yes (202.1/80.8)
+##                     account_length &gt; 105: no (43.9)
+## 
+## -----  Trial 3:  -----
+## 
+## Decision tree:
+## 
+## international_plan = yes:
+## :...total_intl_calls &lt;= 2: yes (117.3)
+## :   total_intl_calls &gt; 2:
+## :   :...total_intl_minutes &gt; 13: yes (62.2)
+## :       total_intl_minutes &lt;= 13:
+## :       :...number_customer_service_calls &gt; 4: yes (20.1/1.6)
+## :           number_customer_service_calls &lt;= 4:
+## :           :...state in {AK,AL,CA,DC,FL,HI,IA,ID,IL,IN,KY,LA,MI,MN,NC,ND,NE,
+## :               :         NJ,NM,NV,NY,OK,OR,PA,RI,SC,UT,VT,WA,WV,
+## :               :         WY}: no (96.3)
+## :               state in {AR,AZ,CO,CT,DE,GA,KS,MA,MD,ME,MO,MS,MT,NH,OH,SD,TN,
+## :                         TX,VA,WI}: yes (166.4/65.3)
+## international_plan = no:
+## :...number_customer_service_calls &gt; 3:
+##     :...total_day_minutes &lt;= 180.8: yes (284.5/85)
+##     :   total_day_minutes &gt; 180.8:
+##     :   :...total_eve_minutes &lt;= 135.1: yes (40.3/14.7)
+##     :       total_eve_minutes &gt; 135.1:
+##     :       :...total_night_charge &lt;= 11.41: no (216.9/25.2)
+##     :           total_night_charge &gt; 11.41: yes (53.8/22)
+##     number_customer_service_calls &lt;= 3:
+##     :...total_day_minutes &gt; 221.8:
+##         :...total_day_charge &gt; 53.65: yes (25.2)
+##         :   total_day_charge &lt;= 53.65:
+##         :   :...voice_mail_plan = yes:
+##         :       :...state in {AK,AL,AR,AZ,CA,CO,CT,DC,DE,GA,HI,IA,ID,IL,IN,KS,
+##         :       :   :         KY,LA,MA,MD,ME,MI,MN,MO,MS,MT,NC,ND,NE,NH,NM,NY,
+##         :       :   :         OH,OK,OR,PA,RI,SC,SD,TN,TX,UT,VA,VT,WA,WI,WV,
+##         :       :   :         WY}: no (189.6)
+##         :       :   state in {FL,NJ,NV}: yes (28.1/7.9)
+##         :       voice_mail_plan = no:
+##         :       :...total_eve_charge &gt; 18.21: yes (326.7/98.9)
+##         :           total_eve_charge &lt;= 18.21:
+##         :           :...total_intl_minutes &lt;= 14.7: no (452.8/115.3)
+##         :               total_intl_minutes &gt; 14.7: yes (36.7/7.1)
+##         total_day_minutes &lt;= 221.8:
+##         :...state in {AK,AL,AR,CT,DE,FL,HI,IA,KS,KY,MA,MO,NM,OK,
+##             :         PA}: no (422.7)
+##             state in {AZ,CA,CO,DC,GA,ID,IL,IN,LA,MD,ME,MI,MN,MS,MT,NC,ND,NE,NH,
+##             :         NJ,NV,NY,OH,OR,RI,SC,SD,TN,TX,UT,VA,VT,WA,WI,WV,WY}:
+##             :...total_day_minutes &lt;= 78.5: no (41.2)
+##                 total_day_minutes &gt; 78.5:
+##                 :...total_day_calls &lt;= 59: no (25.4)
+##                     total_day_calls &gt; 59:
+##                     :...total_day_calls &lt;= 63: yes (34/14.2)
+##                         total_day_calls &gt; 63:
+##                         :...account_length &lt;= 57: no (191.6/17.7)
+##                             account_length &gt; 57:
+##                             :...total_intl_minutes &lt;= 8.2: no (341.4/43.4)
+##                                 total_intl_minutes &gt; 8.2:
+##                                 :...total_eve_charge &lt;= 11.42: no (66.4)
+##                                     total_eve_charge &gt; 11.42:
+##                                     :...total_eve_charge &lt;= 12.26: yes (75.5/23.9)
+##                                         total_eve_charge &gt; 12.26:
+##                                         :...total_day_calls &lt;= 74: no (57.3)
+##                                             total_day_calls &gt; 74: [S1]
+## 
+## SubTree [S1]
+## 
+## total_night_calls &lt;= 64: no (29.7)
+## total_night_calls &gt; 64:
+## :...total_night_charge &lt;= 6.52: no (110.3/6.6)
+##     total_night_charge &gt; 6.52:
+##     :...total_eve_charge &lt;= 20.91:
+##         :...state in {CO,GA,IL,MI,NH,NJ,NV,OR,RI,SD,WI,WV,WY}: no (163.6)
+##         :   state in {AZ,CA,DC,ID,IN,LA,MD,ME,MN,MS,MT,NC,ND,NE,NY,OH,SC,TN,TX,
+##         :   :         UT,VA,VT,WA}:
+##         :   :...number_vmail_messages &lt;= 32: no (530.1/174.3)
+##         :       number_vmail_messages &gt; 32: yes (55/18.2)
+##         total_eve_charge &gt; 20.91:
+##         :...total_day_calls &gt; 121: no (17.6)
+##             total_day_calls &lt;= 121:
+##             :...state in {AZ,CA,CO,DC,GA,ID,IL,IN,LA,MD,ME,MS,NC,ND,NY,OH,OR,
+##                 :         SC,SD,VT}: no (35)
+##                 state in {MI,MN,MT,NE,NH,NJ,NV,RI,TN,TX,UT,VA,WA,WI,WV,
+##                           WY}: yes (186.2/56.9)
+## 
+## -----  Trial 4:  -----
+## 
+## Decision tree:
+## 
+## total_day_minutes &gt; 253.1:
+## :...total_day_charge &gt; 53.65: yes (30.2)
+## :   total_day_charge &lt;= 53.65:
+## :   :...voice_mail_plan = yes: no (138.5/31.9)
+## :       voice_mail_plan = no:
+## :       :...total_eve_charge &lt;= 15.74: no (211.2/86.3)
+## :           total_eve_charge &gt; 15.74:
+## :           :...total_night_charge &lt;= 6.5: no (44.7/9.6)
+## :               total_night_charge &gt; 6.5: yes (210.5/19.3)
+## total_day_minutes &lt;= 253.1:
+## :...number_customer_service_calls &gt; 3:
+##     :...total_day_minutes &lt;= 138.7: yes (91.2/13.9)
+##     :   total_day_minutes &gt; 138.7:
+##     :   :...total_eve_charge &lt;= 16.21: yes (188.3/81.5)
+##     :       total_eve_charge &gt; 16.21:
+##     :       :...number_vmail_messages &gt; 26: no (62.1/0.4)
+##     :           number_vmail_messages &lt;= 26:
+##     :           :...international_plan = no: no (226.1/53.6)
+##     :               international_plan = yes: yes (26.2/6.8)
+##     number_customer_service_calls &lt;= 3:
+##     :...total_day_calls &gt; 147: no (43.6/6.7)
+##         total_day_calls &lt;= 147:
+##         :...international_plan = yes:
+##             :...total_intl_calls &lt;= 2: yes (64.8)
+##             :   total_intl_calls &gt; 2:
+##             :   :...total_intl_minutes &gt; 13.1: yes (26.3)
+##             :       total_intl_minutes &lt;= 13.1:
+##             :       :...total_eve_charge &lt;= 23.47: no (206.7/9.7)
+##             :           total_eve_charge &gt; 23.47: yes (42.8/14.1)
+##             international_plan = no:
+##             :...state in {AK,AL,AR,DE,FL,GA,HI,IA,MA,ME,MI,MO,NH,NM,NV,OK,PA,
+##                 :         RI,SD,TN,VA,VT,WI,WV}: no (1091.2/149.8)
+##                 state in {AZ,CA,CO,CT,DC,ID,IL,IN,KS,KY,LA,MD,MN,MS,MT,NC,ND,
+##                 :         NE,NJ,NY,OH,OR,SC,TX,UT,WA,WY}:
+##                 :...number_vmail_messages &gt; 36: no (76.5/5.6)
+##                     number_vmail_messages &lt;= 36:
+##                     :...total_night_charge &lt;= 5.38: no (74.4/5.6)
+##                         total_night_charge &gt; 5.38:
+##                         :...total_day_calls &gt; 128: yes (120.7/57.5)
+##                             total_day_calls &lt;= 128:
+##                             :...total_night_calls &gt; 135: no (57.6)
+##                                 total_night_calls &lt;= 135:
+##                                 :...total_day_minutes &gt; 236.3: yes (169.9/84.2)
+##                                     total_day_minutes &lt;= 236.3:
+##                                     :...total_eve_calls &lt;= 75: no (138.8/61.3)
+##                                         total_eve_calls &gt; 75:
+##                                         :...total_night_calls &lt;= 72: no (57.1)
+##                                             total_night_calls &gt; 72:
+##                                             :...state in {AZ,CO,CT,KY,MD,
+##                                                 :         NY}: no (126.9/5.9)
+##                                                 state in {CA,DC,ID,IL,IN,KS,LA,
+##                                                 :         MN,MS,MT,NC,ND,NE,NJ,
+##                                                 :         OH,OR,SC,TX,UT,WA,WY}: [S1]
+## 
+## SubTree [S1]
+## 
+## number_vmail_messages &gt; 28: no (94.1/10.6)
+## number_vmail_messages &lt;= 28:
+## :...total_day_minutes &gt; 226.1: no (65.3/4.8)
+##     total_day_minutes &lt;= 226.1:
+##     :...total_day_calls &lt;= 74: no (58.5/5.3)
+##         total_day_calls &gt; 74:
+##         :...total_night_minutes &gt; 294.8: yes (32.2/7)
+##             total_night_minutes &lt;= 294.8:
+##             :...total_eve_charge &lt;= 12.11: no (63.4/5.3)
+##                 total_eve_charge &gt; 12.11:
+##                 :...state in {KS,MN,MT,NC,ND,NE,NJ,OR,UT,WY}: no (272/56.6)
+##                     state in {CA,DC,ID,IL,IN,LA,MS,OH,SC,TX,WA}:
+##                     :...total_eve_charge &lt;= 17.06: yes (225.5/85.1)
+##                         total_eve_charge &gt; 17.06: no (162.7/48.7)
+## 
+## -----  Trial 5:  -----
+## 
+## Decision tree:
+## 
+## total_day_charge &gt; 45.1:
+## :...voice_mail_plan = yes: no (108.1/37.2)
+## :   voice_mail_plan = no:
+## :   :...total_eve_charge &lt;= 11.75: no (39.2/10.7)
+## :       total_eve_charge &gt; 11.75: yes (288.4/50.1)
+## total_day_charge &lt;= 45.1:
+## :...number_customer_service_calls &gt; 4:
+##     :...total_day_minutes &lt;= 135.7: yes (28.9)
+##     :   total_day_minutes &gt; 135.7: no (220.5/99.6)
+##     number_customer_service_calls &lt;= 4:
+##     :...total_eve_charge &gt; 21.56:
+##         :...total_day_charge &lt;= 35.31: no (422.7/115.5)
+##         :   total_day_charge &gt; 35.31:
+##         :   :...voice_mail_plan = yes: no (25.7/0.3)
+##         :       voice_mail_plan = no:
+##         :       :...total_night_charge &lt;= 7.85: no (57.5/14.2)
+##         :           total_night_charge &gt; 7.85: yes (191.9/25.3)
+##         total_eve_charge &lt;= 21.56:
+##         :...total_night_charge &lt;= 3.82: yes (44.9/19.5)
+##             total_night_charge &gt; 3.82:
+##             :...international_plan = yes:
+##                 :...total_intl_calls &lt;= 2: yes (47.1)
+##                 :   total_intl_calls &gt; 2:
+##                 :   :...total_intl_minutes &lt;= 13: no (195.4/15.4)
+##                 :       total_intl_minutes &gt; 13: yes (29.8)
+##                 international_plan = no:
+##                 :...total_intl_minutes &lt;= 4: no (29.2)
+##                     total_intl_minutes &gt; 4:
+##                     :...total_eve_calls &lt;= 66: no (80.2/3.9)
+##                         total_eve_calls &gt; 66:
+##                         :...total_eve_calls &lt;= 68: yes (38.6/14.5)
+##                             total_eve_calls &gt; 68:
+##                             :...total_night_calls &lt;= 78:
+##                                 :...state in {AK,AL,AR,AZ,DC,FL,GA,HI,IA,ID,IL,
+##                                 :   :         IN,KS,MA,MI,MN,MO,MS,MT,NE,NH,NM,
+##                                 :   :         NV,NY,OH,OK,PA,RI,TX,VA,VT,WA,WI,
+##                                 :   :         WY}: no (184.2/4.4)
+##                                 :   state in {CA,CO,CT,DE,KY,LA,MD,ME,NC,ND,NJ,
+##                                 :             OR,SC,SD,TN,UT,
+##                                 :             WV}: yes (190.8/70.7)
+##                                 total_night_calls &gt; 78:
+##                                 :...total_eve_charge &lt;= 14.19: no (571.2/63.7)
+##                                     total_eve_charge &gt; 14.19:
+##                                     :...state in {AZ,CO,DE,HI,IL,KY,MA,MO,NH,
+##                                         :         NM,OK,PA,SD,TN,WV,
+##                                         :         WY}: no (297.1/10.4)
+##                                         state in {AK,AL,AR,CA,CT,DC,FL,GA,IA,
+##                                         :         ID,IN,KS,LA,MD,ME,MI,MN,MS,
+##                                         :         MT,NC,ND,NE,NJ,NV,NY,OH,OR,
+##                                         :         RI,SC,TX,UT,VA,VT,WA,WI}:
+##                                         :...account_length &gt; 174: no (30.7)
+##                                             account_length &lt;= 174: [S1]
+## 
+## SubTree [S1]
+## 
+## number_customer_service_calls &gt; 3: no (142.9/59.1)
+## number_customer_service_calls &lt;= 3:
+## :...total_night_charge &lt;= 5.39: no (30.4)
+##     total_night_charge &gt; 5.39:
+##     :...account_length &lt;= 95:
+##         :...state in {AK,CA,CT,FL,IN,LA,MD,ME,MI,NC,ND,NE,NJ,NV,NY,RI,SC,UT,
+##         :   :         VA}: no (211.9)
+##         :   state in {AL,AR,DC,GA,IA,ID,KS,MN,MS,MT,OH,OR,TX,VT,WA,WI}:
+##         :   :...total_intl_calls &gt; 6: no (41/1.5)
+##         :       total_intl_calls &lt;= 6:
+##         :       :...total_intl_calls &lt;= 4: no (156.4/40.3)
+##         :           total_intl_calls &gt; 4: yes (99.4/39.3)
+##         account_length &gt; 95:
+##         :...state in {AK,AL,AR,GA,IA,KS,MN,NV,RI,VT,WI}: no (90.3/0.3)
+##             state in {CA,CT,DC,FL,ID,IN,LA,MD,ME,MI,MS,MT,NC,ND,NE,NJ,NY,OH,OR,
+##             :         SC,TX,UT,VA,WA}:
+##             :...total_day_calls &lt;= 79: no (42.2/4.6)
+##                 total_day_calls &gt; 79:
+##                 :...number_vmail_messages &gt; 35: yes (38.7/11.4)
+##                     number_vmail_messages &lt;= 35:
+##                     :...number_vmail_messages &gt; 28: no (33.5)
+##                         number_vmail_messages &lt;= 28:
+##                         :...total_intl_minutes &lt;= 9.9: no (173.9/45.3)
+##                             total_intl_minutes &gt; 9.9:
+##                             :...state in {FL,ME,NC,ND,UT,VA}: no (28.3)
+##                                 state in {CA,CT,DC,ID,IN,LA,MD,MI,MS,MT,NE,NJ,
+##                                 :         NY,OH,OR,SC,TX,WA}:
+##                                 :...total_day_charge &lt;= 16.15: no (14.2)
+##                                     total_day_charge &gt; 16.15:
+##                                     :...number_vmail_messages &gt; 26: yes (21.1/2)
+##                                         number_vmail_messages &lt;= 26:
+##                                         :...total_eve_calls &lt;= 85: yes (48/7.4)
+##                                             total_eve_calls &gt; 85: no (206/94.6)
+## 
+## -----  Trial 6:  -----
+## 
+## Decision tree:
+## 
+## number_customer_service_calls &gt; 3:
+## :...total_day_minutes &lt;= 173.5: yes (347.9/83.5)
+## :   total_day_minutes &gt; 173.5:
+## :   :...total_eve_calls &gt; 123: no (49.9/3.7)
+## :       total_eve_calls &lt;= 123:
+## :       :...total_intl_calls &gt; 6: no (34.3/3.5)
+## :           total_intl_calls &lt;= 6:
+## :           :...total_day_calls &gt; 127: yes (26.5/2.7)
+## :               total_day_calls &lt;= 127:
+## :               :...total_day_calls &gt; 124: no (18.1)
+## :                   total_day_calls &lt;= 124:
+## :                   :...state in {AK,AL,AZ,CA,CT,FL,HI,IL,KY,MA,MO,MT,NE,NH,NM,
+## :                       :         NV,NY,OH,OK,PA,RI,SC,SD,TN,UT,VA,VT,
+## :                       :         WI}: no (74.3/2)
+## :                       state in {AR,CO,DC,DE,GA,IA,ID,IN,KS,LA,MD,ME,MI,MN,MS,
+## :                                 NC,ND,NJ,OR,TX,WA,WV,WY}: yes (206.8/84.9)
+## number_customer_service_calls &lt;= 3:
+## :...total_day_minutes &gt; 253.5:
+##     :...total_night_charge &gt; 9.41: yes (231.2/57.4)
+##     :   total_night_charge &lt;= 9.41:
+##     :   :...total_eve_charge &lt;= 17.44: no (159.9/43.8)
+##     :       total_eve_charge &gt; 17.44: yes (142.2/44.1)
+##     total_day_minutes &lt;= 253.5:
+##     :...total_eve_charge &gt; 21.56:
+##         :...number_vmail_messages &gt; 32: no (28.3/1.7)
+##         :   number_vmail_messages &lt;= 32:
+##         :   :...total_night_minutes &gt; 232.3: yes (171.7/56.2)
+##         :       total_night_minutes &lt;= 232.3:
+##         :       :...state in {AK,AL,AZ,CO,CT,DC,DE,FL,HI,IA,KS,KY,LA,MA,ME,MN,
+##         :           :         MS,MT,ND,NE,NJ,OH,OK,OR,PA,RI,SD,TN,UT,VT,
+##         :           :         WA}: no (190.8/23.8)
+##         :           state in {AR,CA,GA,ID,IL,IN,MD,MI,MO,NC,NH,NM,NV,NY,SC,TX,
+##         :                     VA,WI,WV,WY}: yes (227.2/77.7)
+##         total_eve_charge &lt;= 21.56:
+##         :...total_day_calls &lt;= 62: no (65.5/2.2)
+##             total_day_calls &gt; 62:
+##             :...total_eve_calls &lt;= 66: no (59/3.5)
+##                 total_eve_calls &gt; 66:
+##                 :...state in {AK,DE,HI,IA,MA,MO,NH,NM,NV,OK,PA,
+##                     :         RI}: no (254.2/17.8)
+##                     state in {AL,AR,AZ,CA,CO,CT,DC,FL,GA,ID,IL,IN,KS,KY,LA,MD,
+##                     :         ME,MI,MN,MS,MT,NC,ND,NE,NJ,NY,OH,OR,SC,SD,TN,TX,
+##                     :         UT,VA,VT,WA,WI,WV,WY}:
+##                     :...total_night_calls &lt;= 70: no (179.8/18.7)
+##                         total_night_calls &gt; 70:
+##                         :...account_length &gt; 119:
+##                             :...state in {AL,AR,AZ,CA,CT,GA,KS,KY,ME,MI,SD,TN,
+##                             :   :         TX,VA,VT,WI,WV}: no (164.4/8.1)
+##                             :   state in {CO,DC,FL,ID,IL,IN,LA,MD,MN,MS,MT,NC,
+##                             :   :         ND,NE,NJ,NY,OH,OR,SC,UT,WA,WY}:
+##                             :   :...total_intl_minutes &lt;= 5.8: yes (43.2/9.5)
+##                             :       total_intl_minutes &gt; 5.8: no (519.7/192.2)
+##                             account_length &lt;= 119:
+##                             :...state in {CO,FL,IL,KY,NY,OR,SC,WV,
+##                                 :         WY}: no (220.3/5.4)
+##                                 state in {AL,AR,AZ,CA,CT,DC,GA,ID,IN,KS,LA,MD,
+##                                 :         ME,MI,MN,MS,MT,NC,ND,NE,NJ,OH,SD,TN,
+##                                 :         TX,UT,VA,VT,WA,WI}:
+##                                 :...total_eve_charge &lt;= 11.34: no (52.6/1.3)
+##                                     total_eve_charge &gt; 11.34:
+##                                     :...total_intl_minutes &lt;= 7.3: no (100.1/4.7)
+##                                         total_intl_minutes &gt; 7.3:
+##                                         :...total_night_charge &lt;= 7.47: no (183.7/19.1)
+##                                             total_night_charge &gt; 7.47:
+##                                             :...total_day_calls &gt; 129: no (52.4/3.9)
+##                                                 total_day_calls &lt;= 129: [S1]
+## 
+## SubTree [S1]
+## 
+## total_eve_calls &lt;= 77: yes (76.7/32.4)
+## total_eve_calls &gt; 77:
+## :...state in {AZ,DC,GA,ID,KS,MI,UT}: no (101.7/3.4)
+##     state in {AL,AR,CA,CT,IN,LA,MD,ME,MN,MS,MT,NC,ND,NE,NJ,OH,SD,TN,TX,VA,VT,
+##     :         WA,WI}:
+##     :...total_eve_calls &lt;= 103: no (235/58.5)
+##         total_eve_calls &gt; 103:
+##         :...total_night_calls &lt;= 84: yes (71.5/15.6)
+##             total_night_calls &gt; 84: no (211.1/80.4)
+## 
+## -----  Trial 7:  -----
+## 
+## Decision tree:
+## 
+## total_day_minutes &gt; 283.9: yes (167.5/49.9)
+## total_day_minutes &lt;= 283.9:
+## :...international_plan = yes:
+##     :...total_intl_calls &lt;= 2: yes (135.9)
+##     :   total_intl_calls &gt; 2:
+##     :   :...total_intl_minutes &lt;= 13: no (296.6/73.1)
+##     :       total_intl_minutes &gt; 13: yes (108.1)
+##     international_plan = no:
+##     :...number_customer_service_calls &gt; 3:
+##         :...total_day_minutes &gt; 188: no (271.2/66.3)
+##         :   total_day_minutes &lt;= 188:
+##         :   :...state in {AK,AR,CA,CT,DE,FL,ID,KS,KY,LA,MA,MN,MO,MS,MT,ND,NE,
+##         :       :         NH,NJ,NM,NV,NY,OK,PA,RI,SC,SD,TN,UT,
+##         :       :         WA}: yes (198.8/20.9)
+##         :       state in {AL,AZ,CO,DC,GA,HI,IA,IL,IN,MD,ME,MI,NC,OH,OR,TX,VA,
+##         :                 VT,WI,WV,WY}: no (186.9/51.8)
+##         number_customer_service_calls &lt;= 3:
+##         :...total_eve_minutes &lt;= 167: no (614.4/82.7)
+##             total_eve_minutes &gt; 167:
+##             :...voice_mail_plan = yes: no (588.1/97.5)
+##                 voice_mail_plan = no:
+##                 :...total_day_minutes &lt;= 210.5:
+##                     :...state in {AK,AL,AR,CT,DE,FL,GA,HI,IA,IL,KS,KY,MA,MO,ND,
+##                     :   :         NH,NJ,NM,NV,OK,PA,RI,SD,UT,
+##                     :   :         VT}: no (322.2)
+##                     :   state in {AZ,CA,CO,DC,ID,IN,LA,MD,ME,MI,MN,MS,MT,NC,NE,
+##                     :   :         NY,OH,OR,SC,TN,TX,VA,WA,WI,WV,WY}:
+##                     :   :...account_length &gt; 151: yes (135.8/60.6)
+##                     :       account_length &lt;= 151:
+##                     :       :...total_intl_minutes &lt;= 7.2: no (60.8/8.7)
+##                     :           total_intl_minutes &gt; 7.2:
+##                     :           :...total_intl_minutes &lt;= 7.4: yes (30.8/4.1)
+##                     :               total_intl_minutes &gt; 7.4: no (646.1/173.2)
+##                     total_day_minutes &gt; 210.5:
+##                     :...total_night_charge &lt;= 8.55:
+##                         :...total_eve_charge &lt;= 22.85: no (240.1/44.8)
+##                         :   total_eve_charge &gt; 22.85: yes (23.3/5)
+##                         total_night_charge &gt; 8.55:
+##                         :...total_day_charge &gt; 45.17: yes (38.1)
+##                             total_day_charge &lt;= 45.17:
+##                             :...total_eve_charge &gt; 23.53: yes (54.5/5.1)
+##                                 total_eve_charge &lt;= 23.53:
+##                                 :...account_length &lt;= 36: no (18.8/0.8)
+##                                     account_length &gt; 36:
+##                                     :...state in {IL,OK}: yes (0)
+##                                         state in {AK,AZ,CO,DC,FL,HI,LA,MA,MT,
+##                                         :         NC,NE,NH,NM,PA,RI,SD,VA,WI,
+##                                         :         WY}: no (51.3)
+##                                         state in {AL,AR,CA,CT,DE,GA,IA,ID,IN,
+##                                         :         KS,KY,MD,ME,MI,MN,MO,MS,ND,
+##                                         :         NJ,NV,NY,OH,OR,SC,TN,TX,UT,
+##                                         :         VT,WA,WV}:
+##                                         :...total_intl_calls &lt;= 6: yes (270.3/87.2)
+##                                             total_intl_calls &gt; 6: no (35.3/11.5)
+## 
+## -----  Trial 8:  -----
+## 
+## Decision tree:
+## 
+## international_plan = yes:
+## :...total_intl_calls &lt;= 2: yes (116.4)
+## :   total_intl_calls &gt; 2:
+## :   :...total_intl_minutes &gt; 13: yes (90.5)
+## :       total_intl_minutes &lt;= 13:
+## :       :...number_customer_service_calls &lt;= 3: no (258.7/84.8)
+## :           number_customer_service_calls &gt; 3: yes (89.6/24)
+## international_plan = no:
+## :...number_customer_service_calls &gt; 3:
+##     :...total_day_minutes &lt;= 134.6: yes (113.1/7.2)
+##     :   total_day_minutes &gt; 134.6:
+##     :   :...total_day_calls &gt; 138: yes (26.4/1.6)
+##     :       total_day_calls &lt;= 138:
+##     :       :...total_eve_charge &lt;= 11.48: yes (89/22.2)
+##     :           total_eve_charge &gt; 11.48:
+##     :           :...voice_mail_plan = yes: no (116.1/18.8)
+##     :               voice_mail_plan = no:
+##     :               :...total_day_minutes &lt;= 160.5: yes (97.5/24.1)
+##     :                   total_day_minutes &gt; 160.5:
+##     :                   :...total_day_minutes &lt;= 241.5: no (233.2/62.7)
+##     :                       total_day_minutes &gt; 241.5: yes (84.2/21.1)
+##     number_customer_service_calls &lt;= 3:
+##     :...total_night_minutes &lt;= 116.9: no (133.1)
+##         total_night_minutes &gt; 116.9:
+##         :...total_day_minutes &gt; 241.9:
+##             :...voice_mail_plan = yes: no (173.3/20.3)
+##             :   voice_mail_plan = no:
+##             :   :...total_day_charge &gt; 51.07: yes (33.1)
+##             :       total_day_charge &lt;= 51.07:
+##             :       :...total_eve_charge &lt;= 15.75:
+##             :           :...total_intl_minutes &lt;= 13.6: no (173.6/29.7)
+##             :           :   total_intl_minutes &gt; 13.6: yes (44/7.9)
+##             :           total_eve_charge &gt; 15.75:
+##             :           :...total_intl_minutes &lt;= 7.2: no (43.4/9.9)
+##             :               total_intl_minutes &gt; 7.2: yes (214.6/40.3)
+##             total_day_minutes &lt;= 241.9:
+##             :...total_eve_charge &lt;= 14.43: no (400.8/11)
+##                 total_eve_charge &gt; 14.43:
+##                 :...state in {AK,AZ,FL,HI,IA,IL,KY,MA,NH,OH,OK,PA,SD,VA,
+##                     :         WI}: no (317.1/0.7)
+##                     state in {AL,AR,CA,CO,CT,DC,DE,GA,ID,IN,KS,LA,MD,ME,MI,MN,
+##                     :         MO,MS,MT,NC,ND,NE,NJ,NM,NV,NY,OR,RI,SC,TN,TX,UT,
+##                     :         VT,WA,WV,WY}:
+##                     :...total_eve_calls &lt;= 70: no (95.2/2.2)
+##                         total_eve_calls &gt; 70:
+##                         :...total_eve_calls &lt;= 73: yes (69.6/29.9)
+##                             total_eve_calls &gt; 73:
+##                             :...total_night_calls &lt;= 67: no (73.9)
+##                                 total_night_calls &gt; 67:
+##                                 :...total_day_calls &lt;= 72: no (94.1/3)
+##                                     total_day_calls &gt; 72:
+##                                     :...total_intl_minutes &lt;= 5.2: no (48/1.6)
+##                                         total_intl_minutes &gt; 5.2:
+##                                         :...total_intl_minutes &lt;= 5.8: yes (30.5/11.7)
+##                                             total_intl_minutes &gt; 5.8:
+##                                             :...state in {CO,GA,OR,RI,
+##                                                 :         VT}: no (108.8)
+##                                                 state in {AL,AR,CA,CT,DC,DE,ID,
+##                                                 :         IN,KS,LA,MD,ME,MI,MN,
+##                                                 :         MO,MS,MT,NC,ND,NE,NJ,
+##                                                 :         NM,NV,NY,SC,TN,TX,UT,
+##                                                 :         WA,WV,WY}: [S1]
+## 
+## SubTree [S1]
+## 
+## total_day_calls &gt; 124: no (146.9/59.4)
+## total_day_calls &lt;= 124:
+## :...number_vmail_messages &gt; 28: no (81)
+##     number_vmail_messages &lt;= 28:
+##     :...total_day_calls &gt; 121: no (36.5)
+##         total_day_calls &lt;= 121:
+##         :...total_eve_charge &lt;= 20.68: no (513.7/119.4)
+##             total_eve_charge &gt; 20.68:
+##             :...total_day_minutes &lt;= 165.2: no (123.9/18.5)
+##                 total_day_minutes &gt; 165.2: yes (192.2/74.1)
+## 
+## -----  Trial 9:  -----
+## 
+## Decision tree:
+## 
+## international_plan = yes:
+## :...total_intl_calls &lt;= 2: yes (96.2)
+## :   total_intl_calls &gt; 2:
+## :   :...total_intl_minutes &gt; 13: yes (74.8)
+## :       total_intl_minutes &lt;= 13:
+## :       :...number_customer_service_calls &gt; 4: yes (23.5)
+## :           number_customer_service_calls &lt;= 4:
+## :           :...state in {AK,AL,CA,DC,FL,HI,IA,ID,IL,IN,KY,LA,MA,MI,MN,MO,NC,
+## :               :         ND,NE,NJ,NM,NV,NY,OK,OR,PA,RI,SC,UT,VA,VT,WA,WV,
+## :               :         WY}: no (105.2)
+## :               state in {AR,AZ,CO,CT,DE,GA,KS,MD,ME,MS,MT,NH,OH,SD,TN,TX,
+## :                         WI}: yes (211.1/87.7)
+## international_plan = no:
+## :...number_customer_service_calls &gt; 3:
+##     :...total_day_minutes &lt;= 134.6: yes (87.6)
+##     :   total_day_minutes &gt; 134.6:
+##     :   :...state in {AL,AZ,FL,HI,ID,IL,IN,MD,NC,ND,NE,NJ,NM,OK,PA,UT,VA,
+##     :       :         VT}: no (199.8/36.4)
+##     :       state in {AR,CA,LA,MS,MT}: yes (56.5)
+##     :       state in {AK,CO,CT,DC,DE,GA,IA,KS,KY,MA,ME,MI,MN,MO,NH,NV,NY,OH,OR,
+##     :       :         RI,SC,SD,TN,TX,WA,WI,WV,WY}:
+##     :       :...total_day_calls &lt;= 68: yes (38.8/4.3)
+##     :           total_day_calls &gt; 68:
+##     :           :...total_eve_charge &lt;= 10.75: yes (23.4)
+##     :               total_eve_charge &gt; 10.75:
+##     :               :...total_intl_calls &gt; 7: no (31.6/2.8)
+##     :                   total_intl_calls &lt;= 7:
+##     :                   :...total_night_calls &lt;= 108: no (209.2/80.8)
+##     :                       total_night_calls &gt; 108: yes (155.8/47.6)
+##     number_customer_service_calls &lt;= 3:
+##     :...total_day_minutes &lt;= 208.3: no (1579.5/41.1)
+##         total_day_minutes &gt; 208.3:
+##         :...voice_mail_plan = yes: no (253.6/7.2)
+##             voice_mail_plan = no:
+##             :...total_day_minutes &gt; 265.9:
+##                 :...total_eve_minutes &lt;= 167.3: no (108.5/40.8)
+##                 :   total_eve_minutes &gt; 167.3: yes (177.9/14.3)
+##                 total_day_minutes &lt;= 265.9:
+##                 :...total_eve_charge &gt; 22.69: yes (177.2/58.2)
+##                     total_eve_charge &lt;= 22.69:
+##                     :...total_night_charge &lt;= 7.25: no (135.3)
+##                         total_night_charge &gt; 7.25:
+##                         :...total_eve_charge &lt;= 14.19: no (72.1)
+##                             total_eve_charge &gt; 14.19:
+##                             :...total_day_minutes &gt; 253.5: yes (96.3/38.1)
+##                                 total_day_minutes &lt;= 253.5:
+##                                 :...state in {AK,AL,AZ,CO,DC,FL,HI,IA,IL,IN,KY,
+##                                     :         LA,MA,ME,MN,MO,MT,NC,NE,NH,NM,NV,
+##                                     :         NY,OK,PA,RI,SC,SD,TN,VA,VT,WI,WV,
+##                                     :         WY}: no (244/5.5)
+##                                     state in {AR,CA,CT,DE,GA,ID,KS,MD,MI,MS,ND,
+##                                     :         NJ,OH,OR,TX,UT,WA}:
+##                                     :...total_intl_minutes &gt; 12.8: yes (25/3.1)
+##                                         total_intl_minutes &lt;= 12.8:
+##                                         :...total_night_charge &lt;= 13.33: no (230.6/66.2)
+##                                             total_night_charge &gt; 13.33: yes (13.6)
+## 
+## 
+## Evaluation on training data (4500 cases):
+## 
+## Trial        Decision Tree   
+## -----      ----------------  
+##    Size      Errors  
+## 
+##    0     29  172( 3.8%)
+##    1     24  559(12.4%)
+##    2     36  591(13.1%)
+##    3     32  527(11.7%)
+##    4     32  524(11.6%)
+##    5     37  506(11.2%)
+##    6     31  649(14.4%)
+##    7     22  372( 8.3%)
+##    8     33  348( 7.7%)
+##    9     25  293( 6.5%)
+## boost            101( 2.2%)   &lt;&lt;
+## 
+## 
+##     (a)   (b)    &lt;-classified as
+##    ----  ----
+##     531    94    (a): class yes
+##       7  3868    (b): class no
+## 
+## 
+##  Attribute usage:
+## 
+##  100.00% international_plan
+##  100.00% total_day_minutes
+##  100.00% total_day_charge
+##  100.00% number_customer_service_calls
+##   99.93% total_eve_charge
+##   97.38% total_intl_minutes
+##   95.84% state
+##   93.69% total_day_calls
+##   93.27% total_night_charge
+##   89.80% total_eve_calls
+##   87.73% total_eve_minutes
+##   84.69% total_night_minutes
+##   84.47% total_night_calls
+##   75.69% voice_mail_plan
+##   71.44% account_length
+##   69.18% number_vmail_messages
+##   45.76% total_intl_calls
+##    6.89% total_intl_charge
+## 
+## 
+## Time: 0.7 secs</code></pre>
+<p>podemos ver cada uno de los árboles construidos y el rendimiento sobre el <code>training set</code>:</p>
+<p>El nuevo clasificador se equivoca en 104 de las 4500 observaciones que tiene el <code>training set</code>, un 2.31% de errores frente al 4.53% que tenía sobre el <code>training set</code> nuestro modelo anterior. Se trata de una mejora del 50% en el error de entrenamiento, pero lo que en realidad nos importa es el comportamiento del nuevo modelo sobre los datos que no ha visto hasta ahora, los del <code>test set</code>:</p>
+<pre class="r"><code>C50_predictions_boost10 &lt;- predict(C50_churn_model_boost10, churn_test)
+
+C50_cm_boost10 &lt;- confusionMatrix(data      = C50_predictions_boost10, 
+                                  reference = churn_test$churn)
+C50_cm_boost10$table</code></pre>
+<pre><code>##           Reference
+## Prediction yes  no
+##        yes  55   3
+##        no   27 415</code></pre>
+<pre class="r"><code>C50_cm_boost10</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction yes  no
+##        yes  55   3
+##        no   27 415
+##                                           
+##                Accuracy : 0.94            
+##                  95% CI : (0.9155, 0.9592)
+##     No Information Rate : 0.836           
+##     P-Value [Acc &gt; NIR] : 1.619e-12       
+##                                           
+##                   Kappa : 0.752           
+##                                           
+##  Mcnemar&#39;s Test P-Value : 2.679e-05       
+##                                           
+##             Sensitivity : 0.6707          
+##             Specificity : 0.9928          
+##          Pos Pred Value : 0.9483          
+##          Neg Pred Value : 0.9389          
+##              Prevalence : 0.1640          
+##          Detection Rate : 0.1100          
+##    Detection Prevalence : 0.1160          
+##       Balanced Accuracy : 0.8318          
+##                                           
+##        &#39;Positive&#39; Class : yes             
+## </code></pre>
+<p>la <code>Accuracy</code> ha pasado del 0.95 al 0.962, es decir, la tasa de error del modelo previo era del 0.05 y la del nuevo modelo es 0.038 (mejora del 24%, prácticamente la mejora esperada). También han mejorado la sensibilidad, la especificidad, el valor predictivo positivo y el valor predictivo negativo.</p>
+</div>
+<div id="penalización-de-errores" class="section level4">
+<h4>Penalización de errores</h4>
+<p>No hacer nada para evitar que un cliente que se va a marchar efectivamente lo haga puede ser un error caro. La solución para reducir el número de falsos negativos podría ser aplicar una penalización a los diferentes tipos de errores, para desalentar que el árbol cometa los errores más penalizados. <code>C5.0</code> permite hacer esto mediante una <strong>matriz de coste</strong> que especificará cuánto queremos penalizar cada tipo de error.</p>
+<p>Construyamos dicha matriz. Primero, sus dimensiones:</p>
+<pre class="r"><code>cost_matrix_dims &lt;- list(c(&quot;no&quot;, &quot;yes&quot;), c(&quot;no&quot;, &quot;yes&quot;))
+    names(cost_matrix_dims) &lt;- c(&quot;predicted&quot;, &quot;actual&quot;)
+    cost_matrix_dims</code></pre>
+<pre><code>## $predicted
+## [1] &quot;no&quot;  &quot;yes&quot;
+## 
+## $actual
+## [1] &quot;no&quot;  &quot;yes&quot;</code></pre>
+<p>Ahora, las penalizaciones:</p>
+<pre class="r"><code>error_cost &lt;- matrix(c(0,1,20,0), nrow = 2, dimnames = cost_matrix_dims)
+    error_cost</code></pre>
+<pre><code>##          actual
+## predicted no yes
+##       no   0  20
+##       yes  1   0</code></pre>
+<p>Como se ve, una clasificación correcta no tiene ningún coste, un falso positivo tiene un a penalización de 1 y un falso negativo cuesta 20. Ya podemos construir el modelo:</p>
+<pre class="r"><code>C50_churn_model_cost &lt;- C5.0(x       = churn_train[-20],
+                                 y       = churn_train$churn, 
+                                 trials  = 1,                # Default
+                                 rules   = FALSE,         # Default
+                                 weights = NULL,          # Default
+                                 control = C5.0Control(), # Default
+                                 costs   = error_cost
+                                 )</code></pre>
+<p>Veamos qué tal predice:</p>
+<pre class="r"><code>    C50_predictions_cost &lt;- predict(C50_churn_model_cost, churn_test)
+
+    C50_cm_cost &lt;- confusionMatrix(data      = C50_predictions_cost, 
+                                   reference = churn_test$churn)
+    C50_cm_cost$table</code></pre>
+<pre><code>##           Reference
+## Prediction yes  no
+##        yes  72 128
+##        no   10 290</code></pre>
+<pre class="r"><code> C50_cm_cost</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction yes  no
+##        yes  72 128
+##        no   10 290
+##                                           
+##                Accuracy : 0.724           
+##                  95% CI : (0.6826, 0.7628)
+##     No Information Rate : 0.836           
+##     P-Value [Acc &gt; NIR] : 1               
+##                                           
+##                   Kappa : 0.3623          
+##                                           
+##  Mcnemar&#39;s Test P-Value : &lt;2e-16          
+##                                           
+##             Sensitivity : 0.8780          
+##             Specificity : 0.6938          
+##          Pos Pred Value : 0.3600          
+##          Neg Pred Value : 0.9667          
+##              Prevalence : 0.1640          
+##          Detection Rate : 0.1440          
+##    Detection Prevalence : 0.4000          
+##       Balanced Accuracy : 0.7859          
+##                                           
+##        &#39;Positive&#39; Class : yes             
+## </code></pre>
+<p>Como se ve, los falsos negativos han bajado de 19 a 10 a costa de aumentar los falsos positivos (de 6 a 114), lo que ha supuesto también una importante bajada de la exactitud. Puede que esto nos interese o no, en cuyo caso debemos jugar con los costes asignados a ver si podemos obtener un resultado más próximo a nuestros intereses.</p>
+</div>
+</div>

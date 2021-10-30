@@ -1,0 +1,341 @@
+---
+title: Árboles de decisión (y IV)
+author: Miguel Conde
+date: '2016-01-18'
+slug: arboles-de-decision-y-iv
+categories:
+  - Machine Learning
+tags:
+  - Machine Learning
+  - Data Science
+  - Clasificación
+  - arbo
+description: 'En este artículo vamos a repetir el mismo ejercicio que en el anterior pero esta vez construiremos un modelo C5.0.'
+thumbnail: ''
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+En este artículo vamos a repetir el mismo ejercicio que en el [anterior](/2015/15/02/arboles-de-decision-iii/) pero esta vez construiremos un modelo C5.0.
+
+Como recordaréis, nuestro problema de clasificación consiste en la predicción de posibles bajas (*churn*) de clientes de una operadora móvil.
+
+Los pasos que seguiremos son, como siempre:
+
+-   Obtención de los datos
+
+-   Exploración y preparación de los datos
+
+-   Construcción del modelo
+
+-   Evaluación de su rendimiento
+
+-   Posibilidades de mejora
+
+
+### Obtención de los datos
+
+Cargamos de nuevo los datos:
+
+```{r}
+library(C50)
+
+library(modeldata)
+
+data(mlc_churn)
+
+churn <- mlc_churn
+```
+
+### Exploración y preparación de los datos
+
+Este ejercicio ya lo hicimos aquí, pero refresquemos un poco nuestro conocimiento del *dataset*:
+
+```{r}
+str(churn)
+```
+    
+
+Tenemos 5000 observaciones y 17 variables, 16 de ellas predictores y 1, *churn*, nuestra variable objetivo.
+
+¿Cuántas observaciones corresponden a clientes que desertaron?
+
+```{r}
+table(churn$churn)
+```
+
+
+Y en porcentajes:
+
+```{r}
+prop.table(table(churn$churn))
+```
+
+
+Preparemos ahora los datos para la posterior construcción del modelo. Los dividiremos en un *training set* (con el que construiremos el modelo) y un *test set* (con el que evaluaremos el rendimiento dle modelo). Existen sistemas más sofisticados, como la **validación cruzada** o *cross-validation* que ya veremos, de momento mantendremos las cosas sencillas.
+
+Para dividir los datos entre el *training set* y el *test set* utilizaremos el muestreo aleatorio, un procedimiento que selecciona aleatoriamente observaciones del conjunto total. Haremos que al *training set* vayan a parar aleatoriamente el 90% de las observaciones y el 10 % restante al*test set*:
+
+```{r}
+set.seed(127)
+train_idx <- sample(nrow(churn), 0.9*nrow(churn))
+
+churn_train <- churn[train_idx,]
+churn_test  <- churn[-train_idx,]
+```
+    
+
+Efectivamente, las dos muestras son muy parecidas:
+
+```{r}
+prop.table(table(churn_train$churn))
+```
+
+    
+```{r}
+prop.table(table(churn_test$churn))
+```
+
+
+
+### Construcción del modelo
+
+Vamos a utilizar el algoritmo C5.0 del paquete `C50`. Ya lo hemos cargado antes (`library(C50)`) ya que este paquete también contiene nuestros datos.
+
+En primera aproximación usaremos las opciones por defecto (`trials = 1`, `costs = NULL`, `rules = FALSE`, `weights = NULL`,`control = C5.0Control()`. Por claridad las voy a explicitar:
+
+```{r}
+C50_churn_model <- C5.0(x       = churn_train[-20], 
+                            y       = churn_train$churn, 
+                            trials  = 1, 
+                            rules   = FALSE, 
+                            weights = NULL, 
+                            control = C5.0Control(), 
+                            costs   = NULL)
+```
+
+    
+
+Como se ve, este algoritmo tiene muchas opciones. En particular, véase la función de control del algoritmo:
+
+```{r}
+C5.0Control()
+```
+
+
+Te resultará interesante echarle un ojo a `?C5.0` y `C5.0Control`.
+
+Veamos el modelo que ha resultado:
+
+```{r}
+C50_churn_model
+```
+    
+
+
+Vemos que la "profundidad" de las decisiones del árbol llega a 27. Veámoslas:
+
+```{r}
+summary(C50_churn_model)
+```
+    
+
+   
+Donde se ven claramente las decisiones según las cuales se crean las ramas del árbol. Los números entre paréntesis indican el número de muestras que llegan a la decisión y cuántas de ellas se clasifican mal. Por ejemplo, a la decisión de la 3ª línea llegan 106 muestras que se clasifican como "yes" y, de ellas, 4 quedan mal clasificadas.
+
+### Evaluación del modelo
+
+Los árboles de decisión tienen tendencia a sobreajustarse (*overfit*) a los ejemplos que se le presentan en el *training set*. Cualquier algoritmo *machine learning* se comportará peor con los datos de *test set* que con los del *training set* (al fin y al cabo, no los ha visto nunca ;-), pero en el caso de los árboles de decisión puede ser peor. Comprobémoslo. Hahamos una predicción sobre las muestras del *test set*:
+
+```{r}
+C50_predictions <- predict(C50_churn_model, churn_test)
+```
+    
+
+La *confusion matrix* obtenida es:
+
+```{r}
+library(caret)
+    C50_cm <- confusionMatrix(data      = C50_predictions, 
+                              reference = churn_test$churn)
+    C50_cm$table
+```
+
+
+La *accuracy* o **exactitud** (aciertos sobre el total de casos) es:
+
+```{r}
+C50_cm$overall["Accuracy"]
+```
+
+
+No está nada mal, con el *training test* era solo ligeramente superior, el 95.5 %. Pero investiguemos un poco más.
+
+La **sensibilidad** (de todos los verdaderos "yes", ¿cuántos se clasificaron como tales? o: si un ejemplo es verdaderamente "yes" ¿cuál es la probabilidad de que lo hayamos clasificado correctamente?) es:
+
+```{r}
+C50_cm$byClass["Sensitivity"]
+```
+
+
+Ya que de 60 verdaderos "yes" solo se clasificaron como tales 41.
+
+La **especificidad** (de todos los verdaderos "no", ¿cuántos se clasificaron como tales? o: si un ejemplo es verdaeramente "no" ¿cuál es la probabilidad de que lo hayamos clasificado correctamente?) es:
+
+```{r}
+C50_cm$byClass["Specificity"]
+```
+
+
+Ya que de 440 verdaderos "no" se clasificaron como tales 434.
+
+Por lo tanto la **false positive rate** (de todos los verdaderos "no", ¿cuántos se clasificaron como "yes"?) es:
+
+```{r}
+as.numeric(C50_cm$byClass["Specificity"])
+```
+
+
+Y la **false negative rate** (de todos los verdaderos "yes", ¿cuántos se clasificaron como "no"?):
+
+```{r}
+as.numeric(C50_cm$byClass["Sensitivity"])
+```
+
+
+También podemos hablar del **valor de predicción positiva** (de todos las predicciones "yes", ¿cuántas lo eran realmente? o: si hemos clasificado una obeservación como "yes" ¿cuál es la probabilidad de que realmente lo sea?)
+
+```{r}
+C50_cm$byClass["Pos Pred Value"]
+```
+
+
+(ya que se predijeron 47 "yes" y solo 41 lo eran)
+
+Y el **valor de predicción negativa** (de todas las predicciones "no", cuántas lo eran realmente? o: si hemos clasificado una obeservación como "no" ¿cuál es la probabilidad de que realmente lo sea?):
+
+```{r}
+C50_cm$byClass["Neg Pred Value"]
+```
+
+
+(ya que se predijeron 453 "yes" y solo 434 lo eran)
+
+### Posibilidades de mejora
+
+#### Boosting
+
+`C5.0` nos proporciona la posibilidad de utilizar un mecanismo llamado *boosting* adaptativo, un proceso en el que se construyen muchos árboles de decisión que "votan" para decidir la clase de cada observación.
+
+Se puede aplicar *boosting* a cualquier algoritmo *machine learning*, no sólo a los árboles de decisión. Por el momento, nos contentaremos con mencionar que la filosofía en que se basa consite en combinar un conjunto de clasificadores débiles para construir un clasificador más potente que cualquiera de ellos.
+
+La función `C5.0()` permite emplear *boosting* muy fácilmente, simplemente especificando mediante el argumento `trials` el número de árboles que se quiere emplear. Se suelen emplear 10 árboles, lo que, según algunos estudios, suele permitir disminuir la tasa de error más o menos un 25%.
+
+`trials`especifica el límite superior de árboles que añadir; si al añadir árboles se observa que la exactitud no mejora significativamente, dejan de añadirse árboles.
+
+```{r}
+C50_churn_model_boost10 <- C5.0(x       = churn_train[-20],
+                                    y       = churn_train$churn, 
+                                    trials  = 10, 
+                                    rules   = FALSE,         # Default
+                                    weights = NULL,          # Default
+                                    control = C5.0Control(), # Default
+                                    costs   = NULL           # Default
+                                    )
+```
+    
+
+Examinemos el modelo resultante. Observaremos que aparecen algunas lineas más:
+
+```{r}
+C50_churn_model_boost10
+```
+    
+
+En efecto, aparecen el número de `trials` y el tamaño medio de cada árbol.
+
+Mediante:
+
+```{r}
+summary(C50_churn_model_boost10)
+```
+
+    
+
+podemos ver cada uno de los árboles construidos y el rendimiento sobre el `training set`:
+
+
+El nuevo clasificador se equivoca en 104 de las 4500 observaciones que tiene el `training set`, un 2.31% de errores frente al 4.53% que tenía sobre el `training set` nuestro modelo anterior. Se trata de una mejora del 50% en el error de entrenamiento, pero lo que en realidad nos importa es el comportamiento del nuevo modelo sobre los datos que no ha visto hasta ahora, los del `test set`:
+
+    
+```{r}
+C50_predictions_boost10 <- predict(C50_churn_model_boost10, churn_test)
+
+C50_cm_boost10 <- confusionMatrix(data      = C50_predictions_boost10, 
+                                  reference = churn_test$churn)
+C50_cm_boost10$table
+```
+
+```{r}
+C50_cm_boost10
+```
+
+    
+
+
+la `Accuracy` ha pasado del 0.95 al 0.962, es decir, la tasa de error del modelo previo era del 0.05 y la del nuevo modelo es 0.038 (mejora del 24%, prácticamente la mejora esperada). También han mejorado la sensibilidad, la especificidad, el valor predictivo positivo y el valor predictivo negativo.
+
+#### Penalización de errores
+
+No hacer nada para evitar que un cliente que se va a marchar efectivamente lo haga puede ser un error caro. La solución para reducir el número de falsos negativos podría ser aplicar una penalización a los diferentes tipos de errores, para desalentar que el árbol cometa los errores más penalizados. `C5.0` permite hacer esto mediante una **matriz de coste** que especificará cuánto queremos penalizar cada tipo de error.
+
+Construyamos dicha matriz. Primero, sus dimensiones:
+
+```{r}
+cost_matrix_dims <- list(c("no", "yes"), c("no", "yes"))
+    names(cost_matrix_dims) <- c("predicted", "actual")
+    cost_matrix_dims
+```
+    
+
+Ahora, las penalizaciones:
+
+```{r}
+error_cost <- matrix(c(0,1,20,0), nrow = 2, dimnames = cost_matrix_dims)
+    error_cost
+```
+
+
+Como se ve, una clasificación correcta no tiene ningún coste, un falso positivo tiene un a penalización de 1 y un falso negativo cuesta 20. Ya podemos construir el modelo:
+
+```{r}
+C50_churn_model_cost <- C5.0(x       = churn_train[-20],
+                                 y       = churn_train$churn, 
+                                 trials  = 1,                # Default
+                                 rules   = FALSE,         # Default
+                                 weights = NULL,          # Default
+                                 control = C5.0Control(), # Default
+                                 costs   = error_cost
+                                 )
+```
+    
+
+Veamos qué tal predice:
+
+```{r}
+    C50_predictions_cost <- predict(C50_churn_model_cost, churn_test)
+
+    C50_cm_cost <- confusionMatrix(data      = C50_predictions_cost, 
+                                   reference = churn_test$churn)
+    C50_cm_cost$table
+```
+
+
+```{r}
+ C50_cm_cost
+```
+
+
+Como se ve, los falsos negativos han bajado de 19 a 10 a costa de aumentar los falsos positivos (de 6 a 114), lo que ha supuesto también una importante bajada de la exactitud. Puede que esto nos interese o no, en cuyo caso debemos jugar con los costes asignados a ver si podemos obtener un resultado más próximo a nuestros intereses.

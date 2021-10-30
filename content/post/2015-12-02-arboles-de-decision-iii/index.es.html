@@ -1,0 +1,286 @@
+---
+title: Árboles de decisión (III)
+author: Miguel Conde
+date: '2015-12-02'
+slug: arboles-de-decision-iii
+categories:
+  - Machine Learning
+tags:
+  - Machine Learning
+  - Data Science
+  - Clasificación
+  - Árboles de Decisión
+description: 'Continuamos con la implementación en R de dos tipos de árboles de decisión, probablemente los algoritmos más empleados en Machine Learning. En este artículo construiremos un modelo rpart.'
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index.es_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Continuamos con la implementación en R de dos tipos de árboles de decisión, probablemente los algoritmos más empleados en Machine Learning. En este artículo construiremos un modelo <a href="https://cran.r-project.org/web/packages/rpart/index.html"><em>rpart</em></a><em>.</em> En el <a href="/2015/11/03/arboles-de-decision-ii/">artículo anterior</a> planteamos un problema de clasificación, consistente en la predicción de posibles bajas (<em>churn</em>) de clientes de una operadora móvil. Cargamos allí los datos e hicimos una sencilla exploración de los mismos. En este vamos a preparar los datos para construir a continuación nuestro modelo de predicción. Evaluaremos después su rendimiento y, por último, veremos si podemos mejorarlo.</p>
+<div id="preparación-de-los-datos" class="section level2">
+<h2>Preparación de los datos</h2>
+<p>Vamos a dividir nuestros datos en dos conjuntos:</p>
+<ul>
+<li><p>Un <strong>train set</strong>, con el que construiremos nuestro modelo de árbol de decisión.</p></li>
+<li><p>Un <strong>test set</strong>, sobre el que evaluaremos la eficiencia de nuestro modelo (esta técnica no es perfecta, ya veremos técnicas mejores).</p></li>
+</ul>
+<p>Cargamos de nuevo los datos:</p>
+<pre class="r"><code>library(C50)
+
+library(modeldata)
+
+data(mlc_churn)
+
+churn &lt;- mlc_churn</code></pre>
+<p>Y realizaremos esta división tomando muestras aleatorias del total de los datos:</p>
+<pre class="r"><code>set.seed(127) 
+train_idx &lt;- sample(nrow(churn), 0.9*nrow(churn)) 
+churnTrain &lt;- churn[train_idx,] 
+churnTest &lt;- churn[-train_idx,]</code></pre>
+<p>Hemos seleccionado aleatoriamente para el <code>train set</code>el 90% de los datos, dejando el 10% restante para el <code>test set</code>. Si lo hemos hecho bien, la distribución de la variable objetivo en ambos conjuntos de datos debe de ser parecida:</p>
+<pre class="r"><code>prop.table(table(churnTrain$churn))</code></pre>
+<pre><code>## 
+##       yes        no 
+## 0.1388889 0.8611111</code></pre>
+<p>(Hay otras formas de hacer esta división de los datos, iremos viéndolas)</p>
+</div>
+<div id="creación-del-modelo" class="section level2">
+<h2>Creación del modelo</h2>
+<p>Como primer intento, vamos a crear un árbol de decisión <code>rpart</code> (si no tienes instalado el paquete: <code>install packages("rpart")</code>).</p>
+<pre class="r"><code>library(rpart)
+
+rpart_churn_model &lt;- rpart(formula = churn ~ ., 
+                           data = churnTrain)</code></pre>
+<p>Con esta sentencia hemos creado un modelo que toma como base el <code>train set</code> y que trata de predecir la variable categórica objetivo <code>churn</code>a partir de todas las demás variables (eso es lo que significa la fórmula <code>churn ~ .</code>)</p>
+<p>Para mostrar los detalles del árbol:</p>
+<pre class="r"><code>rpart_churn_model</code></pre>
+<pre><code>## n= 4500 
+## 
+## node), split, n, loss, yval, (yprob)
+##       * denotes terminal node
+## 
+##   1) root 4500 625 no (0.13888889 0.86111111)  
+##     2) total_day_minutes&gt;=265.75 275 112 yes (0.59272727 0.40727273)  
+##       4) voice_mail_plan=no 208  51 yes (0.75480769 0.24519231)  
+##         8) total_eve_minutes&gt;=167.3 152  13 yes (0.91447368 0.08552632) *
+##         9) total_eve_minutes&lt; 167.3 56  18 no (0.32142857 0.67857143)  
+##          18) total_day_minutes&gt;=303.15 10   0 yes (1.00000000 0.00000000) *
+##          19) total_day_minutes&lt; 303.15 46   8 no (0.17391304 0.82608696) *
+##       5) voice_mail_plan=yes 67   6 no (0.08955224 0.91044776) *
+##     3) total_day_minutes&lt; 265.75 4225 462 no (0.10934911 0.89065089)  
+##       6) number_customer_service_calls&gt;=3.5 334 163 no (0.48802395 0.51197605)  
+##        12) total_day_minutes&lt; 162.7 138  19 yes (0.86231884 0.13768116)  
+##          24) state=AK,AL,AR,CA,CT,DC,DE,FL,GA,ID,IN,KY,LA,MA,MD,ME,MI,MN,MO,MS,MT,NC,NE,NH,NJ,NM,NV,NY,OK,PA,SC,SD,TN,TX,UT,VT,WA,WI,WV 118   5 yes (0.95762712 0.04237288) *
+##          25) state=CO,HI,IA,IL,KS,OH,OR,VA,WY 20   6 no (0.30000000 0.70000000) *
+##        13) total_day_minutes&gt;=162.7 196  44 no (0.22448980 0.77551020)  
+##          26) total_eve_minutes&lt; 135.1 20   6 yes (0.70000000 0.30000000) *
+##          27) total_eve_minutes&gt;=135.1 176  30 no (0.17045455 0.82954545) *
+##       7) number_customer_service_calls&lt; 3.5 3891 299 no (0.07684400 0.92315600)  
+##        14) international_plan=yes 352 127 no (0.36079545 0.63920455)  
+##          28) total_intl_minutes&gt;=13.05 64   0 yes (1.00000000 0.00000000) *
+##          29) total_intl_minutes&lt; 13.05 288  63 no (0.21875000 0.78125000)  
+##            58) total_intl_calls&lt; 2.5 54   0 yes (1.00000000 0.00000000) *
+##            59) total_intl_calls&gt;=2.5 234   9 no (0.03846154 0.96153846) *
+##        15) international_plan=no 3539 172 no (0.04860130 0.95139870)  
+##          30) total_day_minutes&gt;=221.85 578  98 no (0.16955017 0.83044983)  
+##            60) total_eve_minutes&gt;=242.35 110  48 yes (0.56363636 0.43636364)  
+##             120) voice_mail_plan=no 87  25 yes (0.71264368 0.28735632)  
+##               240) total_night_minutes&gt;=174.2 65   9 yes (0.86153846 0.13846154) *
+##               241) total_night_minutes&lt; 174.2 22   6 no (0.27272727 0.72727273) *
+##             121) voice_mail_plan=yes 23   0 no (0.00000000 1.00000000) *
+##            61) total_eve_minutes&lt; 242.35 468  36 no (0.07692308 0.92307692) *
+##          31) total_day_minutes&lt; 221.85 2961  74 no (0.02499156 0.97500844) *</code></pre>
+<p><code>n</code> indica el número de observaciones que alcanzan a cada nodo, <code>loss</code> el número de observaciones que se clasifican mal, <code>yval</code> es el valor de clasificación que se toma como referencia (“no”, en este caso) e <code>yprob</code> las probabilidades de ambas clases (el primer valor se refiere a la probabilidad de alcanzar el valor “no” y el segundo a la de alcanzar el valor “si”).</p>
+<p>Por ejemplo, la primera línea es:</p>
+<pre><code>1) root 3333 483 no (0.14491449 0.85508551)</code></pre>
+<p>Se trata del nodo raíz, con 3333 observaciones (como ya sabiamos) de las que 483 se han clasificado mal. El valor de referencia es “no”. La proporción de observaciones clasificadas como “no” es 0.14491449 y la de clasificadas como “si”, 0.85508551.</p>
+<p>A partir del nodo raíz tenemos la primera decisión:</p>
+<pre><code>2) total_day_minutes&gt;=264.45 211  84 yes (0.60189573 0.39810427)</code></pre>
+<p>Es decir, la decisión de la primera bifurcación se toma mirando la variable <code>total_day_minutes</code>. Si es mayor o igual que 264.45, se clasifica como “yes”. A este nodo llegan 211 observaciones de las que 84 están mal clasificadas. El 0.60189573 se han clasificado como “yes” y el 0.39810427 (84/211) como “no”.</p>
+<p>Nótese que el nodo 3 es la otra rama de la decisión:</p>
+<pre><code>3) total_day_minutes&lt; 264.45 3122 356 no (0.11402947 0.88597053)</code></pre>
+<p>Todo esto es más fácil verlo gráficamente:</p>
+<pre class="r"><code>plot(rpart_churn_model, uniform = TRUE, branch = 0.6, margin = 0.1)
+text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .5)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>plot(rpart_churn_model, uniform = TRUE, branch = 0.6, margin = 0.01)
+text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .7)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><a href="http://es100x100datascience.com/wp-content/uploads/2015/12/Tree.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-1024x448.png" alt="Tree" /></a></p>
+<p>Para ver los parámetros de complejidad del modelo:</p>
+<pre class="r"><code>printcp(x= rpart_churn_model)</code></pre>
+<pre><code>## 
+## Classification tree:
+## rpart(formula = churn ~ ., data = churnTrain)
+## 
+## Variables actually used in tree construction:
+## [1] international_plan            number_customer_service_calls
+## [3] state                         total_day_minutes            
+## [5] total_eve_minutes             total_intl_calls             
+## [7] total_intl_minutes            total_night_minutes          
+## [9] voice_mail_plan              
+## 
+## Root node error: 625/4500 = 0.13889
+## 
+## n= 4500 
+## 
+##         CP nsplit rel error xerror     xstd
+## 1 0.084800      0    1.0000 1.0000 0.037118
+## 2 0.080000      2    0.8304 0.9392 0.036148
+## 3 0.051200      4    0.6704 0.7200 0.032199
+## 4 0.032000      7    0.4816 0.5264 0.027940
+## 5 0.019733      8    0.4496 0.5024 0.027345
+## 6 0.016000     11    0.3904 0.5008 0.027305
+## 7 0.012800     13    0.3584 0.5056 0.027425
+## 8 0.010000     15    0.3328 0.5104 0.027545</code></pre>
+<p>Utilizaremos los parámetros de complejidad (<code>CP</code>) como una penalización para controlar el tamaño del árbol. En resumen, cuanto mayor es el parámetro de complejidad, menos decisiones contiene el árbol (<code>nsplit</code>). El valor <code>rel error</code> representa la desviación media del árbol al que se refiera dividida entre la desviación media del árbol nulo (<code>nsplit = 0</code>). El valor <code>xerror</code> es el valor medio estimado mediante un procedimiento de <em>cross validation</em> que ya veremos. <code>xstd</code> es el error estándar del error relativo.</p>
+<p>La información sobre el <code>CP</code>se puede visualizar:</p>
+<p><a href="http://es100x100datascience.com/wp-content/uploads/2015/12/CP-plot.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/12/CP-plot.png" alt="CP plot" /></a></p>
+<p>El eje x inferior representa el <code>CP</code>, el eje y es el error relativo y el eje x superior es el tamaño del árbol.</p>
+</div>
+<div id="rendimiento-del-modelo" class="section level2">
+<h2>Rendimiento del modelo</h2>
+<p>Ahora que ya hemos construido nuestro modelo, podemos utilizarlo para predecir la categoría basándonos en nuevas observaciones. Pero antes de esto, veamos cuál es el poder de predicción de nuestro modelo utilizando los datos del <em>test set</em>.</p>
+<p>Para hacer predicciones sobre nuestro <em>test set</em>:</p>
+<pre class="r"><code>rpart_predictions &lt;- predict(object = rpart_churn_model,
+                                 newdata = churnTest, 
+                                 type = &quot;class&quot;)</code></pre>
+<p>Y ahora usaremos la función <code>table</code> para crear una tabla de las clasificaciones realizadas:</p>
+<pre class="r"><code>table(churnTest$churn, rpart_predictions)</code></pre>
+<pre><code>##      rpart_predictions
+##       yes  no
+##   yes  52  30
+##   no    4 414</code></pre>
+<p>Esta tabla nos dice que, de los 66 verdaderos “yes” en el <em>test set</em>, hemos acertado 41 pero 25 los hemos clasificado como “no”; y que de los verdaderos 434 “no” en el <em>test set</em>, 427 los hemos clasificado correctamente pero 7 los hemos clasificado como “yes”.</p>
+<p>Esto se ve mejor con la función <code>confusionMatrix</code> del paquete <code>caret</code>:</p>
+<pre class="r"><code>library(caret)
+
+confusionMatrix(data = rpart_predictions, 
+                reference = churnTest$churn)$table</code></pre>
+<pre><code>##           Reference
+## Prediction yes  no
+##        yes  52   4
+##        no   30 414</code></pre>
+<p>Al número total de aciertos lo llamamos <strong>Accuracy</strong> o <strong>exactitud</strong>:</p>
+<p><span class="math display">\[
+Accuracy = \\frac{41+427}{41+25+7+427} = 0.936\
+\]</span></p>
+<p>El porcentaje de <strong>falsos positivos</strong> es:</p>
+<p><span class="math display">\[
+FP = \\frac{25}{41+25} = 0.3787879\
+\]</span></p>
+<p>Y el de <strong>falsos negativos</strong>:</p>
+<p><span class="math display">\[
+FN = \\frac{7}{427+7} = 0.016129\
+\]</span></p>
+<p>La <strong>sensibilidad</strong> (verdaderos positivos) es:</p>
+<p><span class="math display">\[
+Sensitivity = 1 - FP = \\frac{41}{41+25} = 0.6212121\
+\]</span></p>
+<p>Y la <strong>especificidad</strong> (verdaderos negativos):</p>
+<p><span class="math display">\[
+Specificity = 1 - FN = \\frac{427}{427+7} = 0.983871\
+\]</span></p>
+<p>Estas son algunas de las medidas que se utilizan para estimar el rendimiento de un modelo de clasificación. Más adelante veremos este temas con más detenimiento y profundidad.</p>
+</div>
+<div id="mejorando-el-modelo-podar-el-árbol" class="section level2">
+<h2>Mejorando el modelo: podar el árbol</h2>
+<p>Uno de los principales problemas de los árboles de decisión es su tendencia al <em>overfitting</em>: se ajustan tan bien al <em>train set</em> que capturan no sólo la “señal” existente en el <em>train set</em>, sino tambien el “ruido”, de manera que su rendimiento es mucho peor con el <em>test set</em> (cuando realizan predicciones sobre observaciones que no se han visto durante el entrenamiento).</p>
+<p>Para reducir este problema, y para intentar mejorar la <em>accuracy</em>, se recurre a una técnica conocida como <em>prunning</em> o “podado” del árbol: eliminaremos las ramas del árbol que no contribuyen a capturar “señal”.</p>
+<p>En el caso de los árboles <code>rpart</code>, utiliaremos el <code>CP</code> para realizar el podado.</p>
+<p>Primero buscaremos el menor error de <em>cross-validation</em> (<code>xerror</code>) en el modelo. Para ello acudiremos a la tabla que ya hemos visto antes:</p>
+<pre class="r"><code>rpart_churn_model$cptable</code></pre>
+<pre><code>##           CP nsplit rel error xerror       xstd
+## 1 0.08480000      0    1.0000 1.0000 0.03711843
+## 2 0.08000000      2    0.8304 0.9392 0.03614829
+## 3 0.05120000      4    0.6704 0.7200 0.03219938
+## 4 0.03200000      7    0.4816 0.5264 0.02794035
+## 5 0.01973333      8    0.4496 0.5024 0.02734501
+## 6 0.01600000     11    0.3904 0.5008 0.02730470
+## 7 0.01280000     13    0.3584 0.5056 0.02742541
+## 8 0.01000000     15    0.3328 0.5104 0.02754540</code></pre>
+<p>¿En qué fila de la tabla se encuentra el mínimo <code>CP</code>?</p>
+<pre class="r"><code>row_min_xerror &lt;- which.min(rpart_churn_model$cptable[, &quot;xerror&quot;])
+    row_min_xerror</code></pre>
+<pre><code>## 6 
+## 6</code></pre>
+<p>El <code>CP</code> correspondiente es:</p>
+<pre class="r"><code>CP_min_xerror &lt;- rpart_churn_model$cptable[row_min_xerror, &quot;CP&quot;]
+    CP_min_xerror</code></pre>
+<pre><code>## [1] 0.016</code></pre>
+<p>Ahora podamos el árbol:</p>
+<pre class="r"><code>rpart_churn_prunned_model &lt;- prune(tree = rpart_churn_model, 
+                                       cp = CP_min_xerror)</code></pre>
+<p>Visualizamos el nuevo árbol:</p>
+<pre class="r"><code>plot(rpart_churn_prunned_model, uniform = TRUE, branch = 0.6, margin = 0.01)
+    text(rpart_churn_prunned_model, all = TRUE, use.n = TRUE, cex = .7)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p><a href="http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-2.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-2-1024x448.png" alt="Tree 2" /></a></p>
+<p>Y comprobamos su rendimiento:</p>
+<pre class="r"><code>rpart_prunned_predictions &lt;- predict(object = rpart_churn_prunned_model,
+                                 newdata = churnTest, 
+                                 type = &quot;class&quot;)
+    confusionMatrix(data = rpart_prunned_predictions, 
+                    reference = churnTest$churn)$table</code></pre>
+<pre><code>##           Reference
+## Prediction yes  no
+##        yes  55   6
+##        no   27 412</code></pre>
+<p>Comparemos los resultados:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Indicador</th>
+<th>Árbol Completo</th>
+<th>Árbol podado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Accuracy</td>
+<td>0.948</td>
+<td>0.942</td>
+</tr>
+<tr class="even">
+<td>FP</td>
+<td>0.3333333</td>
+<td>0.4333333</td>
+</tr>
+<tr class="odd">
+<td>FN</td>
+<td>0.0136364</td>
+<td>0.0068182</td>
+</tr>
+<tr class="even">
+<td>Sensitivity</td>
+<td>0.6666667</td>
+<td>0.5666667</td>
+</tr>
+<tr class="odd">
+<td>Specificity</td>
+<td>0.9863636</td>
+<td>0.9931818</td>
+</tr>
+</tbody>
+</table>
+<p>¿Cuáles son las diferencias?</p>
+<ul>
+<li><p>El nuevo árbol tiene un nivel menos que el originario, es algo más sencillo.</p></li>
+<li><p>La <em>accuracy</em> ha disminuido ligeramente.</p></li>
+<li><p>Los falsos positivos han aumentado pero han disminuido los falsos negativos.</p></li>
+<li><p>Los verdaderos positivos han disminuido pero han aumentado los verdaderos negativos.</p></li>
+</ul>
+<p>¿Qué modelo es mejor? Pues depende. Depende de lo que queramos. Aquí si que no pueden ayudarnos los sistemas automáticos, es una decisión humana.</p>
+<p>En este caso no parece demasiado interesante (¿recuerdas la pregunta original? Era: <em>¿podemos prever qué clientes se van a ir?</em>) no parece apropiado dejar escapar verdaderos positivos… aunque sea a costa de considerar en riesgo a más clientes de los que verdaderamente van a irse…</p>
+<p>En mi opinión, en este caso, aunque el árbol podado sea más robusto al haber eliminado decisiones que podrían aumentar el riesgo de <em>overfitting</em>, deberíamos quedarnos con el árbol original.</p>
+<p>En el siguiente artículo aplicaremos a este mismo problema otro tipo de árbol de decisión, el <a href="https://cran.r-project.org/web/packages/C50/index.html">C5.0</a>.</p>
+<p>Para terminar, solo resumir los pasos que hemos seguido:</p>
+<ul>
+<li><p>Obtención de los datos</p></li>
+<li><p>Exploración y preparación de los datos</p></li>
+<li><p>Construcción del modelo</p></li>
+<li><p>Evaluación de su rendimiento</p></li>
+<li><p>Posibilidades de mejora</p></li>
+</ul>
+</div>
