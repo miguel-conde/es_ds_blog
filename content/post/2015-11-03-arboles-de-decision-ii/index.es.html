@@ -1,0 +1,125 @@
+---
+title: Arboles de Decision II
+author: Miguel Conde
+date: '2015-11-03'
+slug: arboles-de-decision-ii
+categories:
+  - Machine Learning
+tags:
+  - Árboles de Decisión
+  - Data Science
+  - Clasificación
+  - Machine Learning
+description: 'En esta entrada y la siguiente veremos la implementación en R de dos árboles de decisión: rpart y C5.0. Nos servirán para profundizar en el mecanismo de particionamiento recursivo empleado.'
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index.es_files/header-attrs/header-attrs.js"></script>
+
+
+<p>En esta entrada y la siguiente veremos la implementación en R de dos árboles de decisión: <em>rpart</em> y <em>C5.0</em>. Nos servirán para profundizar en el mecanismo de
+<a href="/2015/09/18/arboles-de-decision-i/">particionamiento recursivo</a> empleado.</p>
+<div id="chief-data-scientist" class="section level2">
+<h2>Chief Data Scientist</h2>
+<p>Imagina que eres el <em>Chief Data Scientist</em> de una compañía operadora de telefonía móvil. Tu jefe te llama a su despacho y te explica que la tasa de rotación de vuestros clientes es alarmante: últimamente, el porcentaje de clientes que se pasa a otras compañías de la competencia ha crecido de manera alarmante. “Algo tenemos que hacer” - te dice.</p>
+<p>Cuando sales de allí te pones al trabajo y después de una semana vuelves a ver a tu jefe con un completo estudio descriptivo de los clientes que abandonan a tu compañía: edades, sexo, ubicación geográfica… Todo está alli. Sin embargo, tu jefe te mira y te dice: “Todo esto está muy bien, pero ¿no podríamos saber por anticipado que clientes se van a marchar? Podríamos ofrecerles nuevas ofertas si fuéramos capaces de preverlo y, quizás, evitar así que se marchen”.</p>
+<div id="la-importancia-de-la-pregunta" class="section level3">
+<h3>La importancia de la pregunta</h3>
+<p>Te ha vuelto a pasar. Reconócelo. La semana pasada saliste la conversación con tu jefe con una idea demasiado vaga de lo que quería y supusiste que lo que te demandaba era un análisis descriptivo de los clientes que rotan. El resto lo hiciste bien, si, la recogida de datos, su limpieza y el análisis estadístico (para el que utilizaste alunas técnicas de <em>clustering</em> de las que ya hablaremos). Hiciste <em>the things right</em>, pero no <em>the right things</em>.</p>
+<p>No importa. A estas alturas ya sabes de sobra que tu trabajo es de una naturaleza altamente iterativa. Primero, entender el problema - la pregunta cuya respuesta se quiere averiguar; segundo, los datos necesarios para ello; después, modelizar, evaluar y desarrollar (un informe, un producto). Y en cada una de esas fases puede que tengas que volver atrás según lo que hayas aprendido hasta el momento. Esto es lo que te acaba de suceder.</p>
+<p>Con esta nueva pregunta - <em>¿podemos prever qué clientes se van a ir?</em> - vuelves al trabajo.</p>
+<p>Otra semana más. Has reunido nuevos datos. Son estos:</p>
+</div>
+</div>
+<div id="los-datos" class="section level2">
+<h2>Los datos</h2>
+<pre class="r"><code>library(C50)
+
+library(modeldata)
+
+data(mlc_churn)
+
+churn &lt;- mlc_churn</code></pre>
+<p><em>(Para nuestro ejemplo utilizaremos el dataset ‘churn’ del <a href="https://cran.r-project.org/web/packages/C50/index.html">paquete ‘C50’</a>. Si no lo tienes instalado, ya sabes: <code>install.packages("C50")</code>. Los datos ya vienen divididos en un <code>train set</code>y un <code>test set</code>. Nosotros los juntaremos primero para mostrar cómo se hace esa división)</em>.</p>
+</div>
+<div id="exploración-y-preparación-de-los-datos" class="section level2">
+<h2>Exploración y preparación de los datos</h2>
+<div id="exploración" class="section level3">
+<h3>Exploración</h3>
+<p>Hagamos un poquito de exploración de los datos. La estructura de los datos es la siguiente:</p>
+<pre class="r"><code>str(churn)</code></pre>
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    5000 obs. of  20 variables:
+##  $ state                        : Factor w/ 51 levels &quot;AK&quot;,&quot;AL&quot;,&quot;AR&quot;,..: 17 36 32 36 37 2 20 25 19 50 ...
+##  $ account_length               : int  128 107 137 84 75 118 121 147 117 141 ...
+##  $ area_code                    : Factor w/ 3 levels &quot;area_code_408&quot;,..: 2 2 2 1 2 3 3 2 1 2 ...
+##  $ international_plan           : Factor w/ 2 levels &quot;no&quot;,&quot;yes&quot;: 1 1 1 2 2 2 1 2 1 2 ...
+##  $ voice_mail_plan              : Factor w/ 2 levels &quot;no&quot;,&quot;yes&quot;: 2 2 1 1 1 1 2 1 1 2 ...
+##  $ number_vmail_messages        : int  25 26 0 0 0 0 24 0 0 37 ...
+##  $ total_day_minutes            : num  265 162 243 299 167 ...
+##  $ total_day_calls              : int  110 123 114 71 113 98 88 79 97 84 ...
+##  $ total_day_charge             : num  45.1 27.5 41.4 50.9 28.3 ...
+##  $ total_eve_minutes            : num  197.4 195.5 121.2 61.9 148.3 ...
+##  $ total_eve_calls              : int  99 103 110 88 122 101 108 94 80 111 ...
+##  $ total_eve_charge             : num  16.78 16.62 10.3 5.26 12.61 ...
+##  $ total_night_minutes          : num  245 254 163 197 187 ...
+##  $ total_night_calls            : int  91 103 104 89 121 118 118 96 90 97 ...
+##  $ total_night_charge           : num  11.01 11.45 7.32 8.86 8.41 ...
+##  $ total_intl_minutes           : num  10 13.7 12.2 6.6 10.1 6.3 7.5 7.1 8.7 11.2 ...
+##  $ total_intl_calls             : int  3 3 5 7 3 6 7 6 4 5 ...
+##  $ total_intl_charge            : num  2.7 3.7 3.29 1.78 2.73 1.7 2.03 1.92 2.35 3.02 ...
+##  $ number_customer_service_calls: int  1 1 0 2 3 0 3 0 1 0 ...
+##  $ churn                        : Factor w/ 2 levels &quot;yes&quot;,&quot;no&quot;: 2 2 2 2 2 2 2 2 2 2 ...</code></pre>
+<p>Tienen esta pinta (solo mostramos las 4 primeras variables y ‘churn’):</p>
+<pre class="r"><code>head(churn[, c(1:5,20)])</code></pre>
+<pre><code>##   state account_length     area_code international_plan voice_mail_plan churn
+## 1    KS            128 area_code_415                 no             yes    no
+## 2    OH            107 area_code_415                 no             yes    no
+## 3    NJ            137 area_code_415                 no              no    no
+## 4    OH             84 area_code_408                yes              no    no
+## 5    OK             75 area_code_415                yes              no    no
+## 6    AL            118 area_code_510                yes              no    no</code></pre>
+<p>En el <code>code book</code> que acompaña a los datos se explica cada una de las variables:</p>
+<pre><code>?churnTrain
+
+There are 19 predictors, mostly numeric: state (categorical), account_length, 
+area_code, international_plan (yes/no), voice_mail_plan (yes/no), 
+number_vmail_messages, total_day_minutes, total_day_calls, total_day_charge, 
+total_eve_minutes, total_eve_calls, total_eve_charge, total_night_minutes, 
+total_night_calls, total_night_charge, total_intl_minutes, total_intl_calls, 
+total_intl_charge and number_customer_service_calls.
+
+The outcome is contained in a column called churn (also yes/no).
+
+The training data has 3333 samples and the test set contains 1667.</code></pre>
+<p>Veamos el porcentaje de rotación de clientes:</p>
+<pre class="r"><code>prop.table(table(churn$churn))</code></pre>
+<pre><code>## 
+##    yes     no 
+## 0.1414 0.8586</code></pre>
+<pre class="r"><code>plot(churn$churn, main = &quot;Proporción valores de &#39;churn&#39;&quot;,
+         ylab = &#39;Nº de personas&#39;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><span class="math display">\[caption id=&quot;attachment_1144&quot; align=&quot;aligncenter&quot; width=&quot;317&quot;\]</span><a href="http://es100x100datascience.com/wp-content/uploads/2015/11/PropChurn1.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/11/PropChurn1-241x300.png" alt="Distribución de los valores de ‘churn’" /></a> Distribución de los valores de ‘churn’<span class="math display">\[/caption\]</span></p>
+<p>La variable objetivo, <code>churn</code>, presenta una distribución muy sesgada.</p>
+<p>Exploremos también la relación entre los diferentes atributos y la variable objetivo <code>churn</code>. Para ello emplearemos la función <code>pairs.panels()</code>del paquete <a href="https://cran.r-project.org/web/packages/psych/index.html"><code>psych</code></a>:</p>
+<pre class="r"><code>library(psych)
+    pairs.panels(churn[,c(1:4,20)], 
+                 main = &quot;&#39;churn&#39; dataset\nSPLOM, histograms and correlations&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Este es el resultado para las prmeras 4 variables y ‘churn’:</p>
+<p><span class="math display">\[caption id=&quot;attachment_1147&quot; align=&quot;aligncenter&quot; width=&quot;582&quot;\]</span><a href="http://es100x100datascience.com/wp-content/uploads/2015/11/SPLOM.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/11/SPLOM-241x300.png" alt="pairs.panels(churn,c(1:4,20), main = “‘churn’ dataset SPLOM, histograms and correlations”)" /></a> ‘churn’ dataset SPLOM, histograms and correlations<span class="math display">\[/caption\]</span></p>
+<p>Los números por encima de la diagonal son la correlación entre las diferentes variables.</p>
+<p>En la diagonal encontramos los histogramas correspondientes a la distribución de cada una de las variables, con una curva superpuesta que representa su densidad.</p>
+<p>Debajo de la diagonal podemos observar los gráficos de dispersión de cada par de variables. En ellos se encuentran también:</p>
+<ul>
+<li><p>Una <strong>elipse de correlación</strong> que representa lo fuerte que es la correlación entre ambas variables. Cuanto más circular, más débil es la correlación; cuanto más excéntrica, más fuerte es la correlación.</p></li>
+<li><p>El punto en el centro de la elipse señala los valores medios de ambas variables.</p></li>
+<li><p>La curva sobre los puntos (<em>loess curve</em>) muestra la relación general entre las variables en los ejes de abscisas y ordenadas.</p></li>
+</ul>
+</div>
+<div id="otra-vez-la-pregunta" class="section level3">
+<h3>Otra vez la pregunta</h3>
+<p>¿Qué significa <em>prever los clientes que se van a ir</em>? Básicamente, queremos predecir con un SI o un NO la posible rotación (‘<em>churn</em>’) de cada cliente a partir de los datos que sobre él tenemos en las otras variables del dataset: se trata de un problema de <strong>clasificación</strong> (en este caso, con solo dos niveles: SI y NO). La clasificación es una de las modalidades <strong>supervisadas</strong> (porque aprenderemos a partir de datos existentes) del <em>machine learning</em>.</p>
+<p>En el siguiente artículo, tras esta toma de contacto con la pregunta que queremos responder y los datos de los que disponemos, continuaremos nuestra búsqueda de respuesta a la pregunta de nuestro jefe.</p>
+</div>
+</div>

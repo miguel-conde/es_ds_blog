@@ -1,0 +1,143 @@
+---
+title: Arboles de Decision II
+author: Miguel Conde
+date: '2015-11-03'
+slug: arboles-de-decision-ii
+categories:
+  - Machine Learning
+tags:
+  - Árboles de Decisión
+  - Data Science
+  - Clasificación
+  - Machine Learning
+description: 'En esta entrada y la siguiente veremos la implementación en R de dos árboles de decisión: rpart y C5.0. Nos servirán para profundizar en el mecanismo de particionamiento recursivo empleado.'
+thumbnail: ''
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+En esta entrada y la siguiente veremos la implementación en R de dos árboles de decisión: *rpart* y *C5.0*. Nos servirán para profundizar en el mecanismo de 
+[particionamiento recursivo](/2015/09/18/arboles-de-decision-i/) empleado.
+
+## Chief Data Scientist
+
+Imagina que eres el *Chief Data Scientist* de una compañía operadora de telefonía móvil. Tu jefe te llama a su despacho y te explica que la tasa de rotación de vuestros clientes es alarmante: últimamente, el porcentaje de clientes que se pasa a otras compañías de la competencia ha crecido de manera alarmante. "Algo tenemos que hacer" - te dice.
+
+Cuando sales de allí te pones al trabajo y después de una semana vuelves a ver a tu jefe con un completo estudio descriptivo de los clientes que abandonan a tu compañía: edades, sexo, ubicación geográfica... Todo está alli. Sin embargo, tu jefe te mira y te dice: "Todo esto está muy bien, pero ¿no podríamos saber por anticipado que clientes se van a marchar? Podríamos ofrecerles nuevas ofertas si fuéramos capaces de preverlo y, quizás, evitar así que se marchen".
+
+### La importancia de la pregunta
+
+Te ha vuelto a pasar. Reconócelo. La semana pasada saliste la conversación con tu jefe con una idea demasiado vaga de lo que quería y supusiste que lo que te demandaba era un análisis descriptivo de los clientes que rotan. El resto lo hiciste bien, si, la recogida de datos, su limpieza y el análisis estadístico (para el que utilizaste alunas técnicas de *clustering* de las que ya hablaremos). Hiciste *the things right*, pero no *the right things*.
+
+No importa. A estas alturas ya sabes de sobra que tu trabajo es de una naturaleza altamente iterativa. Primero, entender el problema - la pregunta cuya respuesta se quiere averiguar; segundo, los datos necesarios para ello; después, modelizar, evaluar y desarrollar (un informe, un producto). Y en cada una de esas fases puede que tengas que volver atrás según lo que hayas aprendido hasta el momento. Esto es lo que te acaba de suceder.
+
+Con esta nueva pregunta - *¿podemos prever qué clientes se van a ir?* - vuelves al trabajo.
+
+Otra semana más. Has reunido nuevos datos. Son estos:
+
+ 
+
+## Los datos
+
+```{r}
+library(C50)
+
+library(modeldata)
+
+data(mlc_churn)
+
+churn <- mlc_churn
+```
+
+*(Para nuestro ejemplo utilizaremos el dataset 'churn' del [paquete 'C50'](https://cran.r-project.org/web/packages/C50/index.html). Si no lo tienes instalado, ya sabes: `install.packages("C50")`. Los datos ya vienen divididos en un `train set`y un `test set`. Nosotros los juntaremos primero para mostrar cómo se hace esa división)*.
+
+
+## Exploración y preparación de los datos
+
+### Exploración
+
+Hagamos un poquito de exploración de los datos. La estructura de los datos es la siguiente:
+
+```{r}
+str(churn)
+```
+
+
+Tienen esta pinta (solo mostramos las 4 primeras variables y 'churn'):
+
+```{r}
+head(churn[, c(1:5,20)])
+```
+    
+
+
+ 
+
+En el `code book` que acompaña a los datos se explica cada una de las variables:
+
+    ?churnTrain
+
+    There are 19 predictors, mostly numeric: state (categorical), account_length, 
+    area_code, international_plan (yes/no), voice_mail_plan (yes/no), 
+    number_vmail_messages, total_day_minutes, total_day_calls, total_day_charge, 
+    total_eve_minutes, total_eve_calls, total_eve_charge, total_night_minutes, 
+    total_night_calls, total_night_charge, total_intl_minutes, total_intl_calls, 
+    total_intl_charge and number_customer_service_calls.
+
+    The outcome is contained in a column called churn (also yes/no).
+
+    The training data has 3333 samples and the test set contains 1667.
+
+Veamos el porcentaje de rotación de clientes:
+
+```{r}
+prop.table(table(churn$churn))
+```
+
+
+```{r}
+plot(churn$churn, main = "Proporción valores de 'churn'",
+         ylab = 'Nº de personas')
+```
+
+
+    
+
+\[caption id="attachment_1144" align="aligncenter" width="317"\][![Distribución de los valores de 'churn'](http://es100x100datascience.com/wp-content/uploads/2015/11/PropChurn1-241x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/11/PropChurn1.png) Distribución de los valores de 'churn'\[/caption\]
+
+La variable objetivo, `churn`, presenta una distribución muy sesgada.
+
+Exploremos también la relación entre los diferentes atributos y la variable objetivo `churn`. Para ello emplearemos la función `pairs.panels()`del paquete [`psych`](https://cran.r-project.org/web/packages/psych/index.html):
+
+```{r}
+library(psych)
+    pairs.panels(churn[,c(1:4,20)], 
+                 main = "'churn' dataset\nSPLOM, histograms and correlations")
+```
+    
+
+Este es el resultado para las prmeras 4 variables y 'churn':
+
+\[caption id="attachment_1147" align="aligncenter" width="582"\][![pairs.panels(churn\[,c(1:4,20)\], main = "'churn' dataset SPLOM, histograms and correlations")](http://es100x100datascience.com/wp-content/uploads/2015/11/SPLOM-241x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/11/SPLOM.png) 'churn' dataset SPLOM, histograms and correlations\[/caption\]
+
+Los números por encima de la diagonal son la correlación entre las diferentes variables.
+
+En la diagonal encontramos los histogramas correspondientes a la distribución de cada una de las variables, con una curva superpuesta que representa su densidad.
+
+Debajo de la diagonal podemos observar los gráficos de dispersión de cada par de variables. En ellos se encuentran también:
+
+-   Una **elipse de correlación** que representa lo fuerte que es la correlación entre ambas variables. Cuanto más circular, más débil es la correlación; cuanto más excéntrica, más fuerte es la correlación.
+
+-   El punto en el centro de la elipse señala los valores medios de ambas variables.
+
+-   La curva sobre los puntos (*loess curve*) muestra la relación general entre las variables en los ejes de abscisas y ordenadas.
+
+ 
+
+### Otra vez la pregunta
+
+¿Qué significa *prever los clientes que se van a ir*? Básicamente, queremos predecir con un SI o un NO la posible rotación ('*churn*') de cada cliente a partir de los datos que sobre él tenemos en las otras variables del dataset: se trata de un problema de **clasificación** (en este caso, con solo dos niveles: SI y NO). La clasificación es una de las modalidades **supervisadas** (porque aprenderemos a partir de datos existentes) del *machine learning*.
+
+En el siguiente artículo, tras esta toma de contacto con la pregunta que queremos responder y los datos de los que disponemos, continuaremos nuestra búsqueda de respuesta a la pregunta de nuestro jefe.

@@ -11,6 +11,10 @@ description: 'La plaga zombie empezó hace ya varios meses. El gobierno informa 
 thumbnail: ''
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
 La plaga zombie empezó hace ya varios meses. El gobierno informa de que, en nuestro país, con una **población** de 47 millones de habitantes, la **prevalencia** de la enfermedad es "tan solo" del 1% (es decir, el 1% de la población padece esta terrible enfermedad en un momento determinado - el actual). Desgraciadamente, la enfermedad tiene un largo periodo de incubación y se desconocen aún las causas de contagio (no, no es necesario que te muerda un infectado). Pero, por fortuna, nuestros científicos del CSIC han hecho su trabajo y han logrado una prueba diagnóstica. Nos informan de que esta prueba tiene exactitud (*accuracy*) del 95,04%. Mañana vendrán los camiones del Gobierno a tu barrio para aplicar la prueba a todos los vecinos y por fin podrás saber si tú y tus seres queridos estáis o no en peligro. Con casi total certeza (*una exactitud del 95,04% es casi total certeza ¿no?* **Pues no**. Al menos, *no exactamente*) Leyendo la letra pequeña de la noticia del CSIC en Internet nos damos cuenta de que se refieren también a otros dos "valores predictivos" de la prueba diagnóstica: su **sensibilidad** es del 99.0% y su **especificidad**, del 95.0%. *¿Qué quiere decir esto?*, te preguntas.
 
 ## Una matriz de confusión
