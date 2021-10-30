@@ -9,7 +9,7 @@ tags:
   - Machine Learning
   - Data Science
   - Clasificación
-  - arbo
+  - Árboles de Decisión
 description: 'En este artículo vamos a repetir el mismo ejercicio que en el anterior pero esta vez construiremos un modelo C5.0.'
 thumbnail: ''
 ---

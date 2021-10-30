@@ -9,7 +9,7 @@ tags:
   - Machine Learning
   - Data Science
   - Clasificación
-  - arbo
+  - Árboles de Decisión
 description: 'En este artículo vamos a repetir el mismo ejercicio que en el anterior pero esta vez construiremos un modelo C5.0.'
 thumbnail: ''
 ---
@@ -159,7 +159,7 @@ churn_test  &lt;- churn[-train_idx,]</code></pre>
 ##  = FALSE, weights = NULL, control = C5.0Control(), costs = NULL)
 ## 
 ## 
-## C5.0 [Release 2.07 GPL Edition]      Sat Oct 30 12:30:01 2021
+## C5.0 [Release 2.07 GPL Edition]      Sat Oct 30 12:32:34 2021
 ## -------------------------------
 ## 
 ## Class specified by attribute `outcome&#39;
@@ -343,7 +343,7 @@ churn_test  &lt;- churn[-train_idx,]</code></pre>
 ##  = FALSE, weights = NULL, control = C5.0Control(), costs = NULL)
 ## 
 ## 
-## C5.0 [Release 2.07 GPL Edition]      Sat Oct 30 12:30:03 2021
+## C5.0 [Release 2.07 GPL Edition]      Sat Oct 30 12:32:35 2021
 ## -------------------------------
 ## 
 ## Class specified by attribute `outcome&#39;
@@ -1156,7 +1156,7 @@ churn_test  &lt;- churn[-train_idx,]</code></pre>
 ##    6.89% total_intl_charge
 ## 
 ## 
-## Time: 0.7 secs</code></pre>
+## Time: 0.6 secs</code></pre>
 <p>podemos ver cada uno de los árboles construidos y el rendimiento sobre el <code>training set</code>:</p>
 <p>El nuevo clasificador se equivoca en 104 de las 4500 observaciones que tiene el <code>training set</code>, un 2.31% de errores frente al 4.53% que tenía sobre el <code>training set</code> nuestro modelo anterior. Se trata de una mejora del 50% en el error de entrenamiento, pero lo que en realidad nos importa es el comportamiento del nuevo modelo sobre los datos que no ha visto hasta ahora, los del <code>test set</code>:</p>
 <pre class="r"><code>C50_predictions_boost10 &lt;- predict(C50_churn_model_boost10, churn_test)
