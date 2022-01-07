@@ -210,7 +210,7 @@ Bueno, pero estamos haciendo algo de trampa ¿no? Todo esto lo sabemos de partid
 porque hemos creado el modelo. ¿Qué tendríamos que hacer si queremos hacer inferencia
 y solo tuviéramos los datos observables? Pues usar la cabeza. Eso siginifica que
 partimos de una hipótesis inicial (`cafe`-> `cancer` <- `tabaco`) y  - esto es 
-lo más importante - de la estructura ****causal*** de nuestro
+lo más importante - de la estructura ***causal*** de nuestro
 hipotético modelo podemos deducir consecuencias ***comprobables*** en los datos
 relativas a las independencias tanto marginales como condicionales entre las
 variables del modelo. E
