@@ -69,6 +69,8 @@ Podemos simular los datos de esta manera:
 N <- 1000
 estilo_de_vida <- seq(-100, 100, length.out = N)
 
+set.seed(2021)
+
 # estilo_de_vida causa consumo de café
 cafe   <- rnorm(N, .9 * estilo_de_vida, 10) 
 
@@ -81,7 +83,6 @@ cancer <- rnorm(N, 0.5 * tabaco, 20)
 # Lo juntamos todo
 d <- tibble(estilo_de_vida, cafe, tabaco, cancer)
 
-set.seed(2021)
 idx_train <- caret::createDataPartition(d$cancer, p = .8, list = FALSE)
 d_train <- d[idx_train, ]
 d_test  <- d[-idx_train, ]

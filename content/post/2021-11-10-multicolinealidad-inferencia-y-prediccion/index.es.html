@@ -60,6 +60,8 @@ plot(dag_OK_cafe_tabaco)</code></pre>
 <pre class="r"><code>N &lt;- 1000
 estilo_de_vida &lt;- seq(-100, 100, length.out = N)
 
+set.seed(2021)
+
 # estilo_de_vida causa consumo de café
 cafe   &lt;- rnorm(N, .9 * estilo_de_vida, 10) 
 
@@ -72,7 +74,6 @@ cancer &lt;- rnorm(N, 0.5 * tabaco, 20)
 # Lo juntamos todo
 d &lt;- tibble(estilo_de_vida, cafe, tabaco, cancer)
 
-set.seed(2021)
 idx_train &lt;- caret::createDataPartition(d$cancer, p = .8, list = FALSE)
 d_train &lt;- d[idx_train, ]
 d_test  &lt;- d[-idx_train, ]</code></pre>
@@ -103,23 +104,23 @@ summary(lm_cafe_tabaco)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -53.895 -13.466  -0.088  13.825  63.248 
+## -68.354 -14.442  -0.442  13.902  73.135 
 ## 
 ## Coefficients:
 ##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) -0.08584    0.70757  -0.121   0.9035    
-## cafe         0.06287    0.03300   1.905   0.0571 .  
-## tabaco       0.43233    0.04111  10.517   &lt;2e-16 ***
+## (Intercept)  0.05810    0.71782   0.081    0.936    
+## cafe         0.01311    0.03409   0.385    0.701    
+## tabaco       0.47457    0.04220  11.246   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 20.01 on 797 degrees of freedom
-## Multiple R-squared:  0.537,  Adjusted R-squared:  0.5359 
-## F-statistic: 462.3 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 20.29 on 797 degrees of freedom
+## Multiple R-squared:  0.5217, Adjusted R-squared:  0.5205 
+## F-statistic: 434.6 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Vaya, <code>tabaco</code> parece una variable significativa, pero <code>cafe</code> no…</p>
 <p>¿Cuál es su capacidad de predicción? Veamos:</p>
 <pre class="r"><code>Metrics::mape(d_test$cancer, predict(lm_cafe_tabaco, d_test))</code></pre>
-<pre><code>## [1] 2.574253</code></pre>
+<pre><code>## [1] 1.561191</code></pre>
 <p>Y ¿si solo usáramos tabaco?</p>
 <pre class="r"><code>lm_tabaco &lt;- lm(cancer ~ tabaco, d_train)
 summary(lm_tabaco)</code></pre>
@@ -129,20 +130,20 @@ summary(lm_tabaco)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -54.389 -13.864   0.389  13.358  62.842 
+## -68.439 -14.288  -0.309  13.844  73.383 
 ## 
 ## Coefficients:
 ##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) -0.06017    0.70861  -0.085    0.932    
-## tabaco       0.50398    0.01663  30.297   &lt;2e-16 ***
+## (Intercept)  0.04985    0.71712    0.07    0.945    
+## tabaco       0.48949    0.01660   29.50   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 20.04 on 798 degrees of freedom
-## Multiple R-squared:  0.5349, Adjusted R-squared:  0.5344 
-## F-statistic: 917.9 on 1 and 798 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 20.28 on 798 degrees of freedom
+## Multiple R-squared:  0.5216, Adjusted R-squared:  0.521 
+## F-statistic:   870 on 1 and 798 DF,  p-value: &lt; 2.2e-16</code></pre>
 <pre class="r"><code>Metrics::mape(d_test$cancer, predict(lm_tabaco, d_test))</code></pre>
-<pre><code>## [1] 2.656389</code></pre>
+<pre><code>## [1] 1.569951</code></pre>
 <p>Era previsible: la variable tabaco sigue siendo significativa y la predicción
 sobre datos de test es casi igual.</p>
 <p>Por cierto: ¿te has fijado que los coeficientes de <code>tabaco</code> y <code>cafe</code> del primer
@@ -156,22 +157,22 @@ summary(lm_cafe)</code></pre>
 ## lm(formula = cancer ~ cafe, data = d)
 ## 
 ## Residuals:
-##    Min     1Q Median     3Q    Max 
-## -65.19 -14.11  -0.05  13.97  73.32 
+##     Min      1Q  Median      3Q     Max 
+## -68.124 -14.445  -1.265  14.513  76.619 
 ## 
 ## Coefficients:
 ##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) -0.04118    0.67479  -0.061    0.951    
-## cafe         0.36555    0.01262  28.973   &lt;2e-16 ***
+## (Intercept)  0.06791    0.69313   0.098    0.922    
+## cafe         0.36781    0.01297  28.349   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 21.34 on 998 degrees of freedom
-## Multiple R-squared:  0.4569, Adjusted R-squared:  0.4563 
-## F-statistic: 839.4 on 1 and 998 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 21.92 on 998 degrees of freedom
+## Multiple R-squared:  0.4461, Adjusted R-squared:  0.4455 
+## F-statistic: 803.7 on 1 and 998 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>¡Anda! Ahora <code>cafe</code> es significativa casi igual que <code>tabaco</code> antes…</p>
 <pre class="r"><code>Metrics::mape(d_test$cancer, predict(lm_cafe, d_test))</code></pre>
-<pre><code>## [1] 2.09132</code></pre>
+<pre><code>## [1] 1.61489</code></pre>
 <p>Y no predice mucho peor…</p>
 <p>Resumiendo: el modelo que hemos hipotetizado, con dos variables explicativas
 - <code>cafe</code> y <code>tabaco</code> - fuertemente correlacionadas entre si, sufre de <strong>colinealidad</strong>:
@@ -216,7 +217,8 @@ partimos de una hipótesis inicial (<code>cafe</code>-&gt; <code>cancer</code> &
 lo más importante - de la estructura ****causal*** de nuestro
 hipotético modelo podemos deducir consecuencias <strong><em>comprobables</em></strong> en los datos
 relativas a las independencias tanto marginales como condicionales entre las
-variables del modelo. Esto lo podemos utilizar para contrastar la validez
+variables del modelo. E
+sto lo podemos utilizar para contrastar la validez
 del modelo que estemos planteando como hipótesis.</p>
 <p>Nuestro modelo hipotético tiene la forma del tercer elemento a considerar en un
 gráfico causal DAG (Directed Acyclic Graph): se trata de un <strong>colisionador</strong> (<em>collider</em>).
