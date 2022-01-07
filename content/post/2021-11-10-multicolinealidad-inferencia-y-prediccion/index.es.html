@@ -1,0 +1,238 @@
+---
+title: Multicolinealidad, inferencia y predicción
+author: Miguel Conde
+date: '2021-11-10'
+slug: multicolinealidad-inferencia-y-prediccion
+categories:
+  - Data Science
+  - Causalidad
+tags:
+  - 'Causalidad'
+  - 'Inferencia'
+  - 'Predicción'
+description: 'A menudo oimos lo mala que es la multicolinealidad en los modelos de regresión. En este artículo vamos a ver en qué consiste y cuáles son sus efectos,lo que nos llevará, curiosamente, a otras disquisiciones habituales: inferencia vs predicción, machine learning vs estadística, causalidad vs correlación.'
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index.es_files/header-attrs/header-attrs.js"></script>
+
+
+<p>A menudo oimos lo mala que es la <strong>multicolinealidad</strong> en los modelos de
+regresión. En este artículo vamos a ver en qué consiste y cuáles son sus efectos,
+lo que nos llevará, curiosamente, a otras disquisiciones habituales:</p>
+<ul>
+<li>¿Qué diferencia hay entre <strong>inferencia</strong> y <strong>predicción</strong>?</li>
+<li>¿Qué enfoque es mejor?
+<ul>
+<li><em>Machine Learning</em>: lo meto todo en la coctelera sin darle muchas vueltas
+a la cabeza y pruebo muchos tipos de modelo y consjuntos de hperparámetros.</li>
+<li><em>Estadístico clásico</em>: construir un modelo exige ponerle mucha cabeza.</li>
+</ul></li>
+</ul>
+<p>Y el recorrido nos conducirá, inevitablemente, a plantearnos qué papel juega la
+<strong>causalidad</strong> en todo esto. Y si, lo has adivinado, al final saldrá también
+aquello de “correlación no implica causalidad”.</p>
+<p>Vamos allá. Lo haremos metiendo las manos directamente en harina. Vamos a plantearnos
+un problema que podría ser real, pero lo haremos con datos cocinados. Es este:
+queremos investigar qué relación hay entre el consumo de café, el de tabaco y
+el cáncer.</p>
+<p>Para “fabricarnos” los datos nos aprovecharemos de que sabemos la respuesta,
+tras muchos años de investigación por los científicos. Y la respuesta es que,
+aunque en algún momento de la historia se sospechó que el café causaba cáncer,
+tan solo se debía a que las personas que siguen determinado estilo de vida
+consumen café Y tabaco. Obviamente el cancerígeno es el tabaco.</p>
+<p>“Fabricaremos” primero los datos y luego haremos como que no lo sabemos.</p>
+<p>Ya que lo conocemos, el modelo causal pinta así:</p>
+<pre class="r"><code>library(tidyverse)
+library(dagitty)
+
+dag_OK_cafe_tabaco &lt;- 
+  dagitty::dagitty(&#39;dag{
+                   cafe &lt;- estilo_de_vida -&gt; tabaco -&gt; cancer
+                   cancer [outcome, pos=&quot;0,2&quot;]
+                   cafe [exposure, pos=&quot;-2,0&quot;]
+                   tabaco [exposure, pos=&quot;2, 0&quot;]
+                   estilo_de_vida [unobserved, pos=&quot;0,-2&quot;]}&#39;)
+
+plot(dag_OK_cafe_tabaco)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Podemos simular los datos de esta manera:</p>
+<pre class="r"><code>N &lt;- 1000
+estilo_de_vida &lt;- seq(-100, 100, length.out = N)
+
+# estilo_de_vida causa consumo de café
+cafe   &lt;- rnorm(N, .9 * estilo_de_vida, 10) 
+
+# estilo_de_vida causa también consumo de tabaco
+tabaco &lt;- rnorm(N, .7 * estilo_de_vida, 15)
+
+# El consumo de tabaco causa cáncer
+cancer &lt;- rnorm(N, 0.5 * tabaco, 20)
+
+# Lo juntamos todo
+d &lt;- tibble(estilo_de_vida, cafe, tabaco, cancer)
+
+set.seed(2021)
+idx_train &lt;- caret::createDataPartition(d$cancer, p = .8, list = FALSE)
+d_train &lt;- d[idx_train, ]
+d_test  &lt;- d[-idx_train, ]</code></pre>
+<p>Vale, ya tenemos nuestros datos. Hagamos ahora como que nos los encontramos por
+primera vez sin saber cómo se han generado. Lo primero sería explorar los datos
+“observables”. Por ejemplo:</p>
+<pre class="r"><code># El estilo_de vida no es &quot;observable&quot;.
+psych::pairs.panels(d_train %&gt;% select(-estilo_de_vida))</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Vemos una alta correlación tanto entre tabaco y cáncer como entre café y cáncer.</p>
+<p>Podríamos hipotetizar este modelo causal:</p>
+<pre class="r"><code>dag_Hipo_cafe_tabaco &lt;- 
+  dagitty::dagitty(&#39;dag{
+                   tabaco -&gt; cancer &lt;- cafe
+                   cancer [outcome, pos=&quot;0,2&quot;]
+                   cafe [exposure, pos=&quot;-2,0&quot;]
+                   tabaco [exposure, pos=&quot;2, 0&quot;]}&#39;)
+
+plot(dag_Hipo_cafe_tabaco)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Y construir por tanto una regresión con <code>tabaco</code> y <code>cafe</code> como variables
+explicativas:</p>
+<pre class="r"><code>lm_cafe_tabaco &lt;- lm(cancer ~ cafe + tabaco, d_train)
+summary(lm_cafe_tabaco)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cancer ~ cafe + tabaco, data = d_train)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -53.895 -13.466  -0.088  13.825  63.248 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.08584    0.70757  -0.121   0.9035    
+## cafe         0.06287    0.03300   1.905   0.0571 .  
+## tabaco       0.43233    0.04111  10.517   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 20.01 on 797 degrees of freedom
+## Multiple R-squared:  0.537,  Adjusted R-squared:  0.5359 
+## F-statistic: 462.3 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Vaya, <code>tabaco</code> parece una variable significativa, pero <code>cafe</code> no…</p>
+<p>¿Cuál es su capacidad de predicción? Veamos:</p>
+<pre class="r"><code>Metrics::mape(d_test$cancer, predict(lm_cafe_tabaco, d_test))</code></pre>
+<pre><code>## [1] 2.574253</code></pre>
+<p>Y ¿si solo usáramos tabaco?</p>
+<pre class="r"><code>lm_tabaco &lt;- lm(cancer ~ tabaco, d_train)
+summary(lm_tabaco)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cancer ~ tabaco, data = d_train)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -54.389 -13.864   0.389  13.358  62.842 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.06017    0.70861  -0.085    0.932    
+## tabaco       0.50398    0.01663  30.297   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 20.04 on 798 degrees of freedom
+## Multiple R-squared:  0.5349, Adjusted R-squared:  0.5344 
+## F-statistic: 917.9 on 1 and 798 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>Metrics::mape(d_test$cancer, predict(lm_tabaco, d_test))</code></pre>
+<pre><code>## [1] 2.656389</code></pre>
+<p>Era previsible: la variable tabaco sigue siendo significativa y la predicción
+sobre datos de test es casi igual.</p>
+<p>Por cierto: ¿te has fijado que los coeficientes de <code>tabaco</code> y <code>cafe</code> del primer
+modelo suman más o menos lo mismo que el coeficiente de <code>tabaco</code> en el segundo?
+Vaya, vaya…</p>
+<p>Pero ¡un momento! ¿Y si hacemos un modelo solo con café? A ver….</p>
+<pre class="r"><code>lm_cafe &lt;- lm(cancer ~ cafe, d)
+summary(lm_cafe)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cancer ~ cafe, data = d)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -65.19 -14.11  -0.05  13.97  73.32 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.04118    0.67479  -0.061    0.951    
+## cafe         0.36555    0.01262  28.973   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 21.34 on 998 degrees of freedom
+## Multiple R-squared:  0.4569, Adjusted R-squared:  0.4563 
+## F-statistic: 839.4 on 1 and 998 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>¡Anda! Ahora <code>cafe</code> es significativa casi igual que <code>tabaco</code> antes…</p>
+<pre class="r"><code>Metrics::mape(d_test$cancer, predict(lm_cafe, d_test))</code></pre>
+<pre><code>## [1] 2.09132</code></pre>
+<p>Y no predice mucho peor…</p>
+<p>Resumiendo: el modelo que hemos hipotetizado, con dos variables explicativas
+- <code>cafe</code> y <code>tabaco</code> - fuertemente correlacionadas entre si, sufre de <strong>colinealidad</strong>:
+observamos como una variable -<code>tabaco</code> “expulsa” a la otra - <code>cafe</code>.</p>
+<p>La explicación es que el modelo que estamos usando no es correcto causalmente.</p>
+<p>Esto no es grave a efectos meramente <strong>predictivos</strong>, como hemos visto. Si lo
+único que queremos es predecir, no hace falta que le demos muchas vueltas al
+modelo. Podemos emplear la táctica <em>machine learning</em> - meter todas las variables
+y construir el mejor modelo - y ¡hala! a predecir.</p>
+<p>Pero si es grave desde un punto de vista <strong>inferencial</strong> - <em>entender cómo
+funcionan las cosas</em> -, ya que cuando usamos
+las dos variables explicativas a la vez, debido a la colinealidad el efecto de la que realmente causa
+cáncer - <code>tabaco</code> - aparece atenuado por la presencia de <code>cafe</code>.</p>
+<p>Y esto es particularmente grave si quiero usar el modelo par a <strong>intervenir</strong>. Me
+llevaría a pensar que reduciendo el consumo de café disminuiría un poco el cáncer.</p>
+<p>Dicho de otro modo, si queremos usar el modelo para entender lo que sucede o, con
+más razón, para <strong>intervenir</strong>, tendremos que usar más la cabeza para plantear
+un modelo causalmente correcto.</p>
+<p>Pero, si <code>cafe</code> no es causa de <code>cancer</code> ¿por qué funciona bien el modelo que
+la usa como única variable predictiva? Si solo miramos ese modelo parece que
+<code>cafe</code> <em>si</em> es causa de <code>cancer</code>, ¿no?</p>
+<p>La razón es que hay un camino no causal entre <code>cafe</code> y <code>cancer</code> en el modelo causal
+correcto (fíjate en el sentido de las flechas para ver que es un camino no causal:
+<code>cancer</code> &lt;- <code>tabaco</code> &lt;- <code>estilo_de_vida</code> -&gt; <code>cafe</code>.</p>
+<p>La existencia de ese camino produce una correlación entre <code>cafe</code> y <code>cancer</code>. Ya
+lo ves, hay correlación pero no causalidad. Y ello es posible gracias a la existencia
+de la variable <code>estilo_de_vida</code> (no observable, en este caso), que actúa aquí
+como <strong><em>confounder</em></strong>.</p>
+<p>Sin embargo, esa asociación entre <code>cafe</code> y <code>cancer</code> se interrumpe al incluir
+<code>tabaco</code> en el modelo. En efecto, el camino <code>esiilo_de_vida</code> -&gt; <code>tabaco</code> -&gt; <code>cancer</code>
+es lo que se conoce como <strong>cadena</strong> (<em>chain</em>). Es un camino transitable siempre que no condicionemos
+(incluyamos en el modelo) la variable central <code>tabaco</code>, en cuyo caso el camino deja
+de ser transitable.</p>
+<p>En este modelo hay otra figura importante, la <strong>bifurcación</strong> (<em>fork</em>) <code>cafe</code>&lt;- <code>estilo_de_vida</code> -&gt; <code>tabaco</code>.
+Se trata también de un camino transitable mientras no condicionemos en la variable central.
+Como en este caso no podemos hacerlo, ya que <code>estilo_de_vida</code> no es observable,
+on podemos usarla para cerrar el camino entre <code>cafe</code> y <code>cancer</code>.</p>
+<p>Bueno, pero estamos haciendo algo de trampa ¿no? Todo esto lo sabemos de partida
+porque hemos creado el modelo. ¿Qué tendríamos que hacer si queremos hacer inferencia
+y solo tuviéramos los datos observables? Pues usar la cabeza. Eso siginifica que
+partimos de una hipótesis inicial (<code>cafe</code>-&gt; <code>cancer</code> &lt;- <code>tabaco</code>) y - esto es
+lo más importante - de la estructura ****causal*** de nuestro
+hipotético modelo podemos deducir consecuencias <strong><em>comprobables</em></strong> en los datos
+relativas a las independencias tanto marginales como condicionales entre las
+variables del modelo. Esto lo podemos utilizar para contrastar la validez
+del modelo que estemos planteando como hipótesis.</p>
+<p>Nuestro modelo hipotético tiene la forma del tercer elemento a considerar en un
+gráfico causal DAG (Directed Acyclic Graph): se trata de un <strong>colisionador</strong> (<em>collider</em>).
+A diferencia de los 2 anteriores, la cadena y la bifurcación, el colisionador por
+defecto <em>no</em> es transitable, está cerrado. Pero se abre al condicionar en la
+variable central.</p>
+<p>Por lo tanto, deducimos del gráfico DAG que, de ser correcto el modelo:</p>
+<ol style="list-style-type: decimal">
+<li><code>cafe</code> y <code>tabaco</code> deberían ser independientes (y, por lo tanto, no correladas) entre
+ellas;</li>
+<li>A no ser que condicionemos en <code>cancer</code>, en cuyo caso <code>cafe</code> influiría en
+<code>tabaco</code> a través de <code>cancer</code> lo que provocaría una correlación entre <code>cafe</code> y
+<code>tabaco</code>, que serían ahora dependientes entre si condicionalmente a <code>cancer</code></li>
+</ol>
+<p>Y estas dos deducciones son comprobables en los datos. De hecho, ya hemos visto
+que la primera no se cumple, luego nuestro hipotético modelo no es correcto.</p>
+<p>Nos preguntaríamos entonces qué induce la correlación entre <code>cafe</code> y <code>tabaco</code> e
+identificaríamos como causa probable la existencia de una variable no observada
+que influye a la vez sobre <code>tabaco</code> y <code>cafe</code>. Una bifurcación, vamos.</p>
