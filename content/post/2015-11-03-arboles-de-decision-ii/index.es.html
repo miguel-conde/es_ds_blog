@@ -98,16 +98,14 @@ The training data has 3333 samples and the test set contains 1667.</code></pre>
 ## 0.1414 0.8586</code></pre>
 <pre class="r"><code>plot(churn$churn, main = &quot;Proporción valores de &#39;churn&#39;&quot;,
          ylab = &#39;Nº de personas&#39;)</code></pre>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
-<p><span class="math display">\[caption id=&quot;attachment_1144&quot; align=&quot;aligncenter&quot; width=&quot;317&quot;\]</span><a href="http://es100x100datascience.com/wp-content/uploads/2015/11/PropChurn1.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/11/PropChurn1-241x300.png" alt="Distribución de los valores de ‘churn’" /></a> Distribución de los valores de ‘churn’<span class="math display">\[/caption\]</span></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>La variable objetivo, <code>churn</code>, presenta una distribución muy sesgada.</p>
 <p>Exploremos también la relación entre los diferentes atributos y la variable objetivo <code>churn</code>. Para ello emplearemos la función <code>pairs.panels()</code>del paquete <a href="https://cran.r-project.org/web/packages/psych/index.html"><code>psych</code></a>:</p>
 <pre class="r"><code>library(psych)
     pairs.panels(churn[,c(1:4,20)], 
                  main = &quot;&#39;churn&#39; dataset\nSPLOM, histograms and correlations&quot;)</code></pre>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<p>Este es el resultado para las prmeras 4 variables y ‘churn’:</p>
-<p><span class="math display">\[caption id=&quot;attachment_1147&quot; align=&quot;aligncenter&quot; width=&quot;582&quot;\]</span><a href="http://es100x100datascience.com/wp-content/uploads/2015/11/SPLOM.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/11/SPLOM-241x300.png" alt="pairs.panels(churn,c(1:4,20), main = “‘churn’ dataset SPLOM, histograms and correlations”)" /></a> ‘churn’ dataset SPLOM, histograms and correlations<span class="math display">\[/caption\]</span></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Este es el resultado para las prmeras 4 variables y ‘churn’.</p>
 <p>Los números por encima de la diagonal son la correlación entre las diferentes variables.</p>
 <p>En la diagonal encontramos los histogramas correspondientes a la distribución de cada una de las variables, con una curva superpuesta que representa su densidad.</p>
 <p>Debajo de la diagonal podemos observar los gráficos de dispersión de cada par de variables. En ellos se encuentran también:</p>

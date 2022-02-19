@@ -15,7 +15,7 @@ thumbnail: ''
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center")
 ```
 
 En esta entrada y la siguiente veremos la implementación en R de dos árboles de decisión: *rpart* y *C5.0*. Nos servirán para profundizar en el mecanismo de 
@@ -104,9 +104,6 @@ plot(churn$churn, main = "Proporción valores de 'churn'",
 
 
     
-
-\[caption id="attachment_1144" align="aligncenter" width="317"\][![Distribución de los valores de 'churn'](http://es100x100datascience.com/wp-content/uploads/2015/11/PropChurn1-241x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/11/PropChurn1.png) Distribución de los valores de 'churn'\[/caption\]
-
 La variable objetivo, `churn`, presenta una distribución muy sesgada.
 
 Exploremos también la relación entre los diferentes atributos y la variable objetivo `churn`. Para ello emplearemos la función `pairs.panels()`del paquete [`psych`](https://cran.r-project.org/web/packages/psych/index.html):
@@ -118,9 +115,7 @@ library(psych)
 ```
     
 
-Este es el resultado para las prmeras 4 variables y 'churn':
-
-\[caption id="attachment_1147" align="aligncenter" width="582"\][![pairs.panels(churn\[,c(1:4,20)\], main = "'churn' dataset SPLOM, histograms and correlations")](http://es100x100datascience.com/wp-content/uploads/2015/11/SPLOM-241x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/11/SPLOM.png) 'churn' dataset SPLOM, histograms and correlations\[/caption\]
+Este es el resultado para las prmeras 4 variables y 'churn'.
 
 Los números por encima de la diagonal son la correlación entre las diferentes variables.
 
