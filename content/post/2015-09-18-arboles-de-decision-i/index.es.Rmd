@@ -73,7 +73,9 @@ Gráficamente podemos expresarlo así:
 
 <center>
 
-[![Éxito](http://es100x100datascience.com/wp-content/uploads/2015/09/%C3%89xito-264x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/09/Éxito.png)
+<!-- [![Éxito](http://es100x100datascience.com/wp-content/uploads/2015/09/%C3%89xito-264x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/09/Éxito.png) -->
+![Éxito](images/Exito.png)
+
 
 </center>
 
@@ -85,7 +87,8 @@ Los árboles de decisión se emplean para realizar este tipo de predicciones. Ve
 
 <center>
 
-[![Decission_Tree_Example](http://es100x100datascience.com/wp-content/uploads/2015/09/Decission_Tree_Example-300x223.jpg)](http://es100x100datascience.com/wp-content/uploads/2015/09/Decission_Tree_Example.jpg)
+<!-- [![Decission_Tree_Example](http://es100x100datascience.com/wp-content/uploads/2015/09/Decission_Tree_Example-300x223.jpg)](http://es100x100datascience.com/wp-content/uploads/2015/09/Decission_Tree_Example.jpg) -->
+![Decission_Tree_Example](images/Decission_Tree_Example.jpg)
 
 </center>
 
@@ -121,7 +124,8 @@ Al principio todos nuestros ejemplos están en el nodo raíz. Para crear la prim
 
 <center>
 
-[![Split1](http://es100x100datascience.com/wp-content/uploads/2015/09/Split1-264x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/09/Split1.png)
+<!-- [![Split1](http://es100x100datascience.com/wp-content/uploads/2015/09/Split1-264x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/09/Split1.png) -->
+![Split1](images/Split1.png)
 
 </center>
 
@@ -129,7 +133,8 @@ A continuación podemos dividir el grupo de empresas con productos de CALIDAD AL
 
 <center>
 
-[![Split2](http://es100x100datascience.com/wp-content/uploads/2015/09/Split2-264x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/09/Split2.png)
+<!-- [![Split2](http://es100x100datascience.com/wp-content/uploads/2015/09/Split2-264x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/09/Split2.png) -->
+![Split2](images/Split2.png)
 
 </center>
 Con esto tenemos divididos los ejemplos de nuestros datos en tres grupos:

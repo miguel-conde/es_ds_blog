@@ -10,7 +10,7 @@ tags:
   - Data Science
   - Clasificación
   - Árboles de Decisión
-description: ''
+description: 'Los Árboles de Decisión o Clasificación constituyen un buen ejemplo de clasificadores Machine Learning. Son relativamente sencillos de entender y sobre ellos se basan otros algoritmos más complicados.'
 thumbnail: ''
 ---
 
@@ -64,13 +64,21 @@ thumbnail: ''
 <p>Tenemos dos atributos categóricos (cada uno con tres niveles) y una variable objetivo categórica y binaria.</p>
 <p>Gráficamente podemos expresarlo así:</p>
 <center>
-<p><a href="http://es100x100datascience.com/wp-content/uploads/2015/09/Éxito.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/09/%C3%89xito-264x300.png" alt="Éxito" /></a></p>
+<!-- [![Éxito](http://es100x100datascience.com/wp-content/uploads/2015/09/%C3%89xito-264x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/09/Éxito.png) -->
+<div class="figure">
+<img src="images/Exito.png" alt="" />
+<p class="caption">Éxito</p>
+</div>
 </center>
 <p>La pregunta que nos planteamos es: a la hora de valorar un nuevo proyecto de inversión ¿seremos capaces de predecir su éxito a partir de la calificación que el nuevo proyecto obtenga en cuanto a nivel de inversión y calidad del producto?</p>
 <p>Nivel de inversión y calidad del producto serían nuestras features o predictores y Éxito sería nuestra variable target.</p>
 <p>Los árboles de decisión se emplean para realizar este tipo de predicciones. Veamos un ejemplo de árbol:</p>
 <center>
-<p><a href="http://es100x100datascience.com/wp-content/uploads/2015/09/Decission_Tree_Example.jpg"><img src="http://es100x100datascience.com/wp-content/uploads/2015/09/Decission_Tree_Example-300x223.jpg" alt="Decission_Tree_Example" /></a></p>
+<!-- [![Decission_Tree_Example](http://es100x100datascience.com/wp-content/uploads/2015/09/Decission_Tree_Example-300x223.jpg)](http://es100x100datascience.com/wp-content/uploads/2015/09/Decission_Tree_Example.jpg) -->
+<div class="figure">
+<img src="images/Decission_Tree_Example.jpg" alt="" />
+<p class="caption">Decission_Tree_Example</p>
+</div>
 </center>
 <p>El nodo raíz, donde comienza el árbol, es Does it move?. La decisión va pasando por los diferentes nodos de decisión, que requieren que vayamos realizando elecciones según los atributos de cada ejemplo, hasta llegar a un nodo hoja, que representa la decisión a la que nos ha conducido el árbol de decisión.</p>
 </div>
@@ -96,11 +104,19 @@ thumbnail: ''
 <p>Mediante esta estrategia podemos construir un sencillo árbol de decisión con nuestros datos.</p>
 <p>Al principio todos nuestros ejemplos están en el nodo raíz. Para crear la primera partición podemos escoger el atributo CALIDAD, dividiendo las empresas emprendedoras entre aquellas con CALIDAD media y calidad ALTA o SOBRESALIENTE:</p>
 <center>
-<p><a href="http://es100x100datascience.com/wp-content/uploads/2015/09/Split1.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/09/Split1-264x300.png" alt="Split1" /></a></p>
+<!-- [![Split1](http://es100x100datascience.com/wp-content/uploads/2015/09/Split1-264x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/09/Split1.png) -->
+<div class="figure">
+<img src="images/Split1.png" alt="" />
+<p class="caption">Split1</p>
+</div>
 </center>
 <p>A continuación podemos dividir el grupo de empresas con productos de CALIDAD ALTA o SOBRESALIENTE según si su nivel de INVERSIÓN es MUY ALTA o solo ALTA o MEDIA:</p>
 <center>
-<p><a href="http://es100x100datascience.com/wp-content/uploads/2015/09/Split2.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/09/Split2-264x300.png" alt="Split2" /></a></p>
+<!-- [![Split2](http://es100x100datascience.com/wp-content/uploads/2015/09/Split2-264x300.png)](http://es100x100datascience.com/wp-content/uploads/2015/09/Split2.png) -->
+<div class="figure">
+<img src="images/Split2.png" alt="" />
+<p class="caption">Split2</p>
+</div>
 </center>
 <p>Con esto tenemos divididos los ejemplos de nuestros datos en tres grupos:</p>
 <ul>
