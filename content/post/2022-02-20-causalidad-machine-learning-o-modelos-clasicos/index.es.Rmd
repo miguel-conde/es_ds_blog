@@ -16,6 +16,13 @@ knitr::opts_chunk$set(echo = TRUE, warrning=FALSE, error=FALSE, message=FALSE,
                       fig.align = "center")
 ```
 
+En este post vamos a mezclar R con Python. Los gráficos de modelos causales 
+están hechos con el [paquete `dagitty`](https://cran.r-project.org/web/packages/dagitty/index.html). 
+El resto con Python. Este blog se edita con [blogdown](https://cran.r-project.org/web/packages/blogdown/index.html) 
+y RStudio nos permite 
+crear archivos Rmarkdown mezclando R y Python gracias al [paquete `reticulate`](https://cran.r-project.org/web/packages/reticulate/index.html).
+
+
 ```{r}
 library(tidyverse, quietly = TRUE)
 library(dagitty)
@@ -36,10 +43,6 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error
 ```
 
-En este post vamos a mezclar R con Python. Los gráficos de modelos causales 
-están hechos con el [paquete `dagitty`](https://cran.r-project.org/web/packages/dagitty/index.html). 
-El resto con Python. Este blog se edita con blogdown y RStudio nos permite 
-crear archivos Rmarkdown mezclando R y Python gracias al [paquete `reticulate`](https://cran.r-project.org/web/packages/reticulate/index.html.
 
 
 # Bifurcación (*fork*)
