@@ -20,10 +20,7 @@ El resto con Python. Este blog se edita con <a href="https://cran.r-project.org/
 y RStudio nos permite
 crear archivos Rmarkdown mezclando R y Python gracias al <a href="https://cran.r-project.org/web/packages/reticulate/index.html">paquete <code>reticulate</code></a>.</p>
 <p>Vídeo introductorio:</p>
-<center>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/7F_jKKKTDCQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-</iframe>
-</center>
+<p>{{% youtube id="7F_jKKKTDCQ" color="white" %}}</p>
 <pre class="r"><code>library(tidyverse, quietly = TRUE)
 library(dagitty)
 library(reticulate)
@@ -53,7 +50,7 @@ Z -&gt; Y
 }&#39;)
 
 plot(dag_fork)</code></pre>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-3-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-4-1.png" width="192" style="display: block; margin: auto;" /></p>
 <p>Esta estructura causal se denomina <strong><em>fork</em></strong> o <strong>bifurcación</strong>: <code>Z</code> es
 la causa tanto de <code>X</code> como de <code>Y</code>.</p>
 <p>Veámoslo con un ejemplo sintético.</p>
@@ -101,7 +98,7 @@ prescribir correctamente para poder <strong>intervenir</strong> con éxito sobre
 realidad.</p>
 <div id="resumen---bifurcación-fork" class="section level2">
 <h2>Resumen - Bifurcación (<em>fork</em>)</h2>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-8-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-9-1.png" width="192" style="display: block; margin: auto;" /></p>
 <p>Al analizar los datos disponibles (<code>X</code> e <code>Y</code>) vemos que correlan. Por
 tanto probamos el modelo <span class="math inline">\(Y \sim X\)</span> y comprobamos que funciona bien.</p>
 <p>El peligro de este <em>fork</em> es que pensemos que <code>X</code> es causa de <code>Y</code>. Si
@@ -124,7 +121,7 @@ X1 -&gt; Y
 }&#39;)
 
 plot(dag_colin)</code></pre>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-9-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-10-1.png" width="192" style="display: block; margin: auto;" /></p>
 <p>Fabriquemos un ejemplo sintético.</p>
 <pre class="python"><code>np.random.seed(2022)
 
@@ -200,7 +197,7 @@ print(mean_absolute_error(y_true, y_pred))</code></pre>
 <p>… y el error no está muy lejos de de los 2 anteriores.</p>
 <div id="resumen---colinealidad" class="section level3">
 <h3>Resumen - Colinealidad</h3>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-21-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-22-1.png" width="192" style="display: block; margin: auto;" /></p>
 <p>En este caso hemos analizado los datos disponibles (<code>X1</code>, <code>X2</code> e <code>Y</code> ) y
 hemos encontrado correlaciones entre los 3, así que hemos probado el
 modelo <span class="math inline">\(Y \sim X1 + X2\)</span>. Encontramos que en el modelo <code>X2</code> no es
@@ -231,7 +228,7 @@ Y -&gt; Z
 }&#39;)
 
 plot(dag_chain)</code></pre>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-22-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-23-1.png" width="192" style="display: block; margin: auto;" /></p>
 <p>Creemos algunos datos sintéticos:</p>
 <pre class="python"><code>np.random.seed(2022)
 
@@ -272,7 +269,7 @@ print(chain_lm_X.params)</code></pre>
 ## dtype: float64</code></pre>
 <div id="resumen---cadenas-chains" class="section level2">
 <h2>Resumen - Cadenas (<em>chains</em>)</h2>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-28-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-29-1.png" width="192" style="display: block; margin: auto;" /></p>
 <p>Al analizar los datos disponibles (<code>X</code>, <code>Y</code>, <code>Z</code>) hemos descubierto que
 correlan bien entre ellos, así que hemos probado el modelo <span class="math inline">\(Z \sim X+Y\)</span>.
 Pero entonces descubrimos que <code>X</code> sale no sigificativa.</p>
@@ -295,7 +292,7 @@ Y -&gt; Z
 }&#39;)
 
 plot(dag_collider)</code></pre>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-29-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-30-1.png" width="192" style="display: block; margin: auto;" /></p>
 <p>Simulemos los datos:</p>
 <pre class="python"><code>np.random.seed(2022)
 
@@ -362,7 +359,7 @@ que inicialmente está abierto.</li>
 </ul>
 <div id="resumen---colisionadores-colliders" class="section level2">
 <h2>Resumen - Colisionadores (<em>colliders</em>)</h2>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-38-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-39-1.png" width="192" style="display: block; margin: auto;" /></p>
 <p>Al analizar los datos disponibles (<code>X</code>, <code>Y</code>, <code>Z</code>) hemos visto que <code>Y</code>
 correla zon <code>Z</code> pero no con <code>X</code>. Esto induce a probar el modelo
 <span class="math inline">\(Y \sim Z\)</span>, en el que <code>Z</code> sale significativa. Por supuesto, el modelo no
