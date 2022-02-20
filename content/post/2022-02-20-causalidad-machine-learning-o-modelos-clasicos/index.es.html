@@ -1,0 +1,386 @@
+---
+title: 'Causalidad: ¿machine learning o modelos "clásicos"?'
+author: Miguel Conde
+date: '2022-02-20'
+slug: causalidad-machine-learning-o-modelos-clasicos
+categories:
+  - Causalidad
+tags:
+  - ''
+description: ''
+thumbnail: ''
+---
+
+<script src="{{< blogdown/postref >}}index.es_files/header-attrs/header-attrs.js"></script>
+
+
+<pre class="r"><code>library(tidyverse, quietly = TRUE)
+library(dagitty)
+library(reticulate)
+Sys.setenv(RETICULATE_PYTHON=&quot;&quot;)
+options(reticulate.repl.quiet = TRUE)
+reticulate::use_condaenv(&quot;ml-course-edix&quot;)</code></pre>
+<pre class="python"><code>import warnings
+
+warnings.filterwarnings(&#39;ignore&#39;)
+
+import numpy as np
+import statsmodels.api as sm
+import pandas as pd
+from sklearn.metrics import mean_absolute_error</code></pre>
+<p>En este post vamos a mezclar R con Python. Los gráficos de modelos causales
+están hechos con el <a href="https://cran.r-project.org/web/packages/dagitty/index.html">paquete <code>dagitty</code></a>.
+El resto con Python. Este blog se edita con blogdown y RStudio nos permite
+crear archivos Rmarkdown mezclando R y Python gracias al [paquete <code>reticulate</code>](<a href="https://cran.r-project.org/web/packages/reticulate/index.html" class="uri">https://cran.r-project.org/web/packages/reticulate/index.html</a>.</p>
+<div id="bifurcación-fork" class="section level1">
+<h1>Bifurcación (<em>fork</em>)</h1>
+<p>¿Qué es un <em>confounder</em>? Básicamente, una variable aleatoria oculta que
+es la causa de otras variables aleatorias visibles en las que “induce”
+una dependencia.</p>
+<pre class="r"><code>dag_fork &lt;- dagitty(&#39;dag {
+bb=&quot;0,0,1,1&quot;
+X [pos=&quot;0.3,0.2&quot;]
+Y [pos=&quot;0.5,0.2&quot;]
+Z [pos=&quot;0.4,0.15&quot;]
+Z -&gt; X
+Z -&gt; Y
+}&#39;)
+
+plot(dag_fork)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-3-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p>Esta estructura causal se denomina <strong><em>fork</em></strong> o <strong>bifurcación</strong>: <code>Z</code> es
+la causa tanto de <code>X</code> como de <code>Y</code>.</p>
+<p>Veámoslo con un ejemplo sintético.</p>
+<pre class="python"><code>N = 1000
+
+np.random.seed(2022)
+
+Z = np.random.normal(0, 1, N)
+X = np.random.normal(Z, 1, N)
+Y = np.random.normal(Z, 1, N)
+
+fork_df = pd.DataFrame({&#39;X&#39;:X, &#39;Y&#39;:Y, &#39;Z&#39;: Z})</code></pre>
+<p>Las v.a.’s <code>X</code> e <code>Y</code> se generan a partir de <code>Z</code> (nuestro <em>confounder</em>).
+Esa es la razón de que <code>X</code> e <code>Y</code> no sean independientes. En efecto, si
+fueran independientes su correlación tendría que ser nula, lo que no es
+el caso:</p>
+<pre class="python"><code>fork_df.corr()</code></pre>
+<pre><code>##           X         Y         Z
+## X  1.000000  0.499050  0.692473
+## Y  0.499050  1.000000  0.702374
+## Z  0.692473  0.702374  1.000000</code></pre>
+<p>Si no disponemos de la variable <em>confounder</em> <code>Z</code>, basándonos en la
+correlación entre <code>X</code> e <code>Y</code> el modelo que construiríamos sería este:</p>
+<pre class="python"><code>fork_lm = sm.OLS(fork_df[&#39;Y&#39;], fork_df[&#39;X&#39;]).fit()
+print(fork_lm.params)</code></pre>
+<pre><code>## X    0.504956
+## dtype: float64</code></pre>
+<pre class="python"><code>print(fork_lm.pvalues)</code></pre>
+<pre><code>## X    3.244596e-64
+## dtype: float64</code></pre>
+<p>En el que <code>X</code> , claro, sale significativa. Esto explica <em>por qué</em>
+podemos <strong>predecir</strong> <code>Y</code> a partir de <code>X</code>. Pero, como no somos
+conscientes de la existencia de <code>Z</code> y su relación causal con <code>X</code> e <code>Y</code>:</p>
+<ul>
+<li>Nos equivocaremos si concluimos que <code>X</code> es <strong>causa</strong> de <code>Y</code>.</li>
+<li>Y erraremos también si prescribimos que una <strong>intervención</strong> sobre
+<code>X</code> nos permitirá modificar <code>Y</code>.</li>
+</ul>
+<p>En definitiva, queda claro que <strong>podemos predecir sin tener en cuenta la
+estructura causal</strong>, es decir, sólo a partir de la asociación inducida
+por el <em>confounder</em>.</p>
+<p>Pero lo que <strong>no conseguiremos sin tener en cuenta las relaciones
+causales</strong> es ni <strong>entender</strong> cómo funcionan las cosas (<em>inferencia</em>) ni
+prescribir correctamente para poder <strong>intervenir</strong> con éxito sobre la
+realidad.</p>
+<div id="resumen---bifurcación-fork" class="section level2">
+<h2>Resumen - Bifurcación (<em>fork</em>)</h2>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-8-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p>Al analizar los datos disponibles (<code>X</code> e <code>Y</code>) vemos que correlan. Por
+tanto probamos el modelo <span class="math inline">\(Y \sim X\)</span> y comprobamos que funciona bien.</p>
+<p>El peligro de este <em>fork</em> es que pensemos que <code>X</code> es causa de <code>Y</code>. Si
+intentáramos modificar <code>Y</code> interviniendo en <code>X</code>no conseguiríamos nada.</p>
+</div>
+<div id="colinealidad" class="section level2">
+<h2>Colinealidad</h2>
+<p>También es muy habitual encontrar variables explicativas
+correlacionadas, lo que produce problemas de colinealidad en las
+regresiones lineales. Veamos por ejemplo esta estructura causal:</p>
+<pre class="r"><code>dag_colin &lt;- dagitty(&#39;dag {
+bb=&quot;0,0,1,1&quot;
+X1 [pos=&quot;0.3,0.2&quot;]
+X2 [pos=&quot;0.4,0.2&quot;]
+Z  [pos=&quot;0.35,0.15&quot;]
+Y  [pos=&quot;0.3,0.3&quot;]
+Z -&gt; X1
+Z -&gt; X2
+X1 -&gt; Y
+}&#39;)
+
+plot(dag_colin)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-9-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p>Fabriquemos un ejemplo sintético.</p>
+<pre class="python"><code>np.random.seed(2022)
+
+Z = np.linspace(-100, 100, N)
+X1 = np.random.normal(.9*Z, 10, N)
+X2 = np.random.normal(.7*Z, 15, N)
+Y = np.random.normal(0.5*X1, 20, N)
+
+colin_df = pd.DataFrame({&#39;X1&#39;:X1, &#39;X2&#39;:X2, &#39;Y&#39;:Y, &#39;Z&#39;: Z})</code></pre>
+<pre class="python"><code>print(colin_df.corr())</code></pre>
+<pre><code>##           X1        X2         Y         Z
+## X1  1.000000  0.919292  0.801721  0.982527
+## X2  0.919292  1.000000  0.743092  0.937735
+## Y   0.801721  0.743092  1.000000  0.788665
+## Z   0.982527  0.937735  0.788665  1.000000</code></pre>
+<p>Al haberlas creado asociadas (es decir, dependientes), la correlación
+entre <code>X1</code> y <code>X2</code> no tiene por qué ser <span class="math inline">\(0\)</span> - como podemos comprobar
+arriba, en nuestro caso no lo es en absoluto.</p>
+<p>Sin embargo, <code>X1</code> y <code>X2</code> presentan el problema de la colinealidad: ambas
+correlan entre ellas pero también con <code>Y</code> <em>aunque <code>X2</code> no ha intervenido
+para nada en la generación de <code>Y</code>: se trata de una correlación espúrea
+inducida por el</em> confounder <code>Z</code>.</p>
+<p>Si incluimos ambas en la regresión:</p>
+<pre class="python"><code>colin_lm = sm.OLS(colin_df[&#39;Y&#39;], colin_df[[&#39;X1&#39;, &#39;X2&#39;]]).fit()
+print(colin_lm.params)</code></pre>
+<pre><code>## X1    0.479845
+## X2    0.030429
+## dtype: float64</code></pre>
+<pre class="python"><code>print(colin_lm.pvalues)</code></pre>
+<pre><code>## X1    4.473266e-51
+## X2    4.128670e-01
+## dtype: float64</code></pre>
+<p><code>X2</code> no sale significativa: lo que nos está diciendo es que el efecto
+causal de <code>X2</code> sobre <code>X1</code> es nulo.</p>
+<p>(Por cierto, nótese como la suma de los coeficientes es casi igual al
+número que hemos usado al generar los datos - <span class="math inline">\(0.5\)</span> -)</p>
+<p>En cualquier caso, veamos cómo predice este modelo:</p>
+<pre class="python"><code>y_true = colin_df[&#39;Y&#39;]
+y_pred = colin_lm.predict()
+
+print(mean_absolute_error(y_true, y_pred))</code></pre>
+<pre><code>## 15.774561523819266</code></pre>
+<p>Pero atención: si hacemos sendos modelos univariable resulta que
+<strong>predicen más o menos igual</strong> (de hecho, a veces podría ¡hasta predice
+mejor el modelo con <code>X2</code>!)</p>
+<p>Modelo solo con <code>X1</code>:</p>
+<pre class="python"><code>colin_lm_X1 = sm.OLS(colin_df[&#39;Y&#39;], colin_df[[&#39;X1&#39;]]).fit()
+print(colin_lm_X1.params)</code></pre>
+<pre><code>## X1    0.502529
+## dtype: float64</code></pre>
+<pre class="python"><code>print(colin_lm_X1.pvalues)</code></pre>
+<pre><code>## X1    1.640557e-225
+## dtype: float64</code></pre>
+<pre class="python"><code>y_pred = colin_lm_X1.predict()
+
+print(mean_absolute_error(y_true, y_pred))</code></pre>
+<pre><code>## 15.790672097189905</code></pre>
+<p>Como era de esperar, <code>X1</code> sale significativa. Éste es el mejor modelo (y
+con coeficiente <span class="math inline">\(0.5\)</span>)</p>
+<p>Modelo solo con <code>X2</code>:</p>
+<pre class="python"><code>colin_lm_X2 = sm.OLS(colin_df[&#39;Y&#39;], colin_df[[&#39;X2&#39;]]).fit()
+print(colin_lm_X2.params)</code></pre>
+<pre><code>## X2    0.57437
+## dtype: float64</code></pre>
+<pre class="python"><code>print(colin_lm_X2.pvalues)</code></pre>
+<pre><code>## X2    1.768978e-176
+## dtype: float64</code></pre>
+<p><code>X2</code> ahora sale significativa…</p>
+<pre class="python"><code>y_pred = colin_lm_X2.predict()
+
+print(mean_absolute_error(y_true, y_pred))</code></pre>
+<pre><code>## 17.559263999690536</code></pre>
+<p>… y el error no está muy lejos de de los 2 anteriores.</p>
+<div id="resumen---colinealidad" class="section level3">
+<h3>Resumen - Colinealidad</h3>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-21-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p>En este caso hemos analizado los datos disponibles (<code>X1</code>, <code>X2</code> e <code>Y</code> ) y
+hemos encontrado correlaciones entre los 3, así que hemos probado el
+modelo <span class="math inline">\(Y \sim X1 + X2\)</span>. Encontramos que en el modelo <code>X2</code> no es
+significativa. Lo normal es que pensemos, en este caso acertadamente,
+que debemos excluir <code>X2</code> del modelo. Si no lo hiciéramos, el modelo
+seguiría prediciendo <code>Y</code> razonablemente bien, pero nos llevaría a
+estimar erróneamente el efecto sobre <code>Y</code> al intervenir en <code>X2</code>.</p>
+<p>Otro peligro sería que no dispusiéramos de los datos <code>X1</code>. En ese caso
+probaríamos el modelo <span class="math inline">\(Y \sim X2\)</span> y comprobaríamos que ahora <code>X2</code>
+funciona bien. Si intentáramos influir en <code>Y</code> interviniendo sobre <code>X2</code>,
+fracasaríamos. Sin embargo, si solo queremos predecir <code>Y</code>, el modelo
+funcionaría razonablemente bien.</p>
+</div>
+</div>
+</div>
+<div id="cadenas-chains" class="section level1">
+<h1>Cadenas (<em>Chains</em>)</h1>
+<p>Otro caso interesante es el de las cadenas (<em>chains</em>).</p>
+<p>Se trata de situaciones en las que hay una causa <code>X</code> de otra causa
+intermedia <code>Y</code> que finalmente causa <code>Z</code>.</p>
+<pre class="r"><code>dag_chain &lt;- dagitty(&#39;dag {
+bb=&quot;0,0,1,1&quot;
+X [pos=&quot;0.3,0.2&quot;]
+Y [pos=&quot;0.4,0.2&quot;]
+Z [pos=&quot;0.5,0.2&quot;]
+X -&gt; Y
+Y -&gt; Z
+}&#39;)
+
+plot(dag_chain)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-22-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p>Creemos algunos datos sintéticos:</p>
+<pre class="python"><code>np.random.seed(2022)
+
+X = np.linspace(-100, 100, N)
+Y = np.random.normal(.9*X, 10, N)
+Z = np.random.normal(0.5*Y, 20, N)
+
+chain_df = pd.DataFrame({&#39;X&#39;:X, &#39;Y&#39;:Y,&#39;Z&#39;: Z})</code></pre>
+<p>Claramente hay asociaciones causales directas entre <code>X</code> e <code>Y</code> y entre
+<code>Y</code> y <code>Z</code>; pero también hay una relación causal <em>indirecta</em> entre <code>X</code>y
+<code>Z</code>. Esto explica las correlaciones entre las 3 variables:</p>
+<pre class="python"><code>print(chain_df.corr())</code></pre>
+<pre><code>##           X         Y         Z
+## X  1.000000  0.982527  0.786870
+## Y  0.982527  1.000000  0.797378
+## Z  0.786870  0.797378  1.000000</code></pre>
+<p>Sin embargo, veamos lo que pasa al incluir tanto <code>X</code> como <code>Y</code> en un
+modelo explicativo de <code>Z</code>:</p>
+<pre class="python"><code>chain_lm_X_Y = sm.OLS(chain_df[&#39;Z&#39;], chain_df[[&#39;X&#39;, &#39;Y&#39;]]).fit()
+print(chain_lm_X_Y.params)</code></pre>
+<pre><code>## X    0.056122
+## Y    0.436255
+## dtype: float64</code></pre>
+<p>Aunque claramente hay una relación causal entre <code>X</code> y <code>Z</code>, resulta que
+ahora <code>X</code> no sale significativa en el modelo.</p>
+<p>¿Qué está pasando? Pues que en una <em>chain</em> condicionar sobre la variable
+intermedia “bloquea” el efecto de <code>X</code> sobre <code>Y</code>, “cierra el camino”
+entre ambas.</p>
+<p>Si queremos conocer el efecto total (que es indirecto) de <code>X</code> sobre <code>Z</code>
+no debemos incluir <code>Y</code>en el modelo para que el camino entre <code>X</code>y
+<code>Z</code>quede expedito:</p>
+<pre class="python"><code>chain_lm_X = sm.OLS(chain_df[&#39;Z&#39;], chain_df[[&#39;X&#39;]]).fit()
+print(chain_lm_X.params)</code></pre>
+<pre><code>## X    0.450068
+## dtype: float64</code></pre>
+<pre class="python"><code>print(chain_lm_X.pvalues)</code></pre>
+<pre><code>## X    1.360570e-211
+## dtype: float64</code></pre>
+<div id="resumen---cadenas-chains" class="section level2">
+<h2>Resumen - Cadenas (<em>chains</em>)</h2>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-28-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p>Al analizar los datos disponibles (<code>X</code>, <code>Y</code>, <code>Z</code>) hemos descubierto que
+correlan bien entre ellos, así que hemos probado el modelo <span class="math inline">\(Z \sim X+Y\)</span>.
+Pero entonces descubrimos que <code>X</code> sale no sigificativa.</p>
+<p>El peligro es que, en consecuencia, pensemos que <code>X</code> no tiene efecto
+sobre <code>Z</code>. Si queremos conocer su efecto sobre <code>Z</code> debemos excluir <code>Y</code>
+del modelo.</p>
+</div>
+</div>
+<div id="colisionadores-colliders" class="section level1">
+<h1>Colisionadores (<em>Colliders</em>)</h1>
+<p>Por último, veamos el caso en que dos variables independientes entre sí
+son causa simultánea de otra tercera.</p>
+<pre class="r"><code>dag_collider &lt;- dagitty(&#39;dag {
+bb=&quot;0,0,1,1&quot;
+X [pos=&quot;0.3,0.15&quot;]
+Y [pos=&quot;0.5,0.15&quot;]
+Z [pos=&quot;0.4,0.2&quot;]
+X -&gt; Z
+Y -&gt; Z
+}&#39;)
+
+plot(dag_collider)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-29-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p>Simulemos los datos:</p>
+<pre class="python"><code>np.random.seed(2022)
+
+X = np.random.normal(0, 10, N)
+Y = np.random.normal(0, 10, N)
+Z = np.random.normal(-0.9*X + 0.5*Y, 1, N)
+
+collider_df = pd.DataFrame({&#39;X&#39;:X, &#39;Y&#39;:Y,&#39;Z&#39;: Z})</code></pre>
+<pre class="python"><code>print(collider_df.corr())</code></pre>
+<pre><code>##           X         Y         Z
+## X  1.000000 -0.031899 -0.871237
+## Y -0.031899  1.000000  0.509009
+## Z -0.871237  0.509009  1.000000</code></pre>
+<p>Aquí, claro, no hay correlación entre <code>X</code> e <code>Y</code>; pero cada una de ellas
+correlaciona con <code>Z</code> porque ambas son causa de <code>Z</code>.</p>
+<p>Supongamos que queremos un modelo para <code>Y</code>. Pensando en términos de
+correlación, esperaríamos que <code>X</code> no debería estar en ese modelo.</p>
+<p>En efecto, intentamos explicar <code>Y</code> a partir de <code>X</code>:</p>
+<pre class="python"><code>collider_lm_X = sm.OLS(collider_df[&#39;Y&#39;], collider_df[[&#39;X&#39;]]).fit()
+print(chain_lm_X.params)</code></pre>
+<pre><code>## X    0.450068
+## dtype: float64</code></pre>
+<pre class="python"><code>print(collider_lm_X.pvalues)</code></pre>
+<pre><code>## X    0.317034
+## dtype: float64</code></pre>
+<p><code>X</code> no es significativa. Lógico ¿no? ya que creamos <code>X</code> e <code>Y</code> de manera
+independiente.</p>
+<p>Con la misma lógica basada en las correlaciones, pensaríamos que el
+modelo debería usar xolo <code>Z</code>:</p>
+<pre class="python"><code>collider_lm_Z = sm.OLS(collider_df[&#39;Y&#39;], collider_df[[&#39;Z&#39;]]).fit()
+print(collider_lm_Z.params)</code></pre>
+<pre><code>## Z    0.487921
+## dtype: float64</code></pre>
+<pre class="python"><code>print(collider_lm_Z.pvalues)</code></pre>
+<pre><code>## Z    4.786561e-67
+## dtype: float64</code></pre>
+<p>Y, claro, <code>Z</code> sale significativa. Este modelo predeciría bien <code>y</code> pero,
+como sabemos cómo se han generado los datos, está claro que intervenir
+en <code>Z</code> no tendría efecto en <code>Y</code>.</p>
+<p>Por último, ¿y si incluimos tanto <code>X</code> como <code>Y</code> en el modelo?</p>
+<pre class="python"><code>collider_lm_X_Z = sm.OLS(collider_df[&#39;Y&#39;], collider_df[[&#39;X&#39;, &#39;Z&#39;]]).fit()
+print(collider_lm_X_Z.params)</code></pre>
+<pre><code>## X    1.723143
+## Z    1.914652
+## dtype: float64</code></pre>
+<pre class="python"><code>print(collider_lm_X_Z.pvalues)</code></pre>
+<pre><code>## X    0.0
+## Z    0.0
+## dtype: float64</code></pre>
+<p>¡Vaya! Ahora no solo sale que <code>Z</code> es significativa (esto es normal
+porque hay una relación entre <code>Z</code> e <code>Y</code>: <code>Y</code> es causa de <code>Z</code>), ¡sino que
+<code>X</code> también sale significativa!</p>
+<p>Este modelo también serviría para predecir, pero no para intervenir.</p>
+<p>¿Por que es ahora significativa <code>X</code>? Esto sucede porque, al contrario de
+lo que ocurría con la <em>chain</em>, al incluir la variable intermedia en el
+modelo hemos abierto el camino entre <code>X</code> e <code>Y</code>:</p>
+<ul>
+<li>Condicionar en la variable intermedia en una <em>chain</em> <strong>cierra</strong> el
+camino entre las variables de los extremos, que inicialmente está
+cerrado.</li>
+<li>Por contra, condicionar sobre la variable intermedia en un
+<em>collider</em> <strong>abre</strong> el camino entre las variables de los extremos,
+que inicialmente está abierto.</li>
+</ul>
+<div id="resumen---colisionadores-colliders" class="section level2">
+<h2>Resumen - Colisionadores (<em>colliders</em>)</h2>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-38-1.png" width="192" style="display: block; margin: auto;" /></p>
+<p>Al analizar los datos disponibles (<code>X</code>, <code>Y</code>, <code>Z</code>) hemos visto que <code>Y</code>
+correla zon <code>Z</code> pero no con <code>X</code>. Esto induce a probar el modelo
+<span class="math inline">\(Y \sim Z\)</span>, en el que <code>Z</code> sale significativa. Por supuesto, el modelo no
+explica <code>Y</code> causalmente, así que intervenir sobre <code>Z</code> no produciría
+efecto en <code>Y</code> . Pero el modelo serviría para predecir <code>Y</code> a partir de
+<code>Z</code> . Además, si se nos ocurre incluir <code>X</code> también (<span class="math inline">\(Y \sim Z + X\)</span>),
+resulta que tanto <code>X</code> como <code>Z</code> salen significativas. Intervenir en <code>X</code> o
+<code>Z</code> tampoco tendría efecto en <code>Y</code> pero como modelo predictivo sí
+funcionaría.</p>
+</div>
+</div>
+<div id="conclusión" class="section level1">
+<h1>Conclusión</h1>
+<p>Usar un modelo causalmente incorrecto (es decir, creado basándonos solo
+en las correlaciones) no es un problema a efectos meramente
+<strong>predictivos</strong>, como hemos visto. Si lo único que queremos es predecir,
+no hace falta que le demos muchas vueltas al modelo. Podemos emplear la
+táctica <em>machine learning</em> - meter todas las variables, buscar el modelo
+que mejor prediga - y ¡hala! a predecir.</p>
+<p>Pero si es un problema desde un punto de vista <strong>inferencial</strong> -
+<em>entender cómo funcionan las cosas</em> -, ya que, a efectos explicativos,
+podemos terminar con una idea errónea de qué causa qué. Y esto es
+particularmente grave si queremos usar el modelo para <strong>intervenir</strong>.</p>
+<p>Si queremos explicar y/o intervenir tenemos que poner más cabeza en el
+modelo, empleando metodologías que tengan en cuenta la causalidad para
+crear modelos causalmente correctos.</p>
+</div>
