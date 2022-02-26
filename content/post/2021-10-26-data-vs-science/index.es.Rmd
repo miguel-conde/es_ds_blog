@@ -27,9 +27,7 @@ Notaréis sólo sutiles diferencias: básicamente, en la versión en español lo
 
 En estas diferencias resuenan solo algunas de las abundantes y recurrentes discusiones acerca de lo que es y lo que no es Data Science. No sé si entrará en el marco de esas discusiones, pero lo que a mi me interesa es lo siguiente: casi todo el mundo se centra en la primera palabra, "data": su volumen, velocidad, variedad y también las herramientas para tratar datos: Hadoop, Spark, EC2, Pig, Hive, python, R, etc, etc.
 
-\[caption id="attachment_1669" align="aligncenter" width="600"\]![Y lo mismo podría decirse de "Data Science"...](images/bigDataHumour.png.crdownload)
-
-Y lo mismo podría decirse de "Data Science"...\[/caption\]
+![Y lo mismo podría decirse de "Data Science"...](images/bigDataHumour.png.crdownload "Y lo mismo podría decirse de "Data Science"…")
 
 Pero se habla muy poco de la segunda, "Science". Siguiendo a la gente de la [Especialización Data Science de Coursera](https://www.coursera.org/specializations/jhu-data-science) ([Brian Caffo](http://www.bcaffo.com/), [Robert D. Peng](http://www.biostat.jhsph.edu/~rpeng/index.html) y [Jeffrey Leek](http://jtleek.com/) - [Johns Hopkings Data Science Lab](http://jhudatascience.org/)), el carácter científico de la Ciencia de Datos viene dado porque los datos se utilizan **para responder preguntas**.: *los datos son un medio; responder preguntas es el verdadero fin*.
 
