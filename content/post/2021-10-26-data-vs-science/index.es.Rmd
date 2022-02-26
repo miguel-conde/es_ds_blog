@@ -27,7 +27,9 @@ Notaréis sólo sutiles diferencias: básicamente, en la versión en español lo
 
 En estas diferencias resuenan solo algunas de las abundantes y recurrentes discusiones acerca de lo que es y lo que no es Data Science. No sé si entrará en el marco de esas discusiones, pero lo que a mi me interesa es lo siguiente: casi todo el mundo se centra en la primera palabra, "data": su volumen, velocidad, variedad y también las herramientas para tratar datos: Hadoop, Spark, EC2, Pig, Hive, python, R, etc, etc.
 
-\[caption id="attachment_1669" align="aligncenter" width="600"\][![Y lo mismo podría decirse de "Data Science"...](http://es100x100datascience.com/wp-content/uploads/2016/05/bigDataHumour.png)](http://es100x100datascience.com/wp-content/uploads/2016/05/bigDataHumour.png) Y lo mismo podría decirse de "Data Science"...\[/caption\]
+\[caption id="attachment_1669" align="aligncenter" width="600"\]![Y lo mismo podría decirse de "Data Science"...](images/bigDataHumour.png.crdownload)
+
+Y lo mismo podría decirse de "Data Science"...\[/caption\]
 
 Pero se habla muy poco de la segunda, "Science". Siguiendo a la gente de la [Especialización Data Science de Coursera](https://www.coursera.org/specializations/jhu-data-science) ([Brian Caffo](http://www.bcaffo.com/), [Robert D. Peng](http://www.biostat.jhsph.edu/~rpeng/index.html) y [Jeffrey Leek](http://jtleek.com/) - [Johns Hopkings Data Science Lab](http://jhudatascience.org/)), el carácter científico de la Ciencia de Datos viene dado porque los datos se utilizan **para responder preguntas**.: *los datos son un medio; responder preguntas es el verdadero fin*.
 
@@ -35,7 +37,9 @@ Lo que ocurre es que esta perspectiva es mucho más complicada y azarosa que la 
 
 Pongamos un [ejemplo](https://www.quora.com/What-are-good-examples-of-using-data-science-for-development-and-or-social-good): [[GiveDirectly]{.ul}](http://www.givedirectly.org/) es una ONG que lleva a cabo transferencias directas de efectivo a familias con bajos ingresos en Uganda y Kenia mediante pagos a través del móvil . Estas donaciones se dan sin ningún compromiso, confiando en que las personas sabrán cómo utilizar el dinero de la manera más efectiva. [GiveDirectly](http://www.givewell.org/international/top-charities/give-directly)es una de las organizaciones benéficas [mejor valoradas](http://www.givewell.org/charities/top-charities) en [GiveWell](http://www.givewell.org/international/top-charities/give-directly); ha sido sometida a ensayos controlados aleatorios para evaluar la efectividad de su enfoque, con resultados altamente positivos.
 
-[![giveDirectly](http://es100x100datascience.com/wp-content/uploads/2016/05/giveDirectly.jpg)](https://www.givedirectly.org/)El modelo de GiveDirectly es llevar a cabo las transferencias directas de efectivo a las aldeas con mayor número de pobres . Para evaluar de qué aldeas se trata, la organización tenía que enviar personal a visitar una por una las aldeas de Uganda y Kenia.
+[![giveDirectly](images/giveDirectly.jpg.crdownload)](https://www.givedirectly.org/)
+
+El modelo de GiveDirectly es llevar a cabo las transferencias directas de efectivo a las aldeas con mayor número de pobres . Para evaluar de qué aldeas se trata, la organización tenía que enviar personal a visitar una por una las aldeas de Uganda y Kenia.
 
 Este método es costoso tanto por el tiempo necesario para visitar cada sitio como porque implica utilizar parte de las donaciones para pagar los salarios del personal que realiza las inspecciones, que de otro modo podrían ir directamente a los pobres.
 
