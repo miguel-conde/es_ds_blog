@@ -18,7 +18,7 @@ Tengo una buena noticia para ti: ante ti se abre un enorme abanico de posibilida
 
 <center>
 
-![](https://i0.wp.com/es100x100datascience.com/wp-content/uploads/2020/12/festina-lente.jpg?w=576&ssl=1)
+![](images/festina-lente.jpg)
 
 </center>
 
