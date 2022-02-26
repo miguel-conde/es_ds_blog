@@ -42,11 +42,11 @@ El *Bootstrap* es una **técnica de remuestreo**. Como se dice en [Kuhn and Jhon
 
 <center>
 
-[![In Rudolph Eric Raspe's tale, Baron Munchausen had, in one of his many adventurous travels, fallen to th ebottom of a deep lake and just as he was to succumb to his fate he thought to pull himself up by his own BOOTSTRAP. The original version is in German, where Munchausen actually draws himself up by the hair, not the bootstraps.](http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg)](http://es100x100datascience.com/wp-content/uploads/2016/12/Bootstrap-Munchhhausen.jpg) 
+![In Rudolph Eric Raspe's tale, Baron Munchausen had, in one of his many adventurous travels, fallen to th ebottom of a deep lake and just as he was to succumb to his fate he thought to pull himself up by his own BOOTSTRAP. The original version is in German, where Munchausen actually draws himself up by the hair, not the bootstraps.](images/Bootstrap-Munchhhausen.jpg)
+
 </center>
 
 En el cuento de Rudolph Eric Raspe se relata cómo, en uno de sus viajes de aventuras, el Barón Munchausen cayó con su caballo en una profunda ciénaga y, cuando ya estaba a punto de sucumbir a su fatal destino, se le ocurrió que podía sacarse a sí mismo (¡y a su caballo!) tirando de sus *bootstraps*, las cinchas o tiradores situadas en la parte posterior de sus botas para facilitar la operación de calzarse. Sin embargo, en la versión original en alemán, Munchausen se sacaba a sí mismo de la ciénaga (¡con su caballo!) tirando de su coleta, como se ve en la ilustración, no de sus *bootstraps*.
-
 
 ### El paquete `caret` y el *Bootstrap*
 
@@ -113,7 +113,7 @@ multiPredict <- sapply(list_of_models, predict, churnTest)
 
 <center>
 
-[![Bagged trees - voting](http://es100x100datascience.com/wp-content/uploads/2016/12/voting.jpg "Bagged trees - voting")](http://es100x100datascience.com/wp-content/uploads/2016/12/voting.jpg)
+[![Bagged trees - voting](images/voting.jpg "Bagged trees - voting")](http://es100x100datascience.com/wp-content/uploads/2016/12/voting.jpg)
 
 </center>
 
@@ -188,8 +188,6 @@ kpiPlot(kpis, "F1")
 
 par(mfrow = c(1,1))
 ```
-
-
 
 Las líneas rojas indican la ubicación de las medidas correspondientes a los diferentes KPIs para el modelo *bagged*; las *boxplots* se refieren al mismo KPI según esté distribuido en los 100 modelos individuales generados.
 
