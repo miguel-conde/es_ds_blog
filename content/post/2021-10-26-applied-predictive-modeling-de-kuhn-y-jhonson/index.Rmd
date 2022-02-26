@@ -26,7 +26,8 @@ De hecho este paquete, caret, se utiliza profusamente en el libro. Aquí tenéis
 
 ## El enfoque
 
-[![Applied Predictive Modeling](http://es100x100datascience.com/wp-content/uploads/2016/02/Applied-Predictive-Modeling.jpg)](http://appliedpredictivemodeling.com/)
+<!-- [![Applied Predictive Modeling](http://es100x100datascience.com/wp-content/uploads/2016/02/Applied-Predictive-Modeling.jpg)](http://appliedpredictivemodeling.com/) -->
+![](images/Applied-Predictive-Modeling.jpg)
 
 Los propios autores, en la introducción, nos indican que nos encontramos ante un libro dedicado al *análisis de datos* haciendo foco específicamente en la ***práctica*** *del modelado predictivo*. Entienden acertadamente el modelado predictivo como algo más que un conjunto de técnicas y herramientas para encontrar patrones en los datos: en efecto, la práctica del modelado predictivo define un **proceso**, el proceso de desarrollo de modelos, de modo que podamos *comprender y cuantificar su capacidad de predicción en el futuro, con datos no empleados durante su construcción*.
 
