@@ -25,8 +25,6 @@ Pero centrarse en la parte científica es menos fácil que hacerlo en los datos:
 
 -   Y encontrar patrones en los datos no es difícil: siempre habrá correlaciones por múltiples razones si reunimos datos suficientes. Lo fastidiado es entender qué pintan esas relaciones en relación a nuestra pregunta, si es que pintan algo. Porque a menudo se deben a fenómenos no relacionados con ella.
 
- 
+![Humor_torture_data](images/Humor_torture_data.jpg)
 
-[![Humor_torture_data](http://es100x100datascience.com/wp-content/uploads/2016/05/Humor_torture_data.jpg)](http://es100x100datascience.com/wp-content/uploads/2016/05/Humor_torture_data.jpg)
-
-La expectación en torno a Data Science y Big Data  desaparecerá si la Ciencia de Datos es sólo de "Datos" y no de "Ciencia". La importancia a largo plazo de la Ciencia de Datos se medirá por la de las cuestiones que podamos *responder* con los datos.
+La expectación en torno a Data Science y Big Data desaparecerá si la Ciencia de Datos es sólo de "Datos" y no de "Ciencia". La importancia a largo plazo de la Ciencia de Datos se medirá por la de las cuestiones que podamos *responder* con los datos.
