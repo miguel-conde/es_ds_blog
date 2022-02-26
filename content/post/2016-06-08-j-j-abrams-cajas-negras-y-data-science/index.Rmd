@@ -15,7 +15,9 @@ thumbnail: ''
 
 En una famosa [conferencia](http://www.ted.com/talks/j_j_abrams_mystery_box)de marzo de 2007 en [TED](http://www.ted.com/), el creador de [*Perdidos*](https://es.wikipedia.org/wiki/Lost)*, [Star Trek: más allá](https://es.wikipedia.org/wiki/Star_Trek:_m%C3%A1s_all%C3%A1 "Star Trek: más allá")* o [*Star Wars: Episodio VII - El Despertar de la Fuerza*](https://es.wikipedia.org/wiki/Star_Wars:_Episode_VII_-_The_Force_Awakens "Star Wars: Episode VII - The Force Awakens")contó la siguiente historia: *siendo niño, mi abuelo me llevó a una tienda de magia llamada **Tannen's Magic**, en el Midtown de Nueva York. Perdida en las profundidades de un edificio en ruinas, se trataba de mi refugio favorito, una destartalada covacha atestada de maravillas. Siempre caía algún capricho pero lo que mi abuelo me regaló ese día me fascinaría el resto de mi vida. El objeto era una caja "mágica" de cartón de interior impenetrable y con una enorme interrogación pintada en su lateral.*
 
-[![tanen-box](http://es100x100datascience.com/wp-content/uploads/2016/06/tanen-box.jpg)](http://es100x100datascience.com/wp-content/uploads/2016/06/tanen-box.jpg)Cuarenta años después, **todavía no la ha abierto**: *Ahora representa infinitas posibilidades, representa esperanza, algo potencial*, dice Abrams. *Y **¿qué es una historia sino una caja que puede contener cualquier cosa?***
+![tanen-box](images/tanen-box.jpg)
+
+Cuarenta años después, **todavía no la ha abierto**: *Ahora representa infinitas posibilidades, representa esperanza, algo potencial*, dice Abrams. *Y **¿qué es una historia sino una caja que puede contener cualquier cosa?***
 
 Me diréis, con razón, que la de Abrams no es una caja "negra". Cierto, no es literalmente negra. Lo que me interesa de ella es la relación que establece entre la caja - que puede contener cualquier cosa - y contar una historia.
 
@@ -51,4 +53,6 @@ Creo que los tres primeros son autoexplicativos. El último puede resultar "raro
 
 Aunque terminemos abriendo la Caja, creo que no deberíamos perder nunca la capacidad de maravillarnos ante las historias que los datos pueden contarnos. Parafraseando a [Arthur C. Clarke](https://es.wikipedia.org/wiki/Arthur_Charles_Clarke "Arthur Charles Clarke"), "*toda tecnología lo suficientemente oculta es indistinguible de la magia*".
 
-\[caption id="attachment_1701" align="aligncenter" width="500"\][![simpsons_27](http://es100x100datascience.com/wp-content/uploads/2016/06/simpsons_27.gif)](http://es100x100datascience.com/wp-content/uploads/2016/06/simpsons_27.gif) Al fin y al cabo, también era una Caja Negra ¿no?\[/caption\]
+![simpsons_27](images/simpsons_27.gif)
+
+Al fin y al cabo, también era una Caja Negra ¿no?\[/caption\]
