@@ -12,34 +12,39 @@ tags:
   - 'video'
 description: 'Una infraestructura de optimización en R'
 thumbnail: ''
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 <script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 
 
 <p>El paquete <a href="https://cran.r-project.org/web/packages/ROI/index.html">ROI</a>
-(= <em>R Optimization Infrastructure</em>)
-nos proporciona una infraestructura ampliable para modelado de problemas de optimización (lineal,
-cuadrática, cónica y no lineal en generalgeneral). Además, administra múltiples <em>solvers</em>,
-reformulaciones, colecciones de problemas y funciones para leer y escribir
-problemas de optimización en varios formatos.</p>
-<p>El <a href="https:/epub.wu.ac.at/5858/"><em>paper</em> de 2019</a> es muy recomendable para iniciarse
-en ROI y para profundizar luego en él. En su Apartado 2 encontrarás un
-resumen de teoría de optimización, en el 3 tienes una interesante panorámica del
-software de optimización disponible en R, en los 4 y 5 dispones de la descripción
-de la infraestructura y la librería. El <em>paper</em> termina con un apartado 6 dedicado a
-ejemplos.</p>
-<p>En definitiva, la principal ventaja de <strong>ROI</strong> es que es a la optimización lo
-que <a href="https://cran.r-project.org/web/packages/caret/index.html"><em>caret</em></a> fue a
-<em>machine learning</em>: un <em>wrapper</em> que unifica la interfaz de
+(= <em>R Optimization Infrastructure</em>) nos proporciona una infraestructura
+ampliable para modelado de problemas de optimización (lineal,
+cuadrática, cónica y no lineal en generalgeneral). Además, administra
+múltiples <em>solvers</em>, reformulaciones, colecciones de problemas y
+funciones para leer y escribir problemas de optimización en varios
+formatos.</p>
+<p>El <a href="https:/epub.wu.ac.at/5858/"><em>paper</em> de 2019</a> es muy recomendable
+para iniciarse en ROI y para profundizar luego en él. En su Apartado 2
+encontrarás un resumen de teoría de optimización, en el 3 tienes una
+interesante panorámica del software de optimización disponible en R, en
+los 4 y 5 dispones de la descripción de la infraestructura y la
+librería. El <em>paper</em> termina con un apartado 6 dedicado a ejemplos.</p>
+<p>En definitiva, la principal ventaja de <strong>ROI</strong> es que es a la
+optimización lo que
+<a href="https://cran.r-project.org/web/packages/caret/index.html"><em>caret</em></a> fue
+a <em>machine learning</em>: un <em>wrapper</em> que unifica la interfaz de
 programación independientemente del <em>solver</em>.</p>
 <p>Te muestro a continuación un pequeño ejemplo de su uso.</p>
 <p>Vamos a utilizarlo con este sencillo problema de optimización lineal:</p>
 <center>
-<img src="images/lp.png" width="50%" style="display: block; margin: auto;" />
+<p><img src="images/lp.png" width="50%" style="display: block; margin: auto;" /></p>
 </center>
-<p>Lo primero que hacemos es <strong>definir el problema</strong> como un objeto <code>OP</code> (<em>Optimization
-Problem</em>):</p>
+<p>Lo primero que hacemos es <strong>definir el problema</strong> como un objeto <code>OP</code>
+(<em>Optimization Problem</em>):</p>
 <pre class="r"><code>library(ROI)
 library(tidyverse)
 
@@ -72,8 +77,9 @@ maximum(lp)     &lt;- TRUE</code></pre>
 ## subject to
 ## - 3 constraints of type linear.
 ## - 1 lower and 1 upper non-standard variable bound.</code></pre>
-<p>Como ves, ROI identifica el tipo de problema que le hemos definido. Esto facilita que,
-a continuación, busquemos un <em>solver</em> apropiado para <em>este</em> problema.</p>
+<p>Como ves, ROI identifica el tipo de problema que le hemos definido. Esto
+facilita que, a continuación, busquemos un <em>solver</em> apropiado para
+<em>este</em> problema.</p>
 <p>La infraestructura ROI tiene disponibles los siguientes <em>solvers</em>:</p>
 <pre class="r"><code>ROI_available_solvers(lp)[, c(&quot;Package&quot;, &quot;Repository&quot;)] %&gt;% head()</code></pre>
 <pre><code>##              Package                 Repository
@@ -94,8 +100,8 @@ a continuación, busquemos un <em>solver</em> apropiado para <em>este</em> probl
 ## &quot;ROI.plugin.quadprog&quot;</code></pre>
 <p>Si el que necesitas no está instalado:</p>
 <pre><code>install.packages(&quot;ROI.plugin.glpk&quot;)</code></pre>
-<p>De los que tenemos instalados, ¿cuáles están ya <strong>registrados</strong> (porque ya los hemos
-utilizado anteriormente) ?</p>
+<p>De los que tenemos instalados, ¿cuáles están ya <strong>registrados</strong> (porque
+ya los hemos utilizado anteriormente) ?</p>
 <pre class="r"><code>ROI_registered_solvers() %&gt;% head(15)</code></pre>
 <pre><code>##               nlminb              alabama             deoptimr 
 ##  &quot;ROI.plugin.nlminb&quot; &quot;ROI.plugin.alabama&quot; &quot;ROI.plugin.deoptim&quot; 
@@ -107,10 +113,11 @@ utilizado anteriormente) ?</p>
 ##  &quot;ROI.plugin.nloptr&quot;  &quot;ROI.plugin.nloptr&quot;  &quot;ROI.plugin.nloptr&quot; 
 ##        nloptr.newuoa         nloptr.sbplx         nloptr.stogo 
 ##  &quot;ROI.plugin.nloptr&quot;  &quot;ROI.plugin.nloptr&quot;  &quot;ROI.plugin.nloptr&quot;</code></pre>
-<p>Para registrarlo la primera vez que lo usas lo único que hay que hacer es
-cargar la librería del <em>plugin</em>:</p>
+<p>Para registrarlo la primera vez que lo usas lo único que hay que hacer
+es cargar la librería del <em>plugin</em>:</p>
 <pre><code>library(&quot;ROI.plugin.glpk&quot;)</code></pre>
-<p>Ahora preguntamos a ROI qué <em>solvers</em> son aplicables a <strong><em>este</em></strong> problema:</p>
+<p>Ahora preguntamos a ROI qué <em>solvers</em> son aplicables a <strong><em>este</em></strong>
+problema:</p>
 <pre class="r"><code>ROI_applicable_solvers(lp)</code></pre>
 <pre><code>## [1] &quot;alabama&quot;       &quot;glpk&quot;          &quot;lpsolve&quot;       &quot;nloptr.cobyla&quot;
 ## [5] &quot;nloptr.mma&quot;    &quot;nloptr.auglag&quot; &quot;nloptr.isres&quot;  &quot;nloptr.slsqp&quot;</code></pre>
@@ -158,10 +165,11 @@ cargar la librería del <em>plugin</em>:</p>
 ## 
 ## $sensitivity_report
 ## [1] NA</code></pre>
-<p>Y hasta aquí el ejemplo. Como ves, la dinámica de uso es bastante clara y cómoda.
-Los problemas de optimización reales no son tan simples como este ejemplo, por
-supuesto. Pero usar ROI nos permite centrarnos en plantear y solucionar el problema
-sin malgastar demasiado esfuerzo en la programación de la solución.</p>
+<p>Y hasta aquí el ejemplo. Como ves, la dinámica de uso es bastante clara
+y cómoda. Los problemas de optimización reales no son tan simples como
+este ejemplo, por supuesto. Pero usar ROI nos permite centrarnos en
+plantear y solucionar el problema sin malgastar demasiado esfuerzo en la
+programación de la solución.</p>
 <p>Por último, te dejo un par de enlaces que espero te sean útiles:</p>
 <ul>
 <li><a href="https:/roi.r-forge.r-project.org/">ROI homepage</a></li>

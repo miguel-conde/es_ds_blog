@@ -12,29 +12,34 @@ tags:
   - 'video'
 description: 'Una infraestructura de optimización en R'
 thumbnail: ''
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE, fig.align='center')
 ```
 
-El paquete [ROI](https://cran.r-project.org/web/packages/ROI/index.html) 
-(= *R Optimization Infrastructure*) 
-nos proporciona una infraestructura ampliable para modelado de problemas de optimización (lineal,
-  cuadrática, cónica y no lineal en generalgeneral). Además, administra múltiples *solvers*, 
-  reformulaciones, colecciones de problemas y funciones para leer y escribir 
-  problemas de optimización en varios formatos.
+El paquete [ROI](https://cran.r-project.org/web/packages/ROI/index.html)
+(= *R Optimization Infrastructure*) nos proporciona una infraestructura
+ampliable para modelado de problemas de optimización (lineal,
+cuadrática, cónica y no lineal en generalgeneral). Además, administra
+múltiples *solvers*, reformulaciones, colecciones de problemas y
+funciones para leer y escribir problemas de optimización en varios
+formatos.
 
-El [*paper* de 2019](https:/epub.wu.ac.at/5858/) es muy recomendable para iniciarse
-en ROI y para profundizar luego en él. En su Apartado 2 encontrarás un
-resumen de teoría de optimización, en el 3 tienes una interesante panorámica del 
-software de optimización disponible en R, en los 4 y 5 dispones de la descripción 
-de la infraestructura y la librería. El *paper* termina con un apartado 6 dedicado a
-ejemplos.
+El [*paper* de 2019](https:/epub.wu.ac.at/5858/) es muy recomendable
+para iniciarse en ROI y para profundizar luego en él. En su Apartado 2
+encontrarás un resumen de teoría de optimización, en el 3 tienes una
+interesante panorámica del software de optimización disponible en R, en
+los 4 y 5 dispones de la descripción de la infraestructura y la
+librería. El *paper* termina con un apartado 6 dedicado a ejemplos.
 
-En definitiva, la principal ventaja de **ROI** es que es a la optimización lo 
-que [*caret*](https://cran.r-project.org/web/packages/caret/index.html) fue a 
-*machine learning*: un *wrapper* que unifica la interfaz de 
+En definitiva, la principal ventaja de **ROI** es que es a la
+optimización lo que
+[*caret*](https://cran.r-project.org/web/packages/caret/index.html) fue
+a *machine learning*: un *wrapper* que unifica la interfaz de
 programación independientemente del *solver*.
 
 Te muestro a continuación un pequeño ejemplo de su uso.
@@ -42,13 +47,15 @@ Te muestro a continuación un pequeño ejemplo de su uso.
 Vamos a utilizarlo con este sencillo problema de optimización lineal:
 
 <center>
+
 ```{r, echo=FALSE, out.width="50%"}
 knitr::include_graphics("images/lp.png")
 ```
+
 </center>
 
-Lo primero que hacemos es **definir el problema** como un objeto `OP` (*Optimization
-Problem*):
+Lo primero que hacemos es **definir el problema** como un objeto `OP`
+(*Optimization Problem*):
 
 ```{r}
 library(ROI)
@@ -85,8 +92,9 @@ Este es el problema que hemos definido:
 lp
 ```
 
-Como ves, ROI identifica el tipo de problema que le hemos definido. Esto facilita que,
-a continuación, busquemos un *solver* apropiado para *este* problema.
+Como ves, ROI identifica el tipo de problema que le hemos definido. Esto
+facilita que, a continuación, busquemos un *solver* apropiado para
+*este* problema.
 
 La infraestructura ROI tiene disponibles los siguientes *solvers*:
 
@@ -104,25 +112,22 @@ ROI_installed_solvers()
 
 Si el que necesitas no está instalado:
 
-```
-install.packages("ROI.plugin.glpk")
-```
+    install.packages("ROI.plugin.glpk")
 
-De los que tenemos instalados, ¿cuáles están ya **registrados** (porque ya los hemos
-utilizado anteriormente) ?
+De los que tenemos instalados, ¿cuáles están ya **registrados** (porque
+ya los hemos utilizado anteriormente) ?
 
 ```{r}
 ROI_registered_solvers() %>% head(15)
 ```
 
-Para registrarlo la primera vez que lo usas lo único que hay que hacer es 
-cargar la librería del *plugin*:
+Para registrarlo la primera vez que lo usas lo único que hay que hacer
+es cargar la librería del *plugin*:
 
-```
-library("ROI.plugin.glpk")
-```
+    library("ROI.plugin.glpk")
 
-Ahora preguntamos a ROI qué *solvers* son aplicables a ***este*** problema:
+Ahora preguntamos a ROI qué *solvers* son aplicables a ***este***
+problema:
 
 ```{r}
 ROI_applicable_solvers(lp)
@@ -154,25 +159,27 @@ También podemos ver el *status* del *solver*:
 lp_sol$status
 ```
 
-
 ```{r}
 lp_sol$message
 ```
 
-Y hasta aquí el ejemplo. Como ves, la dinámica de uso es bastante clara y cómoda.
-Los problemas de optimización reales no son tan simples como este ejemplo, por
-supuesto. Pero usar ROI nos permite centrarnos en plantear y solucionar el problema
-sin malgastar demasiado esfuerzo en la programación de la solución.
+Y hasta aquí el ejemplo. Como ves, la dinámica de uso es bastante clara
+y cómoda. Los problemas de optimización reales no son tan simples como
+este ejemplo, por supuesto. Pero usar ROI nos permite centrarnos en
+plantear y solucionar el problema sin malgastar demasiado esfuerzo en la
+programación de la solución.
 
 Por último, te dejo un par de enlaces que espero te sean útiles:
 
-
-- [ROI homepage](https:/roi.r-forge.r-project.org/)
-- [ROI en CRAN](https:/cran.r-project.org/web/packages/ROI/index.html)
+-   [ROI homepage](https:/roi.r-forge.r-project.org/)
+-   [ROI en CRAN](https:/cran.r-project.org/web/packages/ROI/index.html)
 
 Y un video que cuenta más o menos lo mismo que este post:
 
 <center>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/yfz6IkBElpA" frameborder="0" allowfullscreen></iframe>
-</center>
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/yfz6IkBElpA" frameborder="0" allowfullscreen>
+
+</iframe>
+
+</center>
