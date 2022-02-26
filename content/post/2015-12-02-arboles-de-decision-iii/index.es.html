@@ -103,10 +103,10 @@ rpart_churn_model &lt;- rpart(formula = churn ~ .,
 <p>Todo esto es más fácil verlo gráficamente:</p>
 <pre class="r"><code>plot(rpart_churn_model, uniform = TRUE, branch = 0.6, margin = 0.1)
 text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .5)</code></pre>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<pre class="r"><code>plot(rpart_churn_model, uniform = TRUE, branch = 0.6, margin = 0.01)
-text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .7)</code></pre>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(rpart_churn_model, uniform = TRUE, branch = 0.1, margin = 0.01)
+text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .4)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p><a href="http://es100x100datascience.com/wp-content/uploads/2015/12/Tree.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-1024x448.png" alt="Tree" /></a></p>
 <p>Para ver los parámetros de complejidad del modelo:</p>
 <pre class="r"><code>printcp(x= rpart_churn_model)</code></pre>
@@ -136,6 +136,8 @@ text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .7)</code></pre>
 ## 8 0.010000     15    0.3328 0.5104 0.027545</code></pre>
 <p>Utilizaremos los parámetros de complejidad (<code>CP</code>) como una penalización para controlar el tamaño del árbol. En resumen, cuanto mayor es el parámetro de complejidad, menos decisiones contiene el árbol (<code>nsplit</code>). El valor <code>rel error</code> representa la desviación media del árbol al que se refiera dividida entre la desviación media del árbol nulo (<code>nsplit = 0</code>). El valor <code>xerror</code> es el valor medio estimado mediante un procedimiento de <em>cross validation</em> que ya veremos. <code>xstd</code> es el error estándar del error relativo.</p>
 <p>La información sobre el <code>CP</code>se puede visualizar:</p>
+<pre class="r"><code>rpart::plotcp(rpart_churn_model, main = &quot;size of tree&quot;, cex.main = .7)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p><a href="http://es100x100datascience.com/wp-content/uploads/2015/12/CP-plot.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/12/CP-plot.png" alt="CP plot" /></a></p>
 <p>El eje x inferior representa el <code>CP</code>, el eje y es el error relativo y el eje x superior es el tamaño del árbol.</p>
 </div>
@@ -156,19 +158,20 @@ text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .7)</code></pre>
 <p>Esto se ve mejor con la función <code>confusionMatrix</code> del paquete <code>caret</code>:</p>
 <pre class="r"><code>library(caret)
 
-confusionMatrix(data = rpart_predictions, 
-                reference = churnTest$churn)$table</code></pre>
+cm &lt;- confusionMatrix(data = rpart_predictions, 
+                      reference = churnTest$churn)
+cm$table</code></pre>
 <pre><code>##           Reference
 ## Prediction yes  no
 ##        yes  52   4
 ##        no   30 414</code></pre>
 <p>Al número total de aciertos lo llamamos <strong>Accuracy</strong> o <strong>exactitud</strong>:</p>
 <p><span class="math display">\[
-Accuracy = \\frac{41+427}{41+25+7+427} = 0.936\
+Accuracy = \frac{52 + 414}{52 + 4 + 414 + 30} = 0.932
 \]</span></p>
 <p>El porcentaje de <strong>falsos positivos</strong> es:</p>
 <p><span class="math display">\[
-FP = \\frac{25}{41+25} = 0.3787879\
+FP = \frac{4}{52 + 4} = 0.3787879
 \]</span></p>
 <p>Y el de <strong>falsos negativos</strong>:</p>
 <p><span class="math display">\[
@@ -215,14 +218,14 @@ Specificity = 1 - FN = \\frac{427}{427+7} = 0.983871\
 <p>Visualizamos el nuevo árbol:</p>
 <pre class="r"><code>plot(rpart_churn_prunned_model, uniform = TRUE, branch = 0.6, margin = 0.01)
     text(rpart_churn_prunned_model, all = TRUE, use.n = TRUE, cex = .7)</code></pre>
-<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p><img src="{{< blogdown/postref >}}index.es_files/figure-html/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p><a href="http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-2.png"><img src="http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-2-1024x448.png" alt="Tree 2" /></a></p>
 <p>Y comprobamos su rendimiento:</p>
 <pre class="r"><code>rpart_prunned_predictions &lt;- predict(object = rpart_churn_prunned_model,
-                                 newdata = churnTest, 
-                                 type = &quot;class&quot;)
-    confusionMatrix(data = rpart_prunned_predictions, 
-                    reference = churnTest$churn)$table</code></pre>
+                                     newdata = churnTest, 
+                                     type = &quot;class&quot;)
+confusionMatrix(data = rpart_prunned_predictions, 
+                reference = churnTest$churn)$table</code></pre>
 <pre><code>##           Reference
 ## Prediction yes  no
 ##        yes  55   6
