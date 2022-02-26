@@ -21,8 +21,9 @@ y RStudio nos permite
 crear archivos Rmarkdown mezclando R y Python gracias al <a href="https://cran.r-project.org/web/packages/reticulate/index.html">paquete <code>reticulate</code></a>.</p>
 <p>Vídeo introductorio:</p>
 <p>{{% youtube id="7F_jKKKTDCQ" color="white" %}}</p>
-<pre class="r"><code>library(tidyverse, quietly = TRUE)
-library(dagitty)
+<pre class="r"><code>library(tidyverse, quietly = TRUE)</code></pre>
+<pre><code>## Warning: package &#39;readr&#39; was built under R version 4.1.2</code></pre>
+<pre class="r"><code>library(dagitty)
 library(reticulate)
 Sys.setenv(RETICULATE_PYTHON=&quot;&quot;)
 options(reticulate.repl.quiet = TRUE)
@@ -386,4 +387,5 @@ particularmente grave si queremos usar el modelo para <strong>intervenir</strong
 <p>Si queremos explicar y/o intervenir tenemos que poner más cabeza en el
 modelo, empleando metodologías que tengan en cuenta la causalidad para
 crear modelos causalmente correctos.</p>
+<p>{{ partial “share-buttons.html” . }}</p>
 </div>
