@@ -6,7 +6,8 @@ slug: causalidad-machine-learning-o-modelos-clasicos
 categories:
   - Causalidad
 tags:
-  - ''
+  - 'Causalidad'
+  - 'Inferencia'
 description: ''
 thumbnail: ''
 ---
