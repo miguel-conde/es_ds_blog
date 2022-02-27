@@ -6,7 +6,8 @@ slug: causalidad-machine-learning-o-modelos-clasicos
 categories:
   - Causalidad
 tags:
-  - ''
+  - 'Causalidad'
+  - 'Inferencia'
 description: ''
 thumbnail: ''
 ---
@@ -488,6 +489,4 @@ particularmente grave si queremos usar el modelo para **intervenir**.
 Si queremos explicar y/o intervenir tenemos que poner más cabeza en el
 modelo, empleando metodologías que tengan en cuenta la causalidad para
 crear modelos causalmente correctos.
-
-
 

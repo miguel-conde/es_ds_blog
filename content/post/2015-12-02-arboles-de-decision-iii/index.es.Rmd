@@ -15,7 +15,7 @@ thumbnail: ''
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center")
 ```
 
 Continuamos con la implementación en R de dos tipos de árboles de decisión, probablemente los algoritmos más empleados en Machine Learning. En este artículo construiremos un modelo [*rpart*](https://cran.r-project.org/web/packages/rpart/index.html)*.* En el [artículo anterior](/2015/11/03/arboles-de-decision-ii/) planteamos un problema de clasificación, consistente en la predicción de posibles bajas (*churn*) de clientes de una operadora móvil. Cargamos allí los datos e hicimos una sencilla exploración de los mismos. En este vamos a preparar los datos para construir a continuación nuestro modelo de predicción. Evaluaremos después su rendimiento y, por último, veremos si podemos mejorarlo.
@@ -40,7 +40,6 @@ data(mlc_churn)
 churn <- mlc_churn
 ```
 
-
 Y realizaremos esta división tomando muestras aleatorias del total de los datos:
 
 ```{r}
@@ -50,13 +49,11 @@ churnTrain <- churn[train_idx,]
 churnTest <- churn[-train_idx,]
 ```
 
-
 Hemos seleccionado aleatoriamente para el `train set`el 90% de los datos, dejando el 10% restante para el `test set`. Si lo hemos hecho bien, la distribución de la variable objetivo en ambos conjuntos de datos debe de ser parecida:
 
 ```{r}
 prop.table(table(churnTrain$churn))
 ```
-
 
 (Hay otras formas de hacer esta división de los datos, iremos viéndolas)
 
@@ -70,7 +67,6 @@ library(rpart)
 rpart_churn_model <- rpart(formula = churn ~ ., 
                            data = churnTrain)
 ```
-    
 
 Con esta sentencia hemos creado un modelo que toma como base el `train set` y que trata de predecir la variable categórica objetivo `churn`a partir de todas las demás variables (eso es lo que significa la fórmula `churn ~ .`)
 
@@ -106,12 +102,9 @@ text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .5)
 ```
 
 ```{r}
-plot(rpart_churn_model, uniform = TRUE, branch = 0.6, margin = 0.01)
-text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .7)
+plot(rpart_churn_model, uniform = TRUE, branch = 0.1, margin = 0.01)
+text(rpart_churn_model, all = TRUE, use.n = TRUE, cex = .4)
 ```
-
-
-    
 
 [![Tree](http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-1024x448.png)](http://es100x100datascience.com/wp-content/uploads/2015/12/Tree.png)
 
@@ -121,10 +114,13 @@ Para ver los parámetros de complejidad del modelo:
 printcp(x= rpart_churn_model)
 ```
 
-
 Utilizaremos los parámetros de complejidad (`CP`) como una penalización para controlar el tamaño del árbol. En resumen, cuanto mayor es el parámetro de complejidad, menos decisiones contiene el árbol (`nsplit`). El valor `rel error` representa la desviación media del árbol al que se refiera dividida entre la desviación media del árbol nulo (`nsplit = 0`). El valor `xerror` es el valor medio estimado mediante un procedimiento de *cross validation* que ya veremos. `xstd` es el error estándar del error relativo.
 
 La información sobre el `CP`se puede visualizar:
+
+```{r}
+rpart::plotcp(rpart_churn_model, main = "size of tree", cex.main = .7)
+```
 
 [![CP plot](http://es100x100datascience.com/wp-content/uploads/2015/12/CP-plot.png)](http://es100x100datascience.com/wp-content/uploads/2015/12/CP-plot.png)
 
@@ -142,15 +138,11 @@ rpart_predictions <- predict(object = rpart_churn_model,
                                  type = "class")
 ```
 
-    
-
 Y ahora usaremos la función `table` para crear una tabla de las clasificaciones realizadas:
 
 ```{r}
 table(churnTest$churn, rpart_predictions)
 ```
-
-
 
 Esta tabla nos dice que, de los 66 verdaderos "yes" en el *test set*, hemos acertado 41 pero 25 los hemos clasificado como "no"; y que de los verdaderos 434 "no" en el *test set*, 427 los hemos clasificado correctamente pero 7 los hemos clasificado como "yes".
 
@@ -159,21 +151,34 @@ Esto se ve mejor con la función `confusionMatrix` del paquete `caret`:
 ```{r}
 library(caret)
 
-confusionMatrix(data = rpart_predictions, 
-                reference = churnTest$churn)$table
+cm <- confusionMatrix(data = rpart_predictions, 
+                      reference = churnTest$churn)
+cm$table
 ```
-    
 
 Al número total de aciertos lo llamamos **Accuracy** o **exactitud**:
 
+```{r, include = FALSE}
+tp <- cm$table[1,1]
+fp <- cm$table[1,2]
+fn <- cm$table[2,1]
+tn <- cm$table[2,2]
+
+acc <- (tp + tn) / (tp + fp + tn + fn)
+sens <- precision <- tp / (tp + fn)
+spec <- tn / (tn + fp)
+recall <- ppp <- tp / (tp + fp)
+```
+
+
 $$
-Accuracy = \\frac{41+427}{41+25+7+427} = 0.936\
+Accuracy = \frac{`r tp` + `r tn`}{`r tp` + `r fp` + `r tn` + `r fn`} = `r acc`
 $$
 
 El porcentaje de **falsos positivos** es:
 
 $$
-FP = \\frac{25}{41+25} = 0.3787879\
+FP = \frac{`r fp`}{`r tp` + `r fp`} = 0.3787879
 $$
 
 Y el de **falsos negativos**:
@@ -209,7 +214,6 @@ Primero buscaremos el menor error de *cross-validation* (`xerror`) en el modelo.
 ```{r}
 rpart_churn_model$cptable
 ```
-    
 
 ¿En qué fila de la tabla se encuentra el mínimo `CP`?
 
@@ -218,7 +222,6 @@ row_min_xerror <- which.min(rpart_churn_model$cptable[, "xerror"])
     row_min_xerror
 ```
 
-
 El `CP` correspondiente es:
 
 ```{r}
@@ -226,14 +229,12 @@ CP_min_xerror <- rpart_churn_model$cptable[row_min_xerror, "CP"]
     CP_min_xerror
 ```
 
-
 Ahora podamos el árbol:
 
 ```{r}
 rpart_churn_prunned_model <- prune(tree = rpart_churn_model, 
                                        cp = CP_min_xerror)
 ```
-  
 
 Visualizamos el nuevo árbol:
 
@@ -241,7 +242,6 @@ Visualizamos el nuevo árbol:
 plot(rpart_churn_prunned_model, uniform = TRUE, branch = 0.6, margin = 0.01)
     text(rpart_churn_prunned_model, all = TRUE, use.n = TRUE, cex = .7)
 ```
-    
 
 [![Tree 2](http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-2-1024x448.png)](http://es100x100datascience.com/wp-content/uploads/2015/12/Tree-2.png)
 
@@ -249,12 +249,11 @@ Y comprobamos su rendimiento:
 
 ```{r}
 rpart_prunned_predictions <- predict(object = rpart_churn_prunned_model,
-                                 newdata = churnTest, 
-                                 type = "class")
-    confusionMatrix(data = rpart_prunned_predictions, 
-                    reference = churnTest$churn)$table
+                                     newdata = churnTest, 
+                                     type = "class")
+confusionMatrix(data = rpart_prunned_predictions, 
+                reference = churnTest$churn)$table
 ```
-    
 
 Comparemos los resultados:
 
