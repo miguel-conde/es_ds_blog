@@ -15,10 +15,10 @@ Este libre trata de **modelos** sobre **epidemias** y **vacunas**, vamos, dos te
 Si habéis tenido que buscaros la vida para modelar epidemias (ya sabéis, modelos SIR y derivados), este es el libro que os hubiera gustado tener para empezar.
 
 <center>
-![](https://es100x100datascience.com/wp-content/uploads/2021/01/mates_vigilan_salud.jpg){width="650"}
+
+![](images/mates_vigilan_salud.jpg)
 
 </center>
-
 
 Comienza con capítulos dedicados a la **Teoría de Grafos**, a la **Teoría de Juegos**, y a los conceptos de **función** y **ecuaciones diferenciales**. Son los elementos sobre los que elaboran a continuación modelos epidemiológicos **clásicos** con **poblaciones agregadas**, modelos **más avanzados** con **poblaciones estructuradas en grafos** y, finalmente, estudian el efecto que el empleo de las **vacunas** provoca en los modelos y (un auténtico bonus) analizan el **movimiento anti vacunas** desde la Teoría de Juegos.
 
