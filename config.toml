@@ -21,7 +21,7 @@ path = 'github.com/Vimux/Mainroad'
 
 [Author] # Used in authorbox
   name = "Miguel Conde"
-  bio = "John Doe's true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it."
+  bio = "Curioso impenitente, estudiante de todo y maestro de nada."
   # avatar = "img/avatar.png"
   avatar = "https://avatars.githubusercontent.com/u/10048119?s=400&u=5222a85f12113ba85e6eaf0b438c7b027b382491&v=4"
 
