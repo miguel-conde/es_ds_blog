@@ -1,0 +1,81 @@
+---
+title: 'Estructura de los proyectos de datos: paquete rprojtree'
+author: Miguel Conde
+date: '2022-03-05'
+slug: ''
+categories:
+  - Proyectos
+tags:
+  - Buenas Prácticas
+description: 'El paquete rprojtree es una sencilla herramienta para crear estructuras de proyectos de datos'
+thumbnail: ''
+draft: true
+---
+
+Esta semana me han aceptado en [CRAN](https://cran.r-project.org/) el paquete
+[rprojtree](https://cran.r-project.org/web/packages/rprojtree/index.html).
+
+Es el primer *package* que comparto en CRAN y me ha hecho ilusión, la verdad.
+
+CRAN, como perfectamente sabéis los usuarios de R, es el repositorio de 
+referencia de este lenguaje de programación estadística, *a collection of sites 
+which carry identical material, consisting of the R distribution(s), the 
+contributed extensions, documentation for R, and binaries.* 
+([CRAN FAQ](https://cran.r-project.org/doc/FAQ/R-FAQ.html#What-is-CRAN_003f))
+
+`rprojtree` es un paquete muy sencillo, pero me ha permitido transitar "profesionalmente"
+por todas las fases y chequeos necesarios para compartir en este repositorio.
+
+¿Para qué sirve? Os cuento: cada vez que iniciamos un nuevo proyecto de datos necesitamos
+crear una estructura adecuada de carpetas y ficheros. Con este paquete puedes
+utilizar alguna de las plantillas que contiene (de momento, solo dos) o 
+proporcionarle una tú con tu estructura favorita descrita en formato JSON.
+Tienes los detalles en su [github](https://github.com/miguel-conde/rprojtree).
+
+Si, es una pequeña  "chorrada". ¿O no tan "chorrada"? Pues yo creo que no. No se
+trata tanto de automatizar una tarea que se repite al inicio de cada proyecto como
+de enfocar en uno de esos temas poco glamurosos que casi siempre obviamos al hablar
+de proyectos de datos.
+
+Y es que casi todo el *glamour* en este mundillo se lo llevan los palabros de 
+moda: que si el *deep learning*, que si la inteligencia artificial, el *big data*, ...
+
+Siempre digo que prestamos mucha atención a la modelización y poca a la
+**definición del problema**, los **datos** y la **puesta en producción** (de todo
+esto tendría que hablar algún día). Pero tampoco nos ocupamos mucho de los propios 
+**proyectos de datos**:
+
+* Por un lado, la **metodología de gestión de proyectos**. 
+  + Hoy todo el mundo quiere ser *agile* pero ¿cómo funciona esto en proyectos 
+  de ciencia de datos? O ¿funciona, siquiera?
+  + También nos suena [CRISP](https://es.wikipedia.org/wiki/Cross_Industry_Standard_Process_for_Data_Mining) 
+  o quizás otras metodologías pero la realidad es que muchos proyectos se 
+  gestionan ... como buenamente se puede, y luego no veas cómo luce.
+
+* Y por otro lado, las **buenas prácticas** en el desarrollo de proyectos. Por
+ejemplo:
+  + Dedicar tiempo a construir un **diccionario de datos** es una de las mejores 
+inversiones en un proyecto, por varias razones: para asegurarnos de que los entendemos
+bien, para facilitar el trabajo en equipo y porque puede que, cuando dentro de 
+6 meses haya que modificar algo, tengamos la información al alcance.
+  + Ahondando en lo anterior, cuidar la **documentacion**: no se trata de escribir
+  una biblia que luego no se pueda mantener, pero un mínimo que explique como
+  está organizado el código, qué hace y cómo usarlo nos facilitará la vida como
+  equipo y también a quién tenga que hacerse cargo del código en el futuro.
+  + Usar repositorios de **control de versiones**: fundamental no solo como
+  seguro de vida ante posibles "desastres", sino para organizar el trabajo en
+  equipo y el desarrollo.
+  + **Reproducibilidad**, para evitar situaciones como esta: hacemos un trabajo 
+  ímprobo y los resultados acaban en un powerpoint de tropotocientas slides. Y 
+  entonces - ¡sorpresa! - cambian los datos y hay que repetirlo todo a mano. Pero
+  también para permitir que otras personas verifiquen lo que se ha hecho.
+  + En la misma línea, **modularización** del código: dedicar algo de tiempo a
+  esto permite luego reutilizar código (nosotros u otras personas) y, si hay un 
+  problema, solucionarlo solo en un sitio. Es una inversión enormemente rentable
+  + Usar **entornos**, `renv` en R y conda o entornos virtuales en python, para
+  facilitar la compatibilidad para otros desarrolladores, para nosotros mismos o
+  para quien lo vaya a usar en el futuro.
+  + La **estructura** del proyecto: `rprojtree` está pensado para ayudar a crear 
+  estructuras de carpetas y   directorios que faciliten el trabajo y la 
+  comunicación en el proyecto, ya los  desarrolle una sola persona o un equipo más 
+  o menos grande.

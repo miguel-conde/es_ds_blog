@@ -57,7 +57,8 @@ customJS = ["js/custom.js"] # Include custom JS files
 
 [Params.logo]
   # image = "img/placeholder.png" # Logo image. Path relative to "static"
-  image = "https://i1.wp.com/es100x100datascience.com/wp-content/uploads/2015/09/JoshWills05072013Slide25-e1442913156968.png?w=749&ssl=1"
+  # image = "https://i1.wp.com/es100x100datascience.com/wp-content/uploads/2015/09/JoshWills05072013Slide25-e1442913156968.png?w=749&ssl=1"
+  image = "forest.png"
   title = "ES 100x100 DATA SCIENCE" # Logo title, otherwise will use site title
   subtitle = "Aprendiendo Data Science" # Logo subtitle
   
